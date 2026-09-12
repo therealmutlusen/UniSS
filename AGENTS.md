@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.11`). Default UI language is English.
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.12`). Default UI language is English.
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -36,13 +36,14 @@ pack.sh                store zip (manifest at zip root)
 .github/workflows/     tag v* → zip + GitHub Release
 store/LISTING.md       English listing, permission justifications, reviewer notes
 store/privacy.html     local-only policy; GitHub Pages at /store/privacy.html
+wiki/                 GitHub Wiki source (sidebar, install, usage, store, releases)
 ```
 
 No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings and editor are plain extension pages opened as tabs. No build step; load the folder that contains `manifest.json`.
 
 ## Browser compatibility
 
-Current targets (version `2.0.11`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.12`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -83,12 +84,12 @@ Firefox 115+:
 First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). Same zip for all three. Opera Add-ons later. Do not submit to Safari.
 
 - `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
-- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `.DS_Store`
-- GitHub Release: bump `manifest.json` `version`, commit, push tag `v<that version>` (example `v2.0.12`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
+- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.DS_Store`
+- Every push to the repo must increment `manifest.json` `version` (stores reject an upload whose version is not higher than the last published one).
+- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.12`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip
-- Bump `manifest.json` `version` only when asked; each store upload needs a higher version than the last published one
 
 ## Browser API
 
@@ -167,5 +168,5 @@ Scripts are IIFEs. No modules, no build step, no CDN, no `eval`. CSP: `script-sr
 - Match existing naming: `uniss*` storage, `t("key")` for user-visible strings
 - Keep the `browser`/`chrome` shim at the top of new page scripts
 - After user-facing strings, add the English key; do not leave raw Turkish (or other) in JS except comments
-- Bump `manifest.json` `version` only when asked
+- Bump `manifest.json` `version` on every push to the repo. Do not push a commit that leaves the version unchanged.
 - No package manager, prettier, or test runner in this tree — do not add them unless asked

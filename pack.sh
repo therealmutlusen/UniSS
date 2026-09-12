@@ -15,6 +15,7 @@ zip -r "$out" . \
   -x "${out}" \
   -x "store/*" \
   -x "i18n/en.json" \
+  -x "wiki/*" \
   -x ".git/*" \
   -x ".github/*" \
   -x ".github/*/*" \
