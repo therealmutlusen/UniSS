@@ -97,5 +97,13 @@
   "labelTextScale": "Scale",
   "fontSystem": "System",
   "styleShape": "Style",
-  "styleText": "Text style"
+  "styleText": "Text style",
+  "sectionAbout": "About",
+  "aboutBlurb": "UniSS captures, annotates, and downloads screenshots on your device. There is no account and no UniSS server.",
+  "aboutVersion": "Version",
+  "aboutSupport": "Support",
+  "aboutPrivacy": "Privacy policy",
+  "aboutPrivacyOpen": "Open",
+  "aboutLicense": "License",
+  "aboutLicenseValue": "MIT"
 }

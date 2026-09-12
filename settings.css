@@ -159,6 +159,27 @@ body {
 
 .row:first-child { border-top: 0; }
 
+.row.about-blurb {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+
+.about-meta {
+  font-size: 13.5px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+}
+
+.about-link {
+  font-size: 13.5px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  text-decoration: none;
+}
+.about-link:hover { text-decoration: underline; }
+
 .row-copy {
   display: flex;
   flex-direction: column;

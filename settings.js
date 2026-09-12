@@ -102,6 +102,13 @@
     qualityVal.textContent = String(qualityEl.value);
   }
 
+  function fillAboutVersion() {
+    const verEl = document.getElementById("aboutVersion");
+    if (verEl && api && api.runtime && typeof api.runtime.getManifest === "function") {
+      verEl.textContent = api.runtime.getManifest().version;
+    }
+  }
+
   function fillLanguages() {
     const langs = window.UniSSI18n.getLanguages();
     const current = window.UniSSI18n.getLocale();
@@ -119,6 +126,7 @@
     const local = storageLocal();
     if (!local) {
       fillLanguages();
+      fillAboutVersion();
       syncQualityVisibility();
       return;
     }
@@ -139,6 +147,7 @@
     autoCaptureEl.checked = data.unissAutoCaptureOnClick === true;
     fillLanguages();
     if (data.unissLocale) localeEl.value = data.unissLocale;
+    fillAboutVersion();
     syncQualityVisibility();
     snapshotSaved();
     syncButtons();

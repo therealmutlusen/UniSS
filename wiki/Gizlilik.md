@@ -19,3 +19,5 @@ UniSS tamamen tarayıcıda çalışır. UniSS hesabı ve UniSS sunucusu yoktur. 
 Firefox manifest: `data_collection_permissions.required: ["none"]` (cihaz dışına veri yok).
 
 Eklentiyi kaldırmak yerel depolamayı siler. İndirdiğiniz dosyalar sizin klasörünüzdedir.
+
+Destek: [support@mutlusen.com](mailto:support@mutlusen.com).

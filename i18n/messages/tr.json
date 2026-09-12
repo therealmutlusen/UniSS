@@ -97,5 +97,13 @@
   "labelTextScale": "Ölçek",
   "fontSystem": "Sistem",
   "styleShape": "Stil",
-  "styleText": "Metin stili"
+  "styleText": "Metin stili",
+  "sectionAbout": "Hakkında",
+  "aboutBlurb": "UniSS ekran görüntülerini cihazınızda yakalar, işaretler ve indirir. Hesap yok, UniSS sunucusu yok.",
+  "aboutVersion": "Sürüm",
+  "aboutSupport": "Destek",
+  "aboutPrivacy": "Gizlilik politikası",
+  "aboutPrivacyOpen": "Aç",
+  "aboutLicense": "Lisans",
+  "aboutLicenseValue": "MIT"
 }

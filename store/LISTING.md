@@ -4,9 +4,11 @@ Use this copy in Chrome Web Store, Microsoft Edge Add-ons, and Firefox AMO. Do n
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
+Support email: support@mutlusen.com
+
 Screenshots and the 440×280 promo tile are not in this repo — capture them from a running build (popup, editor, settings). Prefer 1280×800, square corners, no padding.
 
-Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.13.zip`. `manifest.json` is at the zip root.
+Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.16.zip`. `manifest.json` is at the zip root.
 
 First-wave stores: Chrome Web Store, Edge Add-ons, Firefox AMO (listed). Opera Add-ons later. Safari is not a target.
 

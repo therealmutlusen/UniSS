@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.15. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.16. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -56,6 +56,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 - **Default mode:** Visible area veya Full page
 - **Capture immediately…:** açıkken simgeye basınca hemen yakalar
 - **Language:** UniSS arayüz dili (varsayılan İngilizce)
+- **About:** sürüm, destek ([support@mutlusen.com](mailto:support@mutlusen.com)), gizlilik politikası, MIT
 
 **Save** ile kaydedin, **Reset to defaults** varsayılanlara döner.
 
@@ -119,7 +120,7 @@ Panoya görüntü kopyalama `ClipboardItem` ister; desteklemeyen tarayıcıda ko
 - Uzak script, CDN, `eval` yok
 - Telemetri yok; yakalamalar `storage.local` içinde kalır
 
-Ayrıntı: [gizlilik politikası](https://therealmutlusen.github.io/UniSS/store/privacy.html).
+Ayrıntı: [gizlilik politikası](https://therealmutlusen.github.io/UniSS/store/privacy.html). Destek: [support@mutlusen.com](mailto:support@mutlusen.com).
 
 ## Mağaza paketi (geliştirici)
 
