@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-i18n-title="editorTitle">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Edit</title>
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="toolbar glass liquid" role="banner">
+      <div class="toolbar-brand" title="UniSS" aria-label="UniSS">
+        <img class="toolbar-logo" src="brand/logo-mark-32.png" width="32" height="32" alt="UniSS" />
+      </div>
+
+      <div class="toolbar-main" role="toolbar" aria-label="Araçlar">
+        <div class="seg" role="group" aria-label="Select">
+          <button type="button" class="icon-btn tool active" data-tool="select" data-i18n-tip="tipSelect" data-tip="Select / Move" aria-label="Select / Move">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+          </button>
+        </div>
+
+        <div class="seg" role="group" aria-label="Draw">
+          <button type="button" class="icon-btn tool" data-tool="pen" data-i18n-tip="tipPen" data-tip="Pen" aria-label="Pen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+          <button type="button" class="icon-btn tool" data-tool="line" data-i18n-tip="tipLine" data-tip="Line" aria-label="Line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5"/></svg>
+          </button>
+          <button type="button" class="icon-btn tool" data-tool="highlight" data-i18n-tip="tipHighlight" data-tip="Highlight" aria-label="Highlight">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+          </button>
+        </div>
+
+        <div class="seg" role="group" aria-label="Shapes">
+          <button type="button" class="icon-btn tool" data-tool="rect" data-i18n-tip="tipRect" data-tip="Rectangle" aria-label="Rectangle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+          </button>
+          <button type="button" class="icon-btn tool" data-tool="ellipse" data-i18n-tip="tipEllipse" data-tip="Ellipse" aria-label="Ellipse">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+          </button>
+          <button type="button" class="icon-btn tool" data-tool="arrow" data-i18n-tip="tipArrow" data-tip="Arrow" aria-label="Arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+          </button>
+          <button type="button" class="icon-btn tool" data-tool="text" data-i18n-tip="tipText" data-tip="Text" aria-label="Text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+          </button>
+        </div>
+
+        <div class="seg style-seg" id="shapeStyle" hidden role="group" data-i18n="styleShape" data-i18n-attr="aria-label" aria-label="Style">
+          <label class="style-chip" for="color" data-i18n-tip="tipColor" data-tip="Color">
+            <input id="color" type="color" value="#ff3b30" aria-label="Color" />
+          </label>
+          <label class="style-chip width-chip" for="width" data-i18n-tip="tipWidth" data-tip="Thickness">
+            <input id="width" type="range" min="1" max="24" value="4" aria-label="Thickness" />
+          </label>
+        </div>
+        <div class="seg style-seg text-style" id="textStyle" hidden role="group" data-i18n="styleText" data-i18n-attr="aria-label" aria-label="Text style">
+          <label class="style-chip" for="textColor" data-i18n-tip="tipColor" data-tip="Color">
+            <input id="textColor" type="color" value="#ff3b30" aria-label="Color" />
+          </label>
+          <label class="style-chip font-chip" for="fontFamily" data-i18n-tip="tipFont" data-tip="Font family">
+            <select id="fontFamily" aria-label="Font family">
+              <option value="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" data-i18n="fontSystem">System</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="&quot;Times New Roman&quot;, Times, serif">Times New Roman</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="&quot;Courier New&quot;, Courier, monospace">Courier New</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            </select>
+          </label>
+          <label class="style-chip size-chip" for="fontSize" data-i18n-tip="tipFontSize" data-tip="Font size">
+            <input id="fontSize" type="number" min="8" max="200" value="20" step="1" aria-label="Font size" />
+          </label>
+          <button type="button" id="textBold" class="icon-btn text-toggle" data-i18n-tip="tipBold" data-tip="Bold" aria-pressed="false" aria-label="Bold">
+            <span class="toggle-b">B</span>
+          </button>
+          <button type="button" id="textItalic" class="icon-btn text-toggle" data-i18n-tip="tipItalic" data-tip="Italic" aria-pressed="false" aria-label="Italic">
+            <span class="toggle-i">I</span>
+          </button>
+          <label class="style-chip scale-chip" id="textScaleChip" for="textScale" data-i18n-tip="tipTextScale" data-tip="Scale text" hidden>
+            <input id="textScale" type="range" min="50" max="300" value="100" step="1" aria-label="Scale text" />
+            <span id="textScaleVal" class="chip-val">100%</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="toolbar-actions" role="toolbar" aria-label="Actions">
+        <div class="seg" role="group" aria-label="Edit history">
+          <button type="button" id="undo" class="icon-btn" data-i18n-tip="tipUndo" data-tip="Undo" aria-label="Undo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.7 2.9L3 13"/></svg>
+          </button>
+          <button type="button" id="deleteSelected" class="icon-btn" data-i18n-tip="tipDelete" data-tip="Delete selected" aria-label="Delete selected" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+          </button>
+          <button type="button" id="clear" class="icon-btn" data-i18n-tip="tipClear" data-tip="Clear all drawings" aria-label="Clear all drawings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          </button>
+        </div>
+        <div class="seg" role="group" aria-label="Export">
+          <button type="button" id="settings" class="icon-btn" data-i18n-tip="tipSettings" data-tip="Settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button type="button" id="copy" class="icon-btn" data-i18n-tip="tipCopy" data-tip="Copy to clipboard" aria-label="Copy to clipboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </button>
+          <button type="button" id="download" class="icon-btn primary" data-i18n-tip="tipDownload" data-tip="Download" aria-label="Download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <p id="status" class="status sr-only" aria-live="polite"></p>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <div class="stage-wrap">
+      <div class="stage">
+        <canvas id="canvas"></canvas>
+        <textarea id="textOverlay" class="text-overlay" hidden dir="auto" rows="1" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n="textPlaceholder" data-i18n-attr="placeholder" placeholder="Type here" data-i18n-tip="tipText"></textarea>
+      </div>
+    </div>
+  </div>
+  <script src="i18n.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-i18n-title="extName">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>UniSS</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="top liquid">
+      <div class="brand">
+        <img class="brand-mark" src="brand/logo-mark-32.png" width="32" height="32" alt="" />
+        <div class="brand-text">
+          <h1 data-i18n="extName">UniSS</h1>
+          <p class="hint" data-i18n="popupHint">Capture, edit, download.</p>
+        </div>
+      </div>
+      <button id="settings" type="button" class="icon-btn" data-i18n="settingsAria" data-i18n-attr="title" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </header>
+
+    <fieldset class="mode">
+      <legend class="sr-only" data-i18n="captureModeLegend">Capture mode</legend>
+      <label class="mode-opt">
+        <input type="radio" name="mode" value="visible" checked />
+        <svg class="mode-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M7 9h6M7 13h10"/>
+        </svg>
+        <span data-i18n="modeVisible">Visible area</span>
+      </label>
+      <label class="mode-opt">
+        <input type="radio" name="mode" value="full" />
+        <svg class="mode-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="3" width="16" height="18" rx="2"/>
+          <path d="M8 8h8M8 12h8M8 16h5"/>
+        </svg>
+        <span data-i18n="modeFull">Full page</span>
+      </label>
+      <span class="mode-info" id="formatInfo" tabindex="0" data-i18n-tip="formatHintTip" data-tip="">
+        <svg class="info-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v.01"/>
+          <path d="M12 12v4"/>
+        </svg>
+      </span>
+    </fieldset>
+    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+
+    <div class="preview-box" hidden>
+      <img id="preview" alt="Screenshot preview" />
+    </div>
+
+    <div class="actions">
+      <button id="capture" type="button" class="btn primary" data-i18n="capture">Capture</button>
+      <button id="edit" type="button" class="btn accent" disabled data-i18n="edit">Edit</button>
+      <button id="download" type="button" class="btn" disabled data-i18n="download">Download</button>
+      <button id="copy" type="button" class="btn" disabled data-i18n="copyClipboard">Copy to clipboard</button>
+    </div>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

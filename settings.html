@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-i18n-title="settingsTitle">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <img class="brand-mark" src="brand/logo-mark-32.png" width="28" height="28" alt="" />
+        <h1 class="title" data-i18n="settingsTitle">Settings</h1>
+      </div>
+      <div class="actions">
+        <button type="button" id="close" class="btn btn-ghost" data-i18n="close">Close</button>
+        <button type="button" id="reset" class="btn btn-ghost" data-i18n="resetDefaults">Reset to defaults</button>
+        <button type="button" id="save" class="btn btn-primary" data-i18n="save" disabled>Save</button>
+      </div>
+    </header>
+
+    <main class="panel">
+      <section class="group">
+        <h2 class="group-title" data-i18n="sectionOutput">Output</h2>
+        <div class="card">
+          <div class="row">
+            <label class="row-label" for="format" data-i18n="fileFormat">File format</label>
+            <select id="format" class="control">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+            </select>
+          </div>
+          <div class="row" id="qualityField">
+            <div class="row-copy">
+              <label class="row-label" for="quality" data-i18n="imageQuality">Image quality</label>
+              <p class="help" data-i18n="qualityHelp">Applies to JPEG and WebP. PNG is lossless.</p>
+            </div>
+            <div class="quality-wrap">
+              <input id="quality" type="range" min="10" max="100" value="92" />
+              <span class="quality-val"><span id="qualityVal">92</span>%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group-title" data-i18n="sectionCapture">Capture</h2>
+        <div class="card">
+          <div class="row">
+            <label class="row-label" for="mode" data-i18n="defaultMode">Default mode</label>
+            <select id="mode" class="control">
+              <option value="visible" data-i18n="modeVisible">Visible area</option>
+              <option value="full" data-i18n="modeFull">Full page</option>
+            </select>
+          </div>
+          <label class="row toggle-row" for="autoCapture">
+            <div class="row-copy">
+              <span class="row-label" data-i18n="autoCapture">Capture immediately when the extension is clicked</span>
+              <span class="help" data-i18n="autoCaptureHelp">When off, options appear first; press Capture to take a screenshot.</span>
+            </div>
+            <span class="switch">
+              <input id="autoCapture" type="checkbox" />
+              <span class="switch-track" aria-hidden="true"></span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group-title" data-i18n="language">Language</h2>
+        <div class="card">
+          <div class="row">
+            <div class="row-copy">
+              <label class="row-label" for="locale" data-i18n="language">Language</label>
+              <p class="help" data-i18n="languageHelp">UI language for UniSS. Default is English.</p>
+            </div>
+            <select id="locale" class="control control-wide"></select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <p id="status" class="sr-only" aria-live="polite"></p>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+  <script src="i18n.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

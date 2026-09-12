@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "UniSS",
+  "version": "2.0.11",
+  "description": "UniSS: capture, annotate, download. 72 UI languages (default English).",
+  "action": {
+    "default_title": "UniSS",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "uniss@uniss.app",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self';"
+  }
+}
