@@ -16,6 +16,6 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi. Yeni sekm
 
 ## Language
 
-UniSS arayüz dili. Varsayılan İngilizce. 72 dil; eksik çeviriler İngilizceye düşer.
+UniSS arayüz dili. Varsayılan İngilizce. 71 dil; eksik çeviriler İngilizceye düşer.
 
 Ayarlar tarayıcının `storage.local` alanında kalır; hesap veya senkron yok.

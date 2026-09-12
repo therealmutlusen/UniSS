@@ -6,7 +6,7 @@ Privacy policy URL (paste into every store form): https://therealmutlusen.github
 
 Screenshots and the 440×280 promo tile are not in this repo — capture them from a running build (popup, editor, settings). Prefer 1280×800, square corners, no padding.
 
-Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.11.zip`. `manifest.json` is at the zip root.
+Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.13.zip`. `manifest.json` is at the zip root.
 
 First-wave stores: Chrome Web Store, Edge Add-ons, Firefox AMO (listed). Opera Add-ons later. Safari is not a target.
 
@@ -16,7 +16,7 @@ Capture the visible tab or a full page, then download, copy, or annotate locally
 
 ## Short description (≤132 characters)
 
-UniSS: capture, annotate, download. 72 UI languages (default English).
+UniSS: capture, annotate, download. 71 UI languages (default English).
 
 (This matches `manifest.json` `description`.)
 
@@ -44,7 +44,7 @@ UniSS captures the current web page from the toolbar, then lets you download, co
 **Settings**
 
 - Default capture mode, format, quality, and UI language
-- 72 interface languages; English is the default
+- 71 interface languages; English is the default
 
 Screenshots stay in the browser’s local extension storage. UniSS does not send captures, page content, or analytics to a server. There is no account and no remote script.
 

@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.12`). Default UI language is English.
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.13`). Default UI language is English.
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -24,7 +24,7 @@ popup.html|js|css      toolbar popup (360px)
 editor.html|js|css     annotation canvas in a new tab
 settings.html|js|css   format / quality / mode / locale
 i18n.js                UniSSI18n on window
-i18n/languages.json    locale picker list (72 codes)
+i18n/languages.json    locale picker list (71 codes)
 i18n/messages/*.json   catalogs; en.json is the source of truth
 i18n/en.json           leftover duplicate — do not use; runtime loads messages/
 icons/                 toolbar / store icons 16–128
@@ -43,7 +43,7 @@ No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings 
 
 ## Browser compatibility
 
-Current targets (version `2.0.12`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.13`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -59,7 +59,7 @@ Limits:
 - Clipboard image copy needs `ClipboardItem`; treat copy as optional. Download does not
 - Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`)
 
-User-facing matrix and install copy live in `README.md`. Update both when support changes.
+User-facing matrix and install copy live in `README.md` and `wiki/`. Update both when support or behavior changes.
 
 ## Load / reload
 
@@ -86,7 +86,7 @@ First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed
 - `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
 - Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.DS_Store`
 - Every push to the repo must increment `manifest.json` `version` (stores reject an upload whose version is not higher than the last published one).
-- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.12`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
+- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.13`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip
@@ -169,4 +169,5 @@ Scripts are IIFEs. No modules, no build step, no CDN, no `eval`. CSP: `script-sr
 - Keep the `browser`/`chrome` shim at the top of new page scripts
 - After user-facing strings, add the English key; do not leave raw Turkish (or other) in JS except comments
 - Bump `manifest.json` `version` on every push to the repo. Do not push a commit that leaves the version unchanged.
+- Before every push, check whether `README.md` and `wiki/` need a new page or an update for this change (install, usage, editor, settings, browsers, privacy, store, releases, FAQ). If user-facing behavior, support, or workflow changed and those docs would be stale, update them in the same commit. Skip only when the change is purely internal (comments, AGENTS.md-only, packing excludes with no user effect).
 - No package manager, prettier, or test runner in this tree — do not add them unless asked
