@@ -2,7 +2,9 @@
 
 Build adımı yok. Zip indirdiyseniz açın; yüklenecek klasör **`manifest.json` içeren kök** olmalı (iç içe ekstra klasör değil).
 
-Mağaza yayını hazırlanıyor (Chrome Web Store, Edge Add-ons, Firefox AMO). Şimdilik paketlenmemiş yükleme veya [GitHub Release](https://github.com/therealmutlusen/UniSS/releases) zip’i.
+**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)**
+
+Mağaza yayını hazırlanıyor (Chrome Web Store, Edge Add-ons, Firefox AMO). Şimdilik paketlenmemiş yükleme veya GitHub Release zip’i.
 
 ## Chrome
 

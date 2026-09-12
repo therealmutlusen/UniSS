@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.13. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.14. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -9,6 +9,8 @@ Kaynak: [github.com/therealmutlusen/UniSS](https://github.com/therealmutlusen/Un
 Wiki: [github.com/therealmutlusen/UniSS/wiki](https://github.com/therealmutlusen/UniSS/wiki) · kaynak sayfalar [`wiki/`](wiki/)
 
 Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https://therealmutlusen.github.io/UniSS/store/privacy.html)
+
+[![Download ZIP](https://img.shields.io/github/v/release/therealmutlusen/UniSS?label=Download%20ZIP&logo=github&style=for-the-badge&color=6ea8ff)](https://github.com/therealmutlusen/UniSS/releases/latest)
 
 ## Ne işe yarar
 
@@ -60,6 +62,8 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 ## Kurulum
 
 Build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
+
+**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>.zip`.
 
 Mağaza yayını hazırlanıyor (Chrome Web Store, Edge Add-ons, Firefox AMO). Şimdilik paketlenmemiş yükleme:
 
