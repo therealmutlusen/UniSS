@@ -2,6 +2,10 @@
 
 Manifest V3 ekran görüntüsü eklentisi. Sürüm 2.0.11. Arayüz varsayılanı İngilizce (72 dil).
 
+Kaynak: [github.com/therealmutlusen/UniSS](https://github.com/therealmutlusen/UniSS)
+
+Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https://therealmutlusen.github.io/UniSS/store/privacy.html)
+
 ## Özellikler
 
 - Görünür alan / tam sayfa yakalama
@@ -23,7 +27,7 @@ Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır (`chrome://`
 
 Chromium tarayıcılarda `chrome.*` API kullanılır. Firefox’ta `browser.*` (yoksa `chrome`) tercih edilir.
 
-Mağaza paketi: kökte `./pack.sh` → `uniss-2.0.11.zip` (Chrome Web Store, Edge Add-ons, Firefox AMO). Listing metni ve gizlilik taslağı `store/` içinde. Gizlilik sayfasını HTTPS’e koyup mağaza formuna URL olarak yapıştırın.
+Mağaza paketi: kökte `./pack.sh` → `uniss-2.0.11.zip` (Chrome Web Store, Edge Add-ons, Firefox AMO). Listing metni `store/LISTING.md`. Mağaza gizlilik URL’si: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 Firefox’ta `about:debugging` ile yüklenen eklenti tarayıcı kapanınca kalkar. Kalıcı kurulum AMO imzası ister.
 

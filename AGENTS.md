@@ -32,7 +32,7 @@ brand/                 in-page logos
 README.md              user-facing install + browser matrix (Turkish)
 pack.sh                store zip (manifest at zip root)
 store/LISTING.md       English listing, permission justifications, reviewer notes
-store/privacy.html     local-only policy; host on HTTPS for store forms
+store/privacy.html     local-only policy; GitHub Pages at /store/privacy.html
 ```
 
 No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings and editor are plain extension pages opened as tabs. No build step; load the folder that contains `manifest.json`.
@@ -82,7 +82,7 @@ First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed
 - `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
 - Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.DS_Store`
 - Listing copy and permission justifications: `store/LISTING.md`
-- Privacy policy to host on HTTPS: `store/privacy.html` (nothing leaves the device; contact is the store listing email)
+- Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip
 - Bump `manifest.json` `version` only when asked; each store upload needs a higher version than the last published one
 

@@ -2,7 +2,9 @@
 
 Use this copy in Chrome Web Store, Microsoft Edge Add-ons, and Firefox AMO. Do not paste AGENTS.md into a listing.
 
-Host `store/privacy.html` on HTTPS and paste that URL into every store’s privacy field. Screenshots and the 440×280 promo tile are not in this repo — capture them from a running build (popup, editor, settings). Prefer 1280×800, square corners, no padding.
+Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
+
+Screenshots and the 440×280 promo tile are not in this repo — capture them from a running build (popup, editor, settings). Prefer 1280×800, square corners, no padding.
 
 Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.11.zip`. `manifest.json` is at the zip root.
 
@@ -97,4 +99,4 @@ Firefox: id `uniss@uniss.app`, `strict_min_version` 115.0, desktop only (do not 
 - Screenshots: at least 1, up to 5. Chrome/Edge: 1280×800 or 640×400. Opera (later): ~612×408.
 - Small promo (Chrome): 440×280 PNG.
 - Optional marquee: 1400×560.
-- Privacy URL: HTTPS hosting of `store/privacy.html`.
+- Privacy URL: https://therealmutlusen.github.io/UniSS/store/privacy.html
