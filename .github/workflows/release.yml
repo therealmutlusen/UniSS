@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag matches manifest version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          man=$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' manifest.json | head -n 1)
+          if [ "$tag" != "$man" ]; then
+            echo "Tag v${tag} does not match manifest.json version ${man}"
+            exit 1
+          fi
+
+      - name: Pack zip
+        run: chmod +x pack.sh && ./pack.sh
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" "uniss-${ver}.zip" \
+            --title "UniSS ${ver}" \
+            --generate-notes

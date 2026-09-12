@@ -33,6 +33,7 @@ README.md              user-facing install + browser matrix (Turkish)
 LICENSE                MIT
 CONTRIBUTING.md        how to load unpacked, PR rules
 pack.sh                store zip (manifest at zip root)
+.github/workflows/     tag v* → zip + GitHub Release
 store/LISTING.md       English listing, permission justifications, reviewer notes
 store/privacy.html     local-only policy; GitHub Pages at /store/privacy.html
 ```
@@ -82,7 +83,8 @@ Firefox 115+:
 First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). Same zip for all three. Opera Add-ons later. Do not submit to Safari.
 
 - `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
-- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.DS_Store`
+- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `.DS_Store`
+- GitHub Release: bump `manifest.json` `version`, commit, push tag `v<that version>` (example `v2.0.12`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip

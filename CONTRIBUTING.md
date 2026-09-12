@@ -39,7 +39,7 @@ Do not add Safari-only APIs.
 ./pack.sh
 ```
 
-That writes `uniss-<version>.zip` with `manifest.json` at the zip root. Do not commit `uniss-*.zip`. Listing copy is `store/LISTING.md`. Privacy policy is `store/privacy.html` (GitHub Pages: https://therealmutlusen.github.io/UniSS/store/privacy.html).
+That writes `uniss-<version>.zip` with `manifest.json` at the zip root. Do not commit `uniss-*.zip`. To publish a GitHub Release, bump `manifest.json` `version`, commit, and push a matching tag (`v2.0.12`). The Release workflow attaches the zip and generates notes. Listing copy is `store/LISTING.md`. Privacy policy is `store/privacy.html` (GitHub Pages: https://therealmutlusen.github.io/UniSS/store/privacy.html).
 
 ## Pull requests
 
