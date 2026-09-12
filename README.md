@@ -72,3 +72,11 @@ Gecko kimliği: `uniss@uniss.app`. Android hedef değil.
 - Uzak script / CDN / `eval` / `innerHTML` yok; sayfalar yalnızca `'self'` script
 - Ekran görüntüleri yalnızca tarayıcı `storage.local` içinde kalır; harici telemetri yok
 - Yazı ekleri canvas `fillText` ile çizilir (HTML olarak enjekte edilmez)
+
+## Lisans
+
+[MIT](LICENSE). Telif: Mutlu ŞEN, 2026.
+
+## Katkı
+
+Katkı süreci: [CONTRIBUTING.md](CONTRIBUTING.md).

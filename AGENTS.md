@@ -30,6 +30,8 @@ i18n/en.json           leftover duplicate — do not use; runtime loads messages
 icons/                 toolbar / store icons 16–128
 brand/                 in-page logos
 README.md              user-facing install + browser matrix (Turkish)
+LICENSE                MIT
+CONTRIBUTING.md        how to load unpacked, PR rules
 pack.sh                store zip (manifest at zip root)
 store/LISTING.md       English listing, permission justifications, reviewer notes
 store/privacy.html     local-only policy; GitHub Pages at /store/privacy.html
