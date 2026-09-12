@@ -1,6 +1,6 @@
 # UniSS wiki
 
-UniSS, açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 tarayıcı eklentisidir. Hesap yok, sunucu yok. Sürüm **2.0.14**. Arayüz varsayılanı İngilizce (71 dil).
+UniSS, açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 tarayıcı eklentisidir. Hesap yok, sunucu yok. Sürüm **2.0.15**. Arayüz varsayılanı İngilizce (71 dil).
 
 **Kaynak:** [github.com/therealmutlusen/UniSS](https://github.com/therealmutlusen/UniSS)  
 **Gizlilik politikası:** [therealmutlusen.github.io/UniSS/store/privacy.html](https://therealmutlusen.github.io/UniSS/store/privacy.html)  

@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.14`). Default UI language is English.
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.15`). Default UI language is English.
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -43,7 +43,7 @@ No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings 
 
 ## Browser compatibility
 
-Current targets (version `2.0.14`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.15`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -86,7 +86,7 @@ First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed
 - `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
 - Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.DS_Store`
 - Every push to the repo must increment `manifest.json` `version` (stores reject an upload whose version is not higher than the last published one).
-- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.14`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
+- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.15`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip

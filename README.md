@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.14. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.15. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -96,12 +96,17 @@ Kalıcı kurulum AMO imzası ister. Android hedef değil.
 
 ## Tarayıcı uyumluluğu
 
+Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa `chrome`).
+
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
-| Chrome | Evet | Manifest V3; mağaza veya paketlenmemiş |
-| Microsoft Edge | Evet | Chromium; Chrome ile aynı zip |
-| Brave, Opera, Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox | Evet (115+) | AMO imzası veya geçici yükleme |
+| Chrome | Evet | MV3; Chrome Web Store veya paketlenmemiş |
+| Microsoft Edge | Evet | Chromium; Chrome ile aynı zip. Edge Add-ons ayrı yükleme |
+| Brave | Evet | Chromium; Chrome ile aynı zip |
+| Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
+| Vivaldi | Evet | Chromium; Chrome ile aynı zip |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; AMO imzası veya `about:debugging` geçici yükleme |
+| Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedeflenmedi |
 
 Panoya görüntü kopyalama `ClipboardItem` ister; desteklemeyen tarayıcıda kopyala düşebilir, indirme etkilenmez.
