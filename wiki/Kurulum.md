@@ -2,9 +2,13 @@
 
 Build adımı yok. Zip indirdiyseniz açın; yüklenecek klasör **`manifest.json` içeren kök** olmalı (iç içe ekstra klasör değil).
 
-**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)**
+**Chrome:** [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn)
 
-Mağaza yayını hazırlanıyor (Chrome Web Store, Edge Add-ons, Firefox AMO). Şimdilik paketlenmemiş yükleme veya GitHub Release zip’i.
+**Firefox (115+, masaüstü):** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/)
+
+Edge Add-ons henüz yok. Edge’de Chrome Web Store veya paketlenmemiş yükleme.
+
+**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — geliştirici / unpacked.
 
 ## Chrome
 
@@ -29,11 +33,13 @@ Geliştirici modu → paketlenmemiş yükle → klasör → güncellemede Yenile
 
 ## Firefox 115+ (masaüstü)
 
+Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/). Android hedef değil. Gecko id: `uniss@uniss.app`.
+
+Geçici (geliştirme):
+
 1. `about:debugging#/runtime/this-firefox`
 2. **Bu Firefox** → **Geçici eklenti yükle** → `manifest.json`
 3. Firefox kapanınca eklenti kalkar; yeniden yükleyin
-
-Kalıcı kurulum AMO imzası ister. Android hedef değil. Gecko id: `uniss@uniss.app`.
 
 ## Zip’den yükleme
 

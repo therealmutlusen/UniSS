@@ -1,14 +1,14 @@
-# UniSS store listing (draft)
+# UniSS store listing
 
-Use this copy in Chrome Web Store, Microsoft Edge Add-ons, and Firefox AMO. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.18). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 Support email: support@mutlusen.com
 
-Screenshots and the 440×280 promo tile are not in this repo — capture them from a running build (popup, editor, settings). Prefer 1280×800, square corners, no padding.
+Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.16.zip`. `manifest.json` is at the zip root.
+Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.18.zip`. `manifest.json` is at the zip root.
 
 First-wave stores: Chrome Web Store, Edge Add-ons, Firefox AMO (listed). Opera Add-ons later. Safari is not a target.
 
@@ -98,7 +98,8 @@ Firefox: id `uniss@uniss.app`, `strict_min_version` 115.0, desktop only (do not 
 
 ## Assets you still need
 
-- Screenshots: at least 1, up to 5. Chrome/Edge: 1280×800 or 640×400. Opera (later): ~612×408.
-- Small promo (Chrome): 440×280 PNG.
-- Optional marquee: 1400×560.
+- Screenshots: at least 1, up to 5. Chrome/Edge: 1280×800 JPEG (preferred) or 640×400; square corners, full bleed, no alpha. Skip any source image whose longest side is under 512px.
+- Store icon in the zip: `icons/icon-128.png` (PNG, 128×128, 16px transparent padding, 96×96 artwork).
+- Small promo (Chrome, required): 440×280. Brand tile, not a screenshot; avoid marketing copy.
+- Optional marquee: 1400×560 (needed if the item is featured).
 - Privacy URL: https://therealmutlusen.github.io/UniSS/store/privacy.html

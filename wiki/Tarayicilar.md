@@ -1,15 +1,15 @@
 # Tarayıcılar
 
-Sürüm 2.0.16, Manifest V3, tek paket.
+Sürüm 2.0.18, Manifest V3, tek paket.
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
-| Chrome | Evet | MV3; Chrome Web Store veya paketlenmemiş |
+| Chrome | Evet | MV3; [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) veya paketlenmemiş |
 | Microsoft Edge | Evet | Chromium; Chrome ile aynı zip; Edge Add-ons ayrı yükleme |
 | Brave | Evet | Chromium; Chrome ile aynı zip |
 | Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
 | Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; AMO veya geçici yükleme |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; [AMO](https://addons.mozilla.org/firefox/addon/uniss/) veya geçici yükleme |
 | Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedef değil |
 

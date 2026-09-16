@@ -2,7 +2,7 @@
 <html lang="en" data-i18n-title="editorTitle">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="color-scheme" content="light dark" />
   <title>Edit</title>
   <link rel="stylesheet" href="editor.css" />
@@ -115,10 +115,23 @@
     <p id="status" class="status sr-only" aria-live="polite"></p>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <div class="stage-wrap">
-      <div class="stage">
-        <canvas id="canvas"></canvas>
-        <textarea id="textOverlay" class="text-overlay" hidden dir="auto" rows="1" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n="textPlaceholder" data-i18n-attr="placeholder" placeholder="Type here" data-i18n-tip="tipText"></textarea>
+      <div class="stage-sizer">
+        <div class="stage">
+          <canvas id="canvas"></canvas>
+          <textarea id="textOverlay" class="text-overlay" hidden dir="auto" rows="1" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n="textPlaceholder" data-i18n-attr="placeholder" placeholder="Type here" data-i18n-tip="tipText"></textarea>
+        </div>
       </div>
+    </div>
+    <div class="zoom-controls" role="group" data-i18n="zoomControls" data-i18n-attr="aria-label" aria-label="Zoom">
+      <button type="button" id="zoomIn" class="icon-btn" data-i18n-tip="tipZoomIn" data-tip="Zoom in" aria-label="Zoom in">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      </button>
+      <button type="button" id="zoomReset" class="icon-btn" data-i18n-tip="tipZoomReset" data-tip="Reset zoom" aria-label="Reset zoom">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+      </button>
+      <button type="button" id="zoomOut" class="icon-btn" data-i18n-tip="tipZoomOut" data-tip="Zoom out" aria-label="Zoom out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+      </button>
     </div>
   </div>
   <script src="i18n.js"></script>

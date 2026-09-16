@@ -62,6 +62,9 @@
 html, body {
   margin: 0;
   height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
   color: var(--text);
   background:
     radial-gradient(1100px 560px at 6% -14%, color-mix(in srgb, var(--accent-strong) 34%, transparent), transparent 56%),
@@ -76,9 +79,11 @@ html, body {
 }
 
 .app {
+  position: relative;
   height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .glass,
@@ -96,8 +101,9 @@ html, body {
 
 .toolbar {
   position: sticky;
-  top: 10px;
+  top: 0;
   z-index: 30;
+  flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -328,13 +334,23 @@ html, body {
 .status.err { color: var(--danger); }
 
 .stage-wrap {
+  min-height: 0;
   overflow: auto;
-  padding: 18px 20px max(28px, env(safe-area-inset-bottom));
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.stage-sizer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .stage {
   position: relative;
   display: inline-block;
+  flex: 0 0 auto;
   line-height: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -378,7 +394,9 @@ html, body {
 }
 
 #canvas.tool-text { cursor: text; }
-#canvas.tool-select { cursor: default; }
+#canvas.tool-select { cursor: grab; }
+#canvas.tool-select.panning,
+#canvas.panning { cursor: grabbing; }
 #canvas.tool-select.moving { cursor: grab; }
 #canvas.tool-select.resizing { cursor: grab; }
 #canvas.tool-select.resize-nw,
@@ -418,11 +436,44 @@ html, body {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   display: block;
   box-shadow:
     inset 0 1px 0 var(--specular),
     0 4px 12px rgba(15, 23, 42, 0.22);
+}
+
+.zoom-controls {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 14px;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--specular-soft),
+    var(--shadow-md);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+}
+
+.zoom-controls .icon-btn[data-tip]::after {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(4px);
+}
+
+.zoom-controls .icon-btn:hover::after,
+.zoom-controls .icon-btn:focus-visible::after {
+  transform: translateX(0) translateY(0);
 }
 
 .toast {
@@ -506,7 +557,8 @@ html, body {
   .glass,
   .glass-soft,
   .toast,
-  .seg {
+  .seg,
+  .zoom-controls {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -514,7 +566,8 @@ html, body {
   .toast {
     background: var(--surface);
   }
-  .seg {
+  .seg,
+  .zoom-controls {
     background: var(--surface-2);
   }
 }

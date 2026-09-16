@@ -98,7 +98,8 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   flex-shrink: 0;
 }
 

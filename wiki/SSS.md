@@ -7,7 +7,7 @@ Tarayıcı bu sayfalara eklenti yakalamasını vermez. UniSS yalnızca `http://`
 Panoya görüntü `ClipboardItem` ister. Destek yoksa kopyala düşer.
 
 **Firefox’ta eklenti kayboldu.**  
-`about:debugging` geçicidir. Tarayıcı kapanınca kalkar. Kalıcı kurulum AMO imzası ister.
+`about:debugging` geçicidir. Tarayıcı kapanınca kalkar. Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/).
 
 **Tam sayfa kesik / çok uzun sayfa.**  
 Tuval yüksekliği sınırlıdır (~16 000 CSS piksel). Sayfayı bölerek görünür alan da kullanılabilir.
@@ -21,5 +21,5 @@ Cihaz dışına gitmez. [[Gizlilik]].
 **Safari?**  
 Hedef değil.
 
-**Mağazadan ne zaman kurulur?**  
-CWS / Edge / AMO incelemesi ayrıdır. Şimdilik unpacked veya Release zip. [[Kurulum]], [[Magaza]].
+**Mağazadan nasıl kurulur?**  
+Chrome: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn). Firefox: [AMO](https://addons.mozilla.org/firefox/addon/uniss/). Edge Add-ons henüz yok. [[Kurulum]], [[Magaza]].

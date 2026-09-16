@@ -16,6 +16,8 @@
   "modeFull": "Tam sayfa",
   "autoCapture": "Eklentiye tıklanınca hemen yakala",
   "autoCaptureHelp": "Kapalıyken önce seçenekler gelir; yakalamak için Yakala’ya basın.",
+  "pageInfoBar": "Ekran görüntüsüne sayfa başlığı ve URL ekle",
+  "pageInfoBarHelp": "Üste, solda sekme başlığı ve adresi olan tam genişlikte siyah bir şerit ekler.",
   "language": "Dil",
   "languageHelp": "UniSS arayüz dili. Varsayılan İngilizce.",
   "popupHint": "Yakala, düzenle, indir.",

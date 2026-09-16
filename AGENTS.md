@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.16`). Default UI language is English.
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.18`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -43,7 +43,7 @@ No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings 
 
 ## Browser compatibility
 
-Current targets (version `2.0.16`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.18`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -79,17 +79,50 @@ Firefox 115+:
 1. `about:debugging#/runtime/this-firefox` → This Firefox → Load Temporary Add-on → `manifest.json`
 2. Repeat after every Firefox restart
 
+## Versioning
+
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.18`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+
+- Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
+- Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
+- Do not push a commit that leaves the version unchanged.
+- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.17`). Workflow runs `./pack.sh` and attaches the zip. Tag must match the manifest or the job fails. Do not tag every commit.
+- Do not cancel a CWS/AMO review that is already queued unless the zip or listing icon is wrong.
+
 ## Store packaging
 
 First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). Same zip for all three. Opera Add-ons later. Do not submit to Safari.
 
-- `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root
-- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.DS_Store`
-- Every push to the repo must increment `manifest.json` `version` (stores reject an upload whose version is not higher than the last published one).
-- GitHub Release: after that bump is on `main`, push tag `v<that version>` (example `v2.0.16`). Workflow packs the zip and publishes it with generated notes. Tag must match the manifest or the job fails. Do not tag every commit.
+- `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root. Copy to `/Users/mutlusen/Downloads/uniss-<version>.zip` for the macOS file sheet.
+- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
-- Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip
+- Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip (answer **Hayır** on the source-code question)
+- Chrome Web Store item `fdgaihefghcccapchpkfamphcgopoebn` (publisher `61b6029d-22b8-43df-ad6b-71a08952c8f0`) is **live** at **2.0.16** (published 2026-09-16). **2.0.17** is **in review** (İncelenmeyi bekliyor). A new zip cannot be submitted until that review finishes or is cancelled. Do not cancel unless the zip or listing icon is wrong. Public URL: https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn . Do not create a second item. Category: Verimlilik → **Araçlar**. Language: İngilizce. Support email `support@mutlusen.com` (publisher contact, verified).
+- Firefox AMO listed slug `uniss`, gecko id `uniss@uniss.app`, public URL https://addons.mozilla.org/firefox/addon/uniss/ . **2.0.17 live** (Onaylandı, 2026-09-16). Mozilla account `therealmutlusen+firefox@gmail.com`. Do not create a second AMO item. Desktop only; do not tick Android. Do not change the gecko id. Category: **Fotoğraf, Müzik ve Videolar**. Validator warning that `data_collection_permissions` needs Firefox 140+ vs `strict_min_version` 115 is expected — ignore; do not raise the min version.
+- AMO listing copy is English but the default locale is **Türkçe** (filled from the tr DevHub UI). Do not switch default locale to en-US unless en-US fields are filled first or the listing can go empty. Extra details: tag `privacy`, homepage https://github.com/therealmutlusen/UniSS . Edit listing: https://addons.mozilla.org/tr/developers/addon/uniss/edit
+- `support@mutlusen.com` inbound is Resend receiving, not a mailbox and not a Gmail forward. Apex MX: `inbound-smtp.ap-northeast-1.amazonaws.com` (priority 10) on Hostinger DNS. Sending stays on `send` / `resend._domainkey`. CWS verify mail: Resend MCP `list-received-emails` / `get-received-email`, then open the link. Do not enable Hostinger Business Email MX on `@` — it would steal inbound from Resend.
+- CWS listing assets: **Mağaza simgesi 128×128** is required (`icons/icon-128.png`; empty icon disables **İnceleme için gönder**). At least one 1280×800 or 640×400 JPEG/24-bit PNG **without alpha**; small promo 440×280 optional. Official URL needs Search Console — leave “Yok”. Privacy: remote code **No**; check **website content**; three Limited Use boxes; no PII/history/telemetry.
+- AMO screenshots: PNG or JPG, max/recommended 2400×1800. The same 1280×800 JPEGs as CWS work. Listing icon: **Özel simge yükle** with `icons/icon-128.png` (do not leave the AMO default puzzle). Do not `form.submit()` the AMO media form — it drops `files-TOTAL_FORMS` / `INITIAL_FORMS`; click **Değişiklikleri kaydet**.
+- Do not screenshot `file://` popup/editor (`UniSSI18n` fetch fails). Chrome DevTools MCP `upload_file` is blocked outside its workspace roots. After clicking the CWS drop zone or AMO **Ekran görüntüsü ekle…** / **Özel simge yükle…**, macOS file sheet + Cmd+Shift+G to `/Users/mutlusen/Downloads/uniss-store-assets/` (screenshots, promo, `icon-128.png`) or `/Users/mutlusen/Desktop/Projects/uniss-extension/icons/icon-128.png`. Store-asset JPEGs are not in git.
+
+## Deploy (CWS + AMO)
+
+Ship order: bump version → `./pack.sh` → upload **the same zip** to both stores → (after it is on `main`) tag `v<version>` for GitHub Release. A GitHub zip does not update CWS or AMO.
+
+Chrome Web Store (publisher `therealmutlusen@gmail.com`):
+
+1. Package: https://chrome.google.com/webstore/devconsole/61b6029d-22b8-43df-ad6b-71a08952c8f0/fdgaihefghcccapchpkfamphcgopoebn/edit/package — **Yeni paket yükle** → `uniss-<version>.zip`
+2. Listing: https://chrome.google.com/webstore/devconsole/61b6029d-22b8-43df-ad6b-71a08952c8f0/fdgaihefghcccapchpkfamphcgopoebn/edit/listing — **Mağaza simgesi** 128×128 (`icon-128.png`). If the icon slot is empty, **İnceleme için gönder** stays disabled.
+3. **Taslağı kaydet**, then **İnceleme için gönder**. Confirm auto-publish after review. Status **İncelenmeyi bekliyor** means it is queued; listing edits are locked until review finishes or is cancelled.
+
+Firefox AMO:
+
+1. New version: https://addons.mozilla.org/tr/developers/addon/uniss/versions/submit/
+2. Upload the zip. Keep **Firefox** checked; leave **Android İçin Firefox** off.
+3. **Devam et**. Fill English release notes + reviewer notes (zip is the source; no bundler; desktop only; ignore the 115 vs 140 validator warning).
+4. **Sürümü gönder**. Source-code question: **Hayır**. **Devam et**. Done when the page is **Gönderim tamamlandı**.
+5. Listing icon/screenshots: https://addons.mozilla.org/tr/developers/addon/uniss/edit → **Resimler Düzenle** → **Özel simge yükle** / **Değişiklikleri kaydet** (not `form.submit()`).
 
 ## Browser API
 

@@ -13,6 +13,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi. Yeni sekm
 
 - **Default mode:** Visible area veya Full page (popup’taki varsayılan)
 - **Capture immediately when the extension is clicked:** açıkken simgeye basınca hemen yakalar
+- **Show page title and URL on the screenshot:** açıkken yakalamanın üstüne tam genişlikte siyah şerit ekler; solda sekme başlığı ve URL
 
 ## Language
 

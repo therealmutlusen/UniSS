@@ -14,7 +14,7 @@ Sekmenin o anda ekranda görünen kısmı. Sayfaya script enjekte etmez.
 
 ## Tam sayfa
 
-Sayfayı kaydırıp dilimleri birleştirir. Sabit/sticky üst çubuklar gizlenir; yakalama bitince (başarısız olsa da) geri gelir. Soldaki bazı menü/sidebar’lar ilk dilimde tutulabilir.
+Sayfayı kaydırıp dilimleri birleştirir. Sabit/sticky üst çubuklar gizlenir; yakalama bitince (başarısız olsa da) geri gelir. Sabit sol/sağ menü (sidebar) ilk dilimden alınıp diğer dilimlere de uygulanır.
 
 Çok uzun sayfalar tarayıcı tuval sınırına takılabilir (yaklaşık 16 000 CSS piksel yükseklik).
 
@@ -26,5 +26,9 @@ Sayfayı kaydırıp dilimleri birleştirir. Sabit/sticky üst çubuklar gizlenir
 ## Otomatik yakalama
 
 Ayarlarda “Capture immediately when the extension is clicked” açıksa popup açılınca varsayılan modla yakalama hemen başlar. Kapalıysa önce seçenekler görünür.
+
+## Sayfa başlığı ve URL
+
+Ayarlarda “Show page title and URL on the screenshot” açıksa yakalamanın en üstüne tam genişlikte siyah bir şerit eklenir; solda sekme başlığı ve adresi yazar. Kapalıysa görüntü olduğu gibi kalır.
 
 Düzenleme: [[Duzenleyici]]. Seçenekler: [[Ayarlar]].

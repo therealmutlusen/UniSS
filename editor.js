@@ -7,6 +7,9 @@
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
+  const stageWrap = document.querySelector(".stage-wrap");
+  const stageSizer = document.querySelector(".stage-sizer");
+  const toolbarEl = document.querySelector(".toolbar");
   const textOverlay = document.getElementById("textOverlay");
   const statusEl = document.getElementById("status");
   const colorEl = document.getElementById("color");
@@ -27,6 +30,9 @@
   const copyBtn = document.getElementById("copy");
   const downloadBtn = document.getElementById("download");
   const settingsBtn = document.getElementById("settings");
+  const zoomInBtn = document.getElementById("zoomIn");
+  const zoomOutBtn = document.getElementById("zoomOut");
+  const zoomResetBtn = document.getElementById("zoomReset");
 
   const DEFAULT_FONT = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
 
@@ -37,6 +43,8 @@
   let draft = null;
   let drawing = false;
   let moving = false;
+  let panning = false;
+  let panStart = null;
   let resizing = false;
   let resizeHandle = null;
   let moveOrigin = null;
@@ -61,6 +69,11 @@
   let editingTextId = null;
   let textComposing = false;
   let lastTextClick = null;
+  let viewScale = 1;
+  let viewScaleIsFit = true;
+  let pinchStartScale = null;
+  const ZOOM_MIN = 0.1;
+  const ZOOM_MAX = 8;
 
   function mimeFor(format) {
     if (format === "jpeg") return "image/jpeg";
@@ -110,6 +123,81 @@
     const d = new Date();
     const p = (n) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+  }
+
+  function fitScale() {
+    if (!baseImage || !stageWrap) return 1;
+    const padX = 40;
+    const padY = 36;
+    const availW = Math.max(80, stageWrap.clientWidth - padX);
+    const availH = Math.max(80, stageWrap.clientHeight - padY);
+    const iw = Math.max(canvas.width, 1);
+    const ih = Math.max(canvas.height, 1);
+    return Math.min(1, availW / iw, availH / ih);
+  }
+
+  function updateZoomButtons() {
+    if (zoomInBtn) zoomInBtn.disabled = !baseImage || viewScale >= ZOOM_MAX - 1e-6;
+    if (zoomOutBtn) zoomOutBtn.disabled = !baseImage || viewScale <= ZOOM_MIN + 1e-6;
+  }
+
+  function applyViewScale() {
+    if (!baseImage) return;
+    const w = Math.max(1, canvas.width * viewScale);
+    const h = Math.max(1, canvas.height * viewScale);
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    if (stageSizer && stageWrap) {
+      stageSizer.style.width = Math.max(w, stageWrap.clientWidth) + "px";
+      stageSizer.style.height = Math.max(h, stageWrap.clientHeight) + "px";
+    }
+    updateZoomButtons();
+    const shape = editingTextShape();
+    if (shape) positionTextOverlay(shape);
+  }
+
+  function zoomAt(nextScale, clientX, clientY) {
+    if (!stageWrap || !baseImage) return;
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nextScale));
+    if (next === viewScale) {
+      updateZoomButtons();
+      return;
+    }
+    const wrapRect = stageWrap.getBoundingClientRect();
+    const cx = clientX != null ? clientX : wrapRect.left + wrapRect.width / 2;
+    const cy = clientY != null ? clientY : wrapRect.top + wrapRect.height / 2;
+    const before = canvas.getBoundingClientRect();
+    const relX = before.width > 0 ? (cx - before.left) / before.width : 0.5;
+    const relY = before.height > 0 ? (cy - before.top) / before.height : 0.5;
+    viewScale = next;
+    viewScaleIsFit = Math.abs(next - fitScale()) < 0.004;
+    applyViewScale();
+    void stageWrap.offsetHeight;
+    const after = canvas.getBoundingClientRect();
+    stageWrap.scrollLeft += after.left + relX * after.width - cx;
+    stageWrap.scrollTop += after.top + relY * after.height - cy;
+  }
+
+  function resetView() {
+    if (!baseImage || !stageWrap) return;
+    viewScale = fitScale();
+    viewScaleIsFit = true;
+    applyViewScale();
+    stageWrap.scrollLeft = 0;
+    stageWrap.scrollTop = 0;
+  }
+
+  function startPan(e) {
+    if (!stageWrap) return;
+    panning = true;
+    panStart = {
+      x: e.clientX,
+      y: e.clientY,
+      sl: stageWrap.scrollLeft,
+      st: stageWrap.scrollTop,
+    };
+    canvas.classList.add("panning");
+    canvas.setPointerCapture(e.pointerId);
   }
 
   function pointerPos(e) {
@@ -323,6 +411,7 @@
     }
     shape.text = raw;
     remeasureTextBox(shape);
+    setTool("select");
     selectShape(shape);
     setStatus(t("statusTextAdded"));
   }
@@ -899,7 +988,12 @@
 
   function onPointerDown(e) {
     if (!baseImage) return;
-    if (e.button !== undefined && e.button !== 0) return;
+    if (e.button !== undefined && e.button !== 0 && e.button !== 1) return;
+    if (e.button === 1) {
+      e.preventDefault();
+      startPan(e);
+      return;
+    }
     if (isEditingText()) {
       if (tool === "text") {
         const prev = editingTextId;
@@ -956,6 +1050,7 @@
         setStatus(t("statusMove"));
       } else {
         clearResizeCursor();
+        startPan(e);
         setStatus(t("statusEmpty"));
       }
       return;
@@ -1018,6 +1113,11 @@
   }
 
   function onPointerMove(e) {
+    if (panning && panStart && stageWrap) {
+      stageWrap.scrollLeft = panStart.sl - (e.clientX - panStart.x);
+      stageWrap.scrollTop = panStart.st - (e.clientY - panStart.y);
+      return;
+    }
     const p = pointerPos(e);
     if (resizing && selectedId != null && moveOrigin && moveSnapshot && resizeHandle) {
       const target = shapes.find((s) => s.id === selectedId);
@@ -1072,6 +1172,13 @@
   }
 
   function onPointerUp(e) {
+    if (panning) {
+      panning = false;
+      panStart = null;
+      canvas.classList.remove("panning");
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      return;
+    }
     if (resizing) {
       resizing = false;
       resizeHandle = null;
@@ -1120,9 +1227,17 @@
         redraw();
         return;
       }
-      shapes.push(draft);
-      selectShape(draft);
+      const added = draft;
+      shapes.push(added);
       draft = null;
+      if (
+        added.tool === "rect" ||
+        added.tool === "ellipse" ||
+        added.tool === "arrow"
+      ) {
+        setTool("select");
+      }
+      selectShape(added);
       setStatus(t("statusAdded"));
     }
   }
@@ -1236,14 +1351,9 @@
     baseImage = img;
     canvas.width = img.naturalWidth || img.width;
     canvas.height = img.naturalHeight || img.height;
-    const maxCss = Math.min(window.innerWidth - 48, 1400);
-    if (canvas.width > maxCss) {
-      canvas.style.width = maxCss + "px";
-      canvas.style.height = "auto";
-    } else {
-      canvas.style.width = canvas.width + "px";
-      canvas.style.height = "auto";
-    }
+    viewScale = fitScale();
+    viewScaleIsFit = true;
+    applyViewScale();
     setTool("select");
     redraw();
     setStatus("", "ok");
@@ -1304,6 +1414,67 @@
   canvas.addEventListener("pointermove", onPointerMove);
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
+  if (zoomInBtn) zoomInBtn.addEventListener("click", () => zoomAt(viewScale * 1.15));
+  if (zoomOutBtn) zoomOutBtn.addEventListener("click", () => zoomAt(viewScale / 1.15));
+  if (zoomResetBtn) zoomResetBtn.addEventListener("click", resetView);
+  updateZoomButtons();
+
+  function syncToolbarAgainstBrowserZoom() {
+    if (!toolbarEl || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const s = vv.scale || 1;
+    if (s === 1 && !vv.offsetTop && !vv.offsetLeft) {
+      toolbarEl.style.transform = "";
+      toolbarEl.style.width = "";
+      return;
+    }
+    toolbarEl.style.transformOrigin = "top left";
+    toolbarEl.style.transform =
+      "translate(" + vv.offsetLeft + "px, " + vv.offsetTop + "px) scale(" + 1 / s + ")";
+    toolbarEl.style.width = vv.width + "px";
+  }
+
+  function onWheelZoom(e) {
+    // macOS trackpad pinch → wheel + ctrl. Cancel browser page zoom, zoom canvas only.
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= 400;
+    zoomAt(viewScale * Math.exp(-dy * 0.01), e.clientX, e.clientY);
+  }
+  const pinchOpts = { passive: false, capture: true };
+  document.addEventListener("wheel", onWheelZoom, pinchOpts);
+  document.addEventListener(
+    "gesturestart",
+    (e) => {
+      e.preventDefault();
+      pinchStartScale = viewScale;
+    },
+    pinchOpts
+  );
+  document.addEventListener(
+    "gesturechange",
+    (e) => {
+      e.preventDefault();
+      if (pinchStartScale == null) pinchStartScale = viewScale;
+      zoomAt(pinchStartScale * e.scale, e.clientX, e.clientY);
+    },
+    pinchOpts
+  );
+  document.addEventListener(
+    "gestureend",
+    (e) => {
+      e.preventDefault();
+      pinchStartScale = null;
+    },
+    pinchOpts
+  );
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", syncToolbarAgainstBrowserZoom);
+    window.visualViewport.addEventListener("scroll", syncToolbarAgainstBrowserZoom);
+  }
 
   if (textOverlay) {
     textOverlay.addEventListener("input", () => {
@@ -1366,6 +1537,10 @@
   );
 
   window.addEventListener("resize", () => {
+    if (viewScaleIsFit && baseImage) {
+      viewScale = fitScale();
+      applyViewScale();
+    }
     const shape = editingTextShape();
     if (shape) positionTextOverlay(shape);
   });
@@ -1373,6 +1548,23 @@
   window.addEventListener("keydown", (e) => {
     const tag = ((e.target && e.target.tagName) || "").toUpperCase();
     const typing = ["INPUT", "TEXTAREA", "SELECT"].includes(tag);
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === "+" || e.key === "=" || e.code === "NumpadAdd") {
+        e.preventDefault();
+        zoomAt(viewScale * 1.15);
+        return;
+      }
+      if (e.key === "-" || e.code === "NumpadSubtract") {
+        e.preventDefault();
+        zoomAt(viewScale / 1.15);
+        return;
+      }
+      if (e.key === "0" || e.code === "Numpad0") {
+        e.preventDefault();
+        resetView();
+        return;
+      }
+    }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
       if (typing) return;
       e.preventDefault();

@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.16. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.18. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -10,6 +10,8 @@ Wiki: [github.com/therealmutlusen/UniSS/wiki](https://github.com/therealmutlusen
 
 Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https://therealmutlusen.github.io/UniSS/store/privacy.html)
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/fdgaihefghcccapchpkfamphcgopoebn?label=Chrome&logo=googlechrome&style=for-the-badge&color=4285F4)](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn)
+[![Firefox Add-ons](https://img.shields.io/amo/v/uniss?label=Firefox&logo=firefoxbrowser&style=for-the-badge&color=FF7139)](https://addons.mozilla.org/firefox/addon/uniss/)
 [![Download ZIP](https://img.shields.io/github/v/release/therealmutlusen/UniSS?label=Download%20ZIP&logo=github&style=for-the-badge&color=6ea8ff)](https://github.com/therealmutlusen/UniSS/releases/latest)
 
 ## Ne işe yarar
@@ -18,7 +20,7 @@ Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https
 - **Tam sayfa:** sayfayı kaydırıp dilimleri birleştirir (sabit üst çubuklar gizlenir, yakalama bitince geri gelir)
 - **Düzenle:** kalem, çizgi, vurgu, dikdörtgen, elips, ok, yazı; seç / taşı / sil / geri al
 - **Kaydet:** PNG, JPEG veya WebP indir; destekleyen tarayıcıda panoya kopyala
-- **Ayarlar:** format, kalite, varsayılan mod, tıklayınca otomatik yakala, arayüz dili
+- **Ayarlar:** format, kalite, varsayılan mod, tıklayınca otomatik yakala, sayfa başlığı/URL şeridi, arayüz dili
 
 Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır. `chrome://`, `about:`, mağaza sayfaları ve benzeri iç sayfalar yakalanmaz.
 
@@ -45,7 +47,7 @@ Ayarlarda “Capture immediately when the extension is clicked” açıksa popup
 | Arrow | Ok |
 | Text | Tuval üzerinde yazı (sayfaya HTML enjekte edilmez) |
 
-Seçili şekil veya yazıda renk, kalınlık, yazı tipi ve punto panelleri görünür. Geri al: **Cmd/Ctrl+Z**. Seçimi sil: **Delete** veya **Backspace**. İndir ve kopyala düzenleyiciden de çalışır.
+Dikdörtgen, elips, ok veya yazı eklenince araç Select / Move’a geçer. Seçili şekil veya yazıda renk, kalınlık, yazı tipi ve punto panelleri görünür. Geri al: **Cmd/Ctrl+Z**. Seçimi sil: **Delete** veya **Backspace**. Yakınlaştırma yalnızca tuvalde: **Cmd/Ctrl + kaydırma**, **Cmd/Ctrl +** / **-**, sığdır **Cmd/Ctrl+0** (üst çubuk ölçeklenmez). İndir ve kopyala düzenleyiciden de çalışır.
 
 ### Ayarlar
 
@@ -55,6 +57,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 - **Image quality:** JPEG ve WebP için 10–100 (varsayılan 92). PNG’de kalite kaydırıcısı yok
 - **Default mode:** Visible area veya Full page
 - **Capture immediately…:** açıkken simgeye basınca hemen yakalar
+- **Show page title and URL…:** açıkken görüntünün üstüne tam genişlikte siyah şerit; solda başlık ve adres
 - **Language:** UniSS arayüz dili (varsayılan İngilizce)
 - **About:** sürüm, destek ([support@mutlusen.com](mailto:support@mutlusen.com)), gizlilik politikası, MIT
 
@@ -62,11 +65,15 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 
 ## Kurulum
 
-Build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
+**Chrome:** [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) — Brave, Opera, Vivaldi aynı CWS kaydını kullanabilir.
+
+**Firefox (115+, masaüstü):** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/)
+
+Edge Add-ons henüz yok. Edge’de Chrome Web Store veya aşağıdaki paketlenmemiş yükleme.
+
+Geliştirici / kaynak klasör: build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
 
 **[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>.zip`.
-
-Mağaza yayını hazırlanıyor (Chrome Web Store, Edge Add-ons, Firefox AMO). Şimdilik paketlenmemiş yükleme:
 
 ### Chrome
 
@@ -89,11 +96,13 @@ Geliştirici modu → paketlenmemiş yükle → bu klasör → güncellemede Yen
 
 ### Firefox (115+, masaüstü)
 
+Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/). Android hedef değil.
+
+Geçici (geliştirme):
+
 1. `about:debugging#/runtime/this-firefox`
 2. **Bu Firefox** → **Geçici eklenti yükle** → `manifest.json`
 3. Firefox kapanınca eklenti kalkar; yeniden yükleyin
-
-Kalıcı kurulum AMO imzası ister. Android hedef değil.
 
 ## Tarayıcı uyumluluğu
 
@@ -106,7 +115,7 @@ Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa 
 | Brave | Evet | Chromium; Chrome ile aynı zip |
 | Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
 | Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; AMO imzası veya `about:debugging` geçici yükleme |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; [AMO](https://addons.mozilla.org/firefox/addon/uniss/) veya `about:debugging` geçici yükleme |
 | Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedeflenmedi |
 

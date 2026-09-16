@@ -9,6 +9,7 @@
   const qualityField = document.getElementById("qualityField");
   const modeEl = document.getElementById("mode");
   const autoCaptureEl = document.getElementById("autoCapture");
+  const pageInfoBarEl = document.getElementById("pageInfoBar");
   const localeEl = document.getElementById("locale");
   const statusEl = document.getElementById("status");
   const saveBtn = document.getElementById("save");
@@ -19,12 +20,14 @@
     format: "png",
     mode: "visible",
     autoCapture: false,
+    pageInfoBar: false,
   };
   let saved = {
     format: DEFAULTS.format,
     quality: 92,
     mode: DEFAULTS.mode,
     autoCapture: DEFAULTS.autoCapture,
+    pageInfoBar: DEFAULTS.pageInfoBar,
   };
 
   function t(key, vars) {
@@ -65,6 +68,7 @@
       quality: Number(qualityEl.value) || 92,
       mode: modeEl.value,
       autoCapture: !!autoCaptureEl.checked,
+      pageInfoBar: !!pageInfoBarEl.checked,
     };
   }
 
@@ -74,7 +78,8 @@
       c.format !== saved.format ||
       c.quality !== saved.quality ||
       c.mode !== saved.mode ||
-      c.autoCapture !== saved.autoCapture
+      c.autoCapture !== saved.autoCapture ||
+      c.pageInfoBar !== saved.pageInfoBar
     );
   }
 
@@ -83,7 +88,8 @@
     return (
       c.format === DEFAULTS.format &&
       c.mode === DEFAULTS.mode &&
-      c.autoCapture === DEFAULTS.autoCapture
+      c.autoCapture === DEFAULTS.autoCapture &&
+      c.pageInfoBar === DEFAULTS.pageInfoBar
     );
   }
 
@@ -135,6 +141,7 @@
       "unissQuality",
       "unissMode",
       "unissAutoCaptureOnClick",
+      "unissPageInfoBar",
       "unissLocale",
     ]);
     formatEl.value = ["png", "jpeg", "webp"].includes(data.unissFormat)
@@ -145,6 +152,7 @@
     );
     modeEl.value = data.unissMode === "full" ? "full" : "visible";
     autoCaptureEl.checked = data.unissAutoCaptureOnClick === true;
+    pageInfoBarEl.checked = data.unissPageInfoBar === true;
     fillLanguages();
     if (data.unissLocale) localeEl.value = data.unissLocale;
     fillAboutVersion();
@@ -163,6 +171,7 @@
       unissQuality: Number(qualityEl.value) || 92,
       unissMode: modeEl.value,
       unissAutoCaptureOnClick: !!autoCaptureEl.checked,
+      unissPageInfoBar: !!pageInfoBarEl.checked,
       unissLocale: nextLocale,
     });
     await window.UniSSI18n.setLocale(nextLocale);
@@ -177,6 +186,7 @@
     formatEl.value = DEFAULTS.format;
     modeEl.value = DEFAULTS.mode;
     autoCaptureEl.checked = DEFAULTS.autoCapture;
+    pageInfoBarEl.checked = DEFAULTS.pageInfoBar;
     syncQualityVisibility();
     syncButtons();
   }
@@ -190,6 +200,7 @@
   qualityEl.addEventListener("input", onFormChange);
   modeEl.addEventListener("change", onFormChange);
   autoCaptureEl.addEventListener("change", onFormChange);
+  pageInfoBarEl.addEventListener("change", onFormChange);
   localeEl.addEventListener("change", async () => {
     await window.UniSSI18n.setLocale(localeEl.value);
     fillLanguages();

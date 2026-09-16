@@ -22,6 +22,7 @@
   let exportFormat = "png";
   let exportQuality = 92;
   let autoCaptureOnClick = false;
+  let pageInfoBar = false;
 
   function setStatus(text, kind) {
     if (!statusEl) return;
@@ -94,6 +95,7 @@
       "unissFormat",
       "unissQuality",
       "unissAutoCaptureOnClick",
+      "unissPageInfoBar",
     ]);
     if (data.unissMode === "full" || data.unissMode === "visible") {
       const radio = document.querySelector(
@@ -108,6 +110,7 @@
       exportQuality = data.unissQuality;
     }
     autoCaptureOnClick = data.unissAutoCaptureOnClick === true;
+    pageInfoBar = data.unissPageInfoBar === true;
     updateHints();
   }
 
@@ -327,6 +330,87 @@
     });
   }
 
+  function fitCanvasText(ctx, text, maxWidth) {
+    const s = String(text || "");
+    if (!s) return "";
+    if (ctx.measureText(s).width <= maxWidth) return s;
+    const ell = "\u2026";
+    let lo = 0;
+    let hi = s.length;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (ctx.measureText(s.slice(0, mid) + ell).width <= maxWidth) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo > 0 ? s.slice(0, lo) + ell : ell;
+  }
+
+  async function overlayPageInfoBar(dataUrl, title, url) {
+    const img = await loadImage(dataUrl);
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    if (!w || !h) return dataUrl;
+    const titleText = String(title || "").trim();
+    const urlText = String(url || "").trim();
+    if (!titleText && !urlText) return dataUrl;
+
+    const scale = Math.max(1, w / 1280);
+    const padX = Math.max(12, Math.round(16 * scale));
+    const padY = Math.max(8, Math.round(10 * scale));
+    const titleSize = Math.max(13, Math.round(15 * scale));
+    const urlSize = Math.max(11, Math.round(12 * scale));
+    const lineGap = Math.max(3, Math.round(4 * scale));
+    const lines = [];
+    if (titleText) {
+      lines.push({ text: titleText, size: titleSize, weight: "600", color: "#ffffff" });
+    }
+    if (urlText) {
+      lines.push({ text: urlText, size: urlSize, weight: "400", color: "#d4d4d4" });
+    }
+    let textBlock = 0;
+    for (let i = 0; i < lines.length; i++) {
+      textBlock += lines[i].size;
+      if (i < lines.length - 1) textBlock += lineGap;
+    }
+    const barH = padY * 2 + textBlock;
+    const extend = h + barH <= 16384;
+    const outH = extend ? h + barH : h;
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = outH;
+    const ctx = c.getContext("2d");
+    if (!ctx) return dataUrl;
+    if (extend) ctx.drawImage(img, 0, barH);
+    else ctx.drawImage(img, 0, 0);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, w, barH);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    const maxTextW = Math.max(0, w - padX * 2);
+    let y = padY;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      ctx.fillStyle = line.color;
+      ctx.font = `${line.weight} ${line.size}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+      ctx.fillText(fitCanvasText(ctx, line.text, maxTextW), padX, y);
+      y += line.size + lineGap;
+    }
+    try {
+      return c.toDataURL("image/png");
+    } catch (_) {
+      try {
+        return c.toDataURL("image/jpeg", 0.92);
+      } catch (__) {
+        return dataUrl;
+      }
+    }
+  }
+
+  async function applyPageInfoBar(dataUrl, tab) {
+    if (!pageInfoBar || !dataUrl) return dataUrl;
+    return overlayPageInfoBar(dataUrl, tab && tab.title, tab && tab.url);
+  }
+
   async function encodeOutput(dataUrl, format, quality) {
     const mime = mimeFor(format);
     if (format === "png" && dataUrl.startsWith("data:image/png")) return dataUrl;
@@ -452,15 +536,27 @@
         const sh = Math.min(canvasH - sy, Math.round(sidebarRect.h * k));
         if (sw > 0 && sh > 0) {
           try {
-            savedSidebar = cctx.getImageData(sx, sy, sw, sh);
-            savedSidebarPos = { sx, sy };
+            const sc = document.createElement("canvas");
+            sc.width = sw;
+            sc.height = sh;
+            const sctx = sc.getContext("2d");
+            if (sctx) {
+              sctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+              savedSidebar = sc;
+              savedSidebarPos = { sx, sy, sw, sh };
+            }
           } catch (_) {}
         }
       }
     }
     if (savedSidebar && savedSidebarPos && cctx) {
+      const { sx, sy, sw, sh } = savedSidebarPos;
       try {
-        cctx.putImageData(savedSidebar, savedSidebarPos.sx, savedSidebarPos.sy);
+        for (let y = sy; y < canvasH; y += sh) {
+          const dh = Math.min(sh, canvasH - y);
+          if (dh <= 0) break;
+          cctx.drawImage(savedSidebar, 0, 0, sw, dh, sx, y, sw, dh);
+        }
       } catch (_) {}
     }
     if (!canvas) throw new Error(t("errMetrics"));
@@ -502,7 +598,8 @@
       const mode = selectedMode();
       if (mode === "full") {
         const result = await captureFullPage(tab);
-        showResult(await encodeOutput(result.dataUrl, exportFormat, exportQuality));
+        const withInfo = await applyPageInfoBar(result.dataUrl, tab);
+        showResult(await encodeOutput(withInfo, exportFormat, exportQuality));
         setStatus(
           result.truncated
             ? t("statusFullTruncated", { max: MAX_FULL_HEIGHT_CSS })
@@ -515,7 +612,8 @@
           exportFormat === "jpeg" ? "jpeg" : "png",
           exportQuality
         );
-        showResult(await encodeOutput(raw, exportFormat, exportQuality));
+        const withInfo = await applyPageInfoBar(raw, tab);
+        showResult(await encodeOutput(withInfo, exportFormat, exportQuality));
         setStatus(t("statusReady"), "ok");
       }
     } catch (err) {

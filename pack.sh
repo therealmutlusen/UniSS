@@ -13,12 +13,14 @@ zip -r "$out" . \
   -x "AGENTS.md" \
   -x "pack.sh" \
   -x "${out}" \
+  -x "uniss-*.zip" \
   -x "store/*" \
   -x "i18n/en.json" \
   -x "wiki/*" \
   -x ".git/*" \
   -x ".github/*" \
   -x ".github/*/*" \
+  -x ".amo-assets/*" \
   -x "*.DS_Store" \
   -x "**/.DS_Store"
 
