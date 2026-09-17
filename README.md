@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.34. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.35. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -95,6 +95,8 @@ Aynı klasör.
 - Vivaldi: `vivaldi://extensions`
 
 Geliştirici modu → paketlenmemiş yükle → bu klasör → güncellemede Yenile.
+
+> **Geliştirici notu:** Paketlenmemiş yükleme için arşivlenmiş zip'leri değil, güncel kaynak kodunu içeren repo kökünü kullanın. `chrome://extensions`'ta yükseltme sonrası eski `region.js` stack'leri Errors altında kalırsa **Clear all** ile temizleyin.
 
 ### Firefox (115+, masaüstü)
 

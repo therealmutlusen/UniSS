@@ -17,9 +17,14 @@ Etiket (`v2.0.12`) her commit’te atılmaz; yalnızca GitHub Release için.
 
 Etiket `v` öneki olmadan manifest ile **aynı** olmalıdır (`v2.0.12` ↔ `2.0.12`). Uyuşmazsa job durur.
 
-Zip git’e konmaz (`uniss-*.zip` ignore).
+Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.20 arşivi `store/archive/` altında tutulur.
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
+
+## 2.0.35
+
+- Eski `uniss-2.0.20.zip` `store/archive/` altına taşındı; paketlenmemiş yüklemede arşiv yerine repo kökünü kullanın.
+- CI, `region.html` / `region.js` yardımcılarının geri dönmesini ve JavaScript'in bu yolları oluşturmasını reddeder.
 
 ## 2.0.34
 
