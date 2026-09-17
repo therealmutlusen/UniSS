@@ -429,8 +429,8 @@ html, body {
 .chip-btn {
   appearance: none;
   border: 1px solid var(--glass-border);
-  background: color-mix(in srgb, var(--panel) 82%, transparent);
-  color: var(--fg);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -441,27 +441,34 @@ html, body {
   white-space: nowrap;
 }
 .chip-btn:hover {
-  background: color-mix(in srgb, var(--accent) 22%, var(--panel));
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
 }
 .chip-btn.primary {
-  background: color-mix(in srgb, var(--accent) 55%, var(--panel));
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--glass-border));
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  border-color: transparent;
   color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 12px color-mix(in srgb, var(--accent-2) 28%, transparent);
 }
 .chip-btn.primary:hover {
-  background: color-mix(in srgb, var(--accent) 72%, var(--panel));
+  filter: brightness(1.06);
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
 }
-.crop-hint {
-  font-size: 11px;
+.crop-hint-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
   color: var(--muted);
-  white-space: nowrap;
-  padding-inline: 4px;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
-@media (max-width: 1100px) {
-  .crop-hint { display: none; }
+.crop-hint-btn:hover,
+.crop-hint-btn:focus-visible {
+  color: var(--text);
+}
+.crop-hint-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 @media (max-width: 900px) {
@@ -510,13 +517,25 @@ html, body {
   gap: 2px;
   padding: 3px;
   border-radius: 14px;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+  border: 1px solid color-mix(in srgb, var(--text) 22%, var(--glass-border));
   box-shadow:
     inset 0 1px 0 var(--specular-soft),
     var(--shadow-md);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
+  color: var(--text);
+}
+.zoom-controls .icon-btn {
+  color: var(--text);
+  opacity: 1;
+}
+.zoom-controls .icon-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: var(--accent-strong);
+}
+.zoom-controls .icon-btn:disabled {
+  opacity: 0.45;
 }
 
 .zoom-controls .icon-btn[data-tip]::after {
