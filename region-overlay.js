@@ -48,12 +48,6 @@
     return api && api.storage && api.storage.local;
   }
 
-  function storageSession() {
-    return api && api.storage && api.storage.session;
-  }
-
-  // Prefer storage.session for ephemeral PNG (Chromium + Firefox 115+); load/clear try session then local.
-
   const STASH_MAX_AGE_MS = 5 * 60 * 1000;
 
   function extFor(format) {
@@ -81,45 +75,36 @@
   }
 
   async function loadRegionStash() {
-    const stores = [];
-    const session = storageSession();
     const local = storageLocal();
-    if (session) stores.push(session);
-    if (local && local !== session) stores.push(local);
-    for (const store of stores) {
-      try {
-        const data = await store.get(["unissRegionStash"]);
-        const stash = data && data.unissRegionStash;
-        if (!stash) continue;
-        if (
-          typeof stash.ts !== "number" ||
-          Date.now() - stash.ts > STASH_MAX_AGE_MS
-        ) {
-          try {
-            await store.remove("unissRegionStash");
-          } catch (_) {}
-          continue;
-        }
-        return stash;
-      } catch (_) {}
+    if (!local) return null;
+    try {
+      const data = await local.get(["unissRegionStash"]);
+      const stash = data && data.unissRegionStash;
+      if (!stash) return null;
+      if (
+        typeof stash.ts !== "number" ||
+        Date.now() - stash.ts > STASH_MAX_AGE_MS
+      ) {
+        try {
+          await local.remove("unissRegionStash");
+        } catch (_) {}
+        return null;
+      }
+      return stash;
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   async function clearRegionStash() {
-    const stores = [];
-    const session = storageSession();
     const local = storageLocal();
-    if (session) stores.push(session);
-    if (local && local !== session) stores.push(local);
-    for (const store of stores) {
+    if (!local) return;
+    try {
+      await local.remove("unissRegionStash");
+    } catch (_) {
       try {
-        await store.remove("unissRegionStash");
-      } catch (_) {
-        try {
-          await store.set({ unissRegionStash: null });
-        } catch (__) {}
-      }
+        await local.set({ unissRegionStash: null });
+      } catch (__) {}
     }
   }
 

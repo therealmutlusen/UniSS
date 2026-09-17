@@ -21,6 +21,10 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.34
+
+- Region stash now uses `storage.local`: injected content scripts cannot read Chrome's sealed `storage.session`; the ~5 minute TTL and export/cancel/unload cleanup remain.
+
 ## 2.0.33
 
 - Tab-strip busy retry: `tabs.create` (popup Edit/Settings + SW `uniss-open`) aynı `withTabStripRetry` (~8×60ms, “cannot be edited” / dragging) — `activateTab` ile paylaşılır.
@@ -29,7 +33,7 @@ Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesin
 
 ## 2.0.32
 
-- Güvenlik Faz 1: `uniss-open` gönderen doğrulaması; locale allowlist; Region stash ~5 dk TTL + zorunlu temizleme (`storage.session` tercih); export için `isTrusted`; overlay string global’leri Symbol; CSP sıkılaştırma (`default-src` / `connect-src` / `img-src`).
+- Güvenlik Faz 1: `uniss-open` gönderen doğrulaması; locale allowlist; Region stash ~5 dk TTL + zorunlu temizleme; export için `isTrusted`; overlay string global’leri Symbol; CSP sıkılaştırma (`default-src` / `connect-src` / `img-src`).
 
 ## 2.0.31
 

@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.33). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.34). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.33.zip`. `manifest.json` is at the zip root.
+Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.34.zip`. `manifest.json` is at the zip root.
 
 First-wave stores: Chrome Web Store, Edge Add-ons, Firefox AMO (listed). Opera Add-ons later. Safari is not a target.
 
@@ -63,7 +63,7 @@ Productivity (Chrome / Edge). Firefox: Photos, Music & Media or Tabs (pick the c
 
 **scripting** — Full-page capture injects serializable helper functions with `scripting.executeScript({ func, args })` to hide fixed/sticky UI, scroll in viewport steps, and restore the page in `finally`. Visible capture does not need injection. No remote URLs, no `code:` strings, no `eval`.
 
-**storage** — `storage.local` holds settings (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`) and the editor handoff (`unissEditImage`, `unissEditTs`). Region capture may briefly keep `unissRegionStash` in `storage.session` (fallback `storage.local`) until export, cancel, unload, or ~5 minute TTL. Captures are data URLs on the device. Nothing is synced or uploaded.
+**storage** — `storage.local` holds settings (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`) and the editor handoff (`unissEditImage`, `unissEditTs`). Region capture briefly keeps `unissRegionStash` in `storage.local` until export, cancel, unload, or ~5 minute TTL. Captures are data URLs on the device. Nothing is synced or uploaded.
 
 Not requested: `downloads`, `tabs` (beyond activeTab), `host_permissions`, `<all_urls>`, clipboard permissions (copy uses `ClipboardItem` in the extension page).
 

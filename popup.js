@@ -3,12 +3,10 @@
   function storageLocal() {
     return api && api.storage && api.storage.local;
   }
-  function storageSession() {
-    return api && api.storage && api.storage.session;
-  }
-  // Ephemeral region PNG: prefer storage.session (Chromium + Firefox 115+).
+  // The injected Region content script cannot read Chrome storage.session (trusted contexts only),
+  // so keep the short-lived stash in storage.local.
   function stashStorage() {
-    return storageSession() || storageLocal();
+    return storageLocal();
   }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
 

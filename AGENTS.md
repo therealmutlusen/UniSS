@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.33`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.34`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -9,7 +9,7 @@ Read this file before changing code. Prefer surgical edits; do not rewrite whole
 Capture the visible tab or stitch a full-page screenshot, then download, copy, or annotate. Three extension pages: popup, editor, settings. Thin SW opens those pages from the region overlay (avoids page-origin `chrome-extension://` navigation). Region selection runs as an injected overlay on the page.
 
 - Visible capture: `tabs.captureVisibleTab`
-- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.session` preferred, ~5 min TTL), injects `region-overlay.js` into the focused page (no helper tab); overlay hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (page is focused → clipboard works); Edit and Save-full ask the thin SW to `tabs.create` extension pages (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch). Main document only (open shadow pierced; cross-origin iframe = outer box).
+- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL), injects `region-overlay.js` into the focused page (no helper tab); overlay hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (page is focused → clipboard works); Edit and Save-full ask the thin SW to `tabs.create` extension pages (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch). Main document only (open shadow pierced; cross-origin iframe = outer box).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
 - Edit image is handed off through `storage.local` (`unissEditImage`), then `tabs.create` opens `editor.html`
 - Download is an `<a download>` click (no `downloads` permission)
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.33`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.34`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,7 +84,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.33`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.34`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -137,7 +137,7 @@ const api = typeof browser !== "undefined" ? browser : typeof chrome !== "undefi
 
 Use `api` and `await`. Firefox `browser.*` is promise-based; Chromium MV3 `chrome.*` is too for these calls. Do not introduce callback-style `chrome.*` or assume `browser` exists on Chrome.
 
-Used APIs: `storage.local`, `storage.session` (region stash when available), `tabs.query`, `tabs.captureVisibleTab`, `tabs.create`, `scripting.executeScript`, `runtime.getURL`, `runtime.onMessage` (thin SW).
+Used APIs: `storage.local`, `tabs.query`, `tabs.captureVisibleTab`, `tabs.create`, `scripting.executeScript`, `runtime.getURL`, `runtime.onMessage` (thin SW).
 
 Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_permissions`, `<all_urls>`, `downloads`, or a background worker unless the task explicitly requires it.
 
@@ -153,7 +153,7 @@ Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_
 | `unissEditImage` | data URL for the editor |
 | `unissEditTs` | timestamp when editor image was stored |
 | `unissRegionTabId` | tab id for in-progress region capture |
-| `unissRegionStash` | capture-at-start PNG dataUrl + viewport `{w,h,dpr}` + tabId/windowId/ts; prefer `storage.session`, else `storage.local`; ~5 min TTL; removed after export/cancel/unload |
+| `unissRegionStash` | capture-at-start PNG dataUrl + viewport `{w,h,dpr}` + tabId/windowId/ts; `storage.local` only; ~5 min TTL; removed after export/cancel/unload |
 
 Prefix new keys with `uniss`. Large data URLs live only in local storage; never send captures off-device.
 
