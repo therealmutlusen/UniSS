@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.35. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.36. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -75,7 +75,7 @@ Edge Add-ons henüz yok. Edge’de Chrome Web Store veya aşağıdaki paketlenme
 
 Geliştirici / kaynak klasör: build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
 
-**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>.zip`.
+**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>-chrome.zip` (Firefox için `uniss-<sürüm>-firefox.zip`).
 
 ### Chrome
 
@@ -104,13 +104,13 @@ Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uni
 
 Geçici (geliştirme):
 
-1. `about:debugging#/runtime/this-firefox`
-2. **Bu Firefox** → **Geçici eklenti yükle** → `manifest.json`
+1. `./pack.sh firefox` ile `uniss-<sürüm>-firefox.zip` üretin ve zip’i açın.
+2. `about:debugging#/runtime/this-firefox` → **Bu Firefox** → **Geçici eklenti yükle** → açılan klasördeki `manifest.json`
 3. Firefox kapanınca eklenti kalkar; yeniden yükleyin
 
 ## Tarayıcı uyumluluğu
 
-Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa `chrome`).
+Mağaza hedeflerine göre iki Manifest V3 zip’i vardır: Chromium için `-chrome`, Firefox AMO için `-firefox`. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa `chrome`).
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
@@ -119,7 +119,7 @@ Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa 
 | Brave | Evet | Chromium; Chrome ile aynı zip |
 | Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
 | Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; [AMO](https://addons.mozilla.org/firefox/addon/uniss/) veya `about:debugging` geçici yükleme |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; AMO için `-firefox` zip’i veya geçici yükleme |
 | Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedeflenmedi |
 
@@ -137,7 +137,7 @@ Ayrıntı: [gizlilik politikası](https://therealmutlusen.github.io/UniSS/store/
 
 ## Mağaza paketi (geliştirici)
 
-Kökte `./pack.sh` → `uniss-<sürüm>.zip` (`manifest.json` zip kökünde). Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions zip’i [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
+Kökte `./pack.sh` veya `./pack.sh chrome` → `uniss-<sürüm>-chrome.zip`; `./pack.sh firefox` → `uniss-<sürüm>-firefox.zip`. Chrome hedefi ayrıca eski release workflow adı olan `uniss-<sürüm>.zip` alias’ını üretir. Her zip’in kökünde `manifest.json` vardır; paketlerde `scripts/` ve `.sh` dosyaları yoktur. Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions chrome zip alias’ını [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
 
 ## Lisans
 

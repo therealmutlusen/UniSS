@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.35`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.36`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -20,7 +20,7 @@ Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`)
 ## Layout
 
 ```
-manifest.json          MV3, action popup, gecko id, thin SW
+manifest.json          MV3, action popup, gecko id, thin SW (Chrome source; Firefox pack injects scripts)
 background.js          service worker: uniss-open → tabs.create (allowlisted pages only)
 popup.html|js|css      toolbar popup (360px)
 region-overlay.js      injected region/element selector + export (files: executeScript)
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.35`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.36`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -79,12 +79,12 @@ Chromium (same unpacked folder):
 
 Firefox 115+:
 
-1. `about:debugging#/runtime/this-firefox` → This Firefox → Load Temporary Add-on → `manifest.json`
-2. Repeat after every Firefox restart
+1. Run `./pack.sh firefox`, extract `uniss-<version>-firefox.zip`, then select its `manifest.json` in `about:debugging#/runtime/this-firefox` → This Firefox → Load Temporary Add-on.
+2. Repeat after every Firefox restart. The repo root manifest is Chrome-shaped (service worker only); use the Firefox package for temporary Firefox testing.
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.35`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.36`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -94,10 +94,10 @@ Firefox 115+:
 
 ## Store packaging
 
-First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). Same zip for all three. Opera Add-ons later. Do not submit to Safari.
+First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). CWS and Edge use the chrome zip; AMO uses the firefox zip. Opera Add-ons later. Do not submit to Safari.
 
-- `./pack.sh` writes `uniss-<version>.zip` with `manifest.json` at the zip root. Copy to `/Users/mutlusen/Downloads/uniss-<version>.zip` for the macOS file sheet.
-- Excluded from the zip: `AGENTS.md`, `pack.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
+- `./pack.sh` or `./pack.sh chrome` writes `uniss-<version>-chrome.zip` and the legacy alias `uniss-<version>.zip`; `./pack.sh firefox` writes `uniss-<version>-firefox.zip`. Each has `manifest.json` at the zip root. Use the explicit `-chrome` / `-firefox` names for store uploads; the alias exists for the unchanged release workflow.
+- Excluded from both zips: `AGENTS.md`, `pack.sh`, `scripts/`, every `*.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip (answer **Hayır** on the source-code question)
@@ -111,18 +111,18 @@ First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed
 
 ## Deploy (CWS + AMO)
 
-Ship order: bump version → `./pack.sh` → upload **the same zip** to both stores → (after it is on `main`) tag `v<version>` for GitHub Release. A GitHub zip does not update CWS or AMO.
+Ship order: bump version → `./pack.sh chrome` and `./pack.sh firefox` → upload the chrome zip to CWS/Edge and the firefox zip to AMO → (after it is on `main`) tag `v<version>` for GitHub Release. A GitHub zip does not update CWS or AMO.
 
 Chrome Web Store (publisher `therealmutlusen@gmail.com`):
 
-1. Package: https://chrome.google.com/webstore/devconsole/61b6029d-22b8-43df-ad6b-71a08952c8f0/fdgaihefghcccapchpkfamphcgopoebn/edit/package — **Yeni paket yükle** → `uniss-<version>.zip`
+1. Package: https://chrome.google.com/webstore/devconsole/61b6029d-22b8-43df-ad6b-71a08952c8f0/fdgaihefghcccapchpkfamphcgopoebn/edit/package — **Yeni paket yükle** → `uniss-<version>-chrome.zip`
 2. Listing: https://chrome.google.com/webstore/devconsole/61b6029d-22b8-43df-ad6b-71a08952c8f0/fdgaihefghcccapchpkfamphcgopoebn/edit/listing — **Mağaza simgesi** 128×128 (`icon-128.png`). If the icon slot is empty, **İnceleme için gönder** stays disabled.
 3. **Taslağı kaydet**, then **İnceleme için gönder**. Confirm auto-publish after review. Status **İncelenmeyi bekliyor** means it is queued; listing edits are locked until review finishes or is cancelled.
 
 Firefox AMO:
 
 1. New version: https://addons.mozilla.org/tr/developers/addon/uniss/versions/submit/
-2. Upload the zip. Keep **Firefox** checked; leave **Android İçin Firefox** off.
+2. Upload `uniss-<version>-firefox.zip`. Keep **Firefox** checked; leave **Android İçin Firefox** off.
 3. **Devam et**. Fill English release notes + reviewer notes (zip is the source; no bundler; desktop only; ignore the 115 vs 140 validator warning).
 4. **Sürümü gönder**. Source-code question: **Hayır**. **Devam et**. Done when the page is **Gönderim tamamlandı**.
 5. Listing icon/screenshots: https://addons.mozilla.org/tr/developers/addon/uniss/edit → **Resimler Düzenle** → **Özel simge yükle** / **Değişiklikleri kaydet** (not `form.submit()`).

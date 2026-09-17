@@ -13,13 +13,19 @@ Etiket (`v2.0.12`) her commit’te atılmaz; yalnızca GitHub Release için.
 1. `manifest.json` `version` → örn. `2.0.12`
 2. Commit, `main`e push
 3. `git tag v2.0.12 && git push origin v2.0.12`
-4. Actions `./pack.sh` çalıştırır, zip’i [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar, notları üretir
+4. Actions `./pack.sh` çalıştırır; chrome zip’ini ve release workflow uyumluluk alias’ını [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar, notları üretir
 
 Etiket `v` öneki olmadan manifest ile **aynı** olmalıdır (`v2.0.12` ↔ `2.0.12`). Uyuşmazsa job durur.
 
 Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.20 arşivi `store/archive/` altında tutulur.
 
-Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
+Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
+
+## 2.0.36
+
+- Dual store packages: `./pack.sh` or `./pack.sh chrome` writes `uniss-2.0.36-chrome.zip`; `./pack.sh firefox` writes `uniss-2.0.36-firefox.zip`.
+- CWS / Edge use the chrome zip. Firefox AMO uses the firefox zip, whose manifest adds `background.scripts: ["background.js"]`; `strict_min_version` remains 115.0 and `data_collection_permissions.required` remains `["none"]`.
+- Both zips exclude `scripts/`, every `*.sh`, `store/`, wiki, CI, and repository metadata. The chrome target also keeps `uniss-2.0.36.zip` as the unchanged release-workflow alias.
 
 ## 2.0.35
 
