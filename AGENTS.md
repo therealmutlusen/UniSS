@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.28`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.29`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.28`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.29`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,7 +84,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.28`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.29`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.

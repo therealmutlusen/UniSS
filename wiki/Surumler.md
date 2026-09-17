@@ -21,7 +21,7 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
-## 2.0.28
+## 2.0.29
 
 - Region Edit / Save full: ince service worker (`background.js`) allowlist’li extension sayfalarını `tabs.create` ile açar; sayfa kökeninden `chrome-extension://` navigasyonu (ERR_BLOCKED_BY_CLIENT) kalkar.
 - Overlay önce storage yazar, sonra `uniss-open` mesajı gönderir.
