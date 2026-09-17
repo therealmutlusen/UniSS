@@ -1,8 +1,10 @@
 (() => {
-  if (window.__unissRegionTeardown) {
-    try { window.__unissRegionTeardown(); } catch (_) {}
+  // Symbol.for so re-inject can find prior teardown without enumerable string globals.
+  const TEARDOWN_KEY = Symbol.for("uniss.region.teardown");
+  const prevTeardown = window[TEARDOWN_KEY];
+  if (typeof prevTeardown === "function") {
+    try { prevTeardown(); } catch (_) {}
   }
-  window.__unissRegionActive = true;
 
   const api =
     typeof browser !== "undefined"
@@ -29,7 +31,8 @@
     errMetrics: "Could not read page dimensions.",
     regionExportFailed: "Could not export the selection. Try again.",
   };
-  let strings = Object.assign({}, defaults, window.__unissRegionStrings || {});
+  // Strings arrive via runtime message from popup; no window string global.
+  let strings = Object.assign({}, defaults);
 
   function t(key, vars) {
     let s = strings[key] || defaults[key] || key;
@@ -45,7 +48,13 @@
     return api && api.storage && api.storage.local;
   }
 
-  const STASH_MAX_AGE_MS = 30 * 60 * 1000;
+  function storageSession() {
+    return api && api.storage && api.storage.session;
+  }
+
+  // Prefer storage.session for ephemeral PNG (Chromium + Firefox 115+); load/clear try session then local.
+
+  const STASH_MAX_AGE_MS = 5 * 60 * 1000;
 
   function extFor(format) {
     if (format === "jpeg") return "jpg";
@@ -72,25 +81,45 @@
   }
 
   async function loadRegionStash() {
+    const stores = [];
+    const session = storageSession();
     const local = storageLocal();
-    if (!local) return null;
-    try {
-      const data = await local.get(["unissRegionStash"]);
-      return data.unissRegionStash || null;
-    } catch (_) {
-      return null;
+    if (session) stores.push(session);
+    if (local && local !== session) stores.push(local);
+    for (const store of stores) {
+      try {
+        const data = await store.get(["unissRegionStash"]);
+        const stash = data && data.unissRegionStash;
+        if (!stash) continue;
+        if (
+          typeof stash.ts !== "number" ||
+          Date.now() - stash.ts > STASH_MAX_AGE_MS
+        ) {
+          try {
+            await store.remove("unissRegionStash");
+          } catch (_) {}
+          continue;
+        }
+        return stash;
+      } catch (_) {}
     }
+    return null;
   }
 
   async function clearRegionStash() {
+    const stores = [];
+    const session = storageSession();
     const local = storageLocal();
-    if (!local) return;
-    try {
-      await local.remove("unissRegionStash");
-    } catch (_) {
+    if (session) stores.push(session);
+    if (local && local !== session) stores.push(local);
+    for (const store of stores) {
       try {
-        await local.set({ unissRegionStash: null });
-      } catch (__) {}
+        await store.remove("unissRegionStash");
+      } catch (_) {
+        try {
+          await store.set({ unissRegionStash: null });
+        } catch (__) {}
+      }
     }
   }
 
@@ -592,13 +621,21 @@
   }
 
   function teardown() {
-    window.__unissRegionActive = false;
     try {
       if (api && api.runtime && api.runtime.onMessage) {
         api.runtime.onMessage.removeListener(onRuntimeMessage);
       }
     } catch (_) {}
     window.removeEventListener("keydown", onKeyDown, true);
+    window.removeEventListener("pagehide", onPageUnload, true);
+    window.removeEventListener("beforeunload", onPageUnload, true);
+    if (window[TEARDOWN_KEY] === teardown) {
+      try {
+        delete window[TEARDOWN_KEY];
+      } catch (_) {
+        window[TEARDOWN_KEY] = undefined;
+      }
+    }
     removeExisting();
   }
 
@@ -856,11 +893,7 @@
     if (toast) toast.style.display = "none";
     try {
       const stash = await loadRegionStash();
-      const tooOld =
-        !stash ||
-        typeof stash.ts !== "number" ||
-        Date.now() - stash.ts > STASH_MAX_AGE_MS;
-      if (!stash || !stash.dataUrl || tooOld) {
+      if (!stash || !stash.dataUrl) {
         throw new Error(t("errRegionStashMissing"));
       }
       const { format, quality } = await loadExportSettings();
@@ -927,7 +960,7 @@
       capturing = false;
     }
     if (msg.action === "teardown") {
-      teardown();
+      cancelRegion();
     }
     if (msg.action === "capture-failed") {
       root.classList.remove("hidden-all");
@@ -947,22 +980,45 @@
   });
   box.addEventListener("mousedown", onPointerDown, true);
 
+  function requireTrustedGesture(e) {
+    if (e && e.isTrusted === true) return true;
+    showToast(t("regionExportFailed"));
+    return false;
+  }
+
   btnCopy.addEventListener("click", (e) => {
     e.preventDefault();
+    if (!requireTrustedGesture(e)) return;
     requestCapture("copy");
   });
   btnDownload.addEventListener("click", (e) => {
     e.preventDefault();
+    if (!requireTrustedGesture(e)) return;
     requestCapture("download");
   });
   btnEdit.addEventListener("click", (e) => {
     e.preventDefault();
+    if (!requireTrustedGesture(e)) return;
     requestCapture("edit");
   });
+
+  function onPageUnload() {
+    clearRegionStash().catch(() => {}).finally(() => {
+      try { teardown(); } catch (_) {}
+    });
+  }
 
   if (api && api.runtime && api.runtime.onMessage) {
     api.runtime.onMessage.addListener(onRuntimeMessage);
   }
 
-  window.__unissRegionTeardown = teardown;
+  window.addEventListener("pagehide", onPageUnload, true);
+  window.addEventListener("beforeunload", onPageUnload, true);
+
+  Object.defineProperty(window, TEARDOWN_KEY, {
+    value: teardown,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
 })();

@@ -4,7 +4,7 @@ Resmi metin (HTTPS, mağaza formu): [therealmutlusen.github.io/UniSS/store/priva
 
 ## Özet
 
-UniSS tamamen tarayıcıda çalışır. UniSS hesabı ve UniSS sunucusu yoktur. Yakalama pikselleri ve ayarlar yalnızca `storage.local` içindedir. Telemetri, reklam, üçüncü taraf paylaşımı yok.
+UniSS tamamen tarayıcıda çalışır. UniSS hesabı ve UniSS sunucusu yoktur. Ayarlar ve düzenleyici görüntüsü `storage.local` içindedir; bölge seçimi için kısa ömürlü `unissRegionStash` (tercihen `storage.session`, ~5 dk TTL, export/iptal/unload sonrası silinir) kullanılır. Telemetri, reklam, üçüncü taraf paylaşımı yok.
 
 ## İzinler
 

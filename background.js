@@ -38,8 +38,13 @@
 
   if (!api || !api.runtime || !api.runtime.onMessage) return;
 
-  api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!msg || msg.type !== "uniss-open") return;
+    // Only accept uniss-open from this extension (extension pages / content scripts).
+    if (!sender || sender.id !== api.runtime.id) {
+      reply(sendResponse, { ok: false, error: "rejected" });
+      return true;
+    }
     const path = sanitizeExtensionPath(msg.path);
     if (!path) {
       reply(sendResponse, { ok: false, error: "rejected" });

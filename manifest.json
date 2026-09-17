@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UniSS",
-  "version": "2.0.31",
+  "version": "2.0.32",
   "description": "UniSS: capture, annotate, download. 71 UI languages (default English).",
   "action": {
     "default_title": "UniSS",
@@ -37,6 +37,6 @@
     }
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self';"
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'self'; base-uri 'self'; connect-src 'self'; img-src 'self' data: blob:;"
   }
 }

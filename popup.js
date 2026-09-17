@@ -3,6 +3,13 @@
   function storageLocal() {
     return api && api.storage && api.storage.local;
   }
+  function storageSession() {
+    return api && api.storage && api.storage.session;
+  }
+  // Ephemeral region PNG: prefer storage.session (Chromium + Firefox 115+).
+  function stashStorage() {
+    return storageSession() || storageLocal();
+  }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
 
   const MAX_FULL_HEIGHT_CSS = 16000;
@@ -674,6 +681,11 @@
       await local.set({
         unissRegionTabId: tab.id,
         unissMode: "region",
+      });
+    }
+    const stashStore = stashStorage();
+    if (stashStore) {
+      await stashStore.set({
         unissRegionStash: {
           tabId: tab.id,
           windowId: tab.windowId,
