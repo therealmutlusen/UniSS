@@ -16,10 +16,6 @@
   const HANDLE_SIZE = 8;
 
   const defaults = {
-    regionInstruct: "Hover to snap · click to lock · drag for a free rectangle · Esc cancels",
-    regionSaveVisible: "Save visible area",
-    regionSaveFull: "Save full page",
-    regionCancel: "Cancel",
     regionCopy: "Copy",
     regionDownload: "Download",
     regionEdit: "Edit",
@@ -272,34 +268,6 @@
   cursor: crosshair !important;
   background: transparent !important;
 }
-#${ROOT_ID} .uniss-chrome {
-  position: absolute !important;
-  top: 12px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  max-width: calc(100vw - 24px) !important;
-  padding: 8px 10px !important;
-  border-radius: 12px !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-  outline: 2px solid rgba(110,168,255,0.55) !important;
-  border: 1px solid rgba(255,255,255,0.16) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
-  color: #eef2ff !important;
-  pointer-events: auto !important;
-  z-index: 3 !important;
-}
-#${ROOT_ID} .uniss-chrome-hint {
-  font-size: 12px !important;
-  color: #93a0bd !important;
-  margin-right: 4px !important;
-  max-width: 280px !important;
-  line-height: 1.3 !important;
-}
 #${ROOT_ID} .uniss-btn {
   appearance: none !important;
   border: 1px solid rgba(255,255,255,0.14) !important;
@@ -372,7 +340,6 @@
 }
 #${ROOT_ID} .uniss-actions.show { display: flex !important; flex-wrap: wrap !important; }
 #${ROOT_ID}.capturing .uniss-hit,
-#${ROOT_ID}.capturing .uniss-chrome,
 #${ROOT_ID}.capturing .uniss-actions,
 #${ROOT_ID}.capturing .uniss-handle { display: none !important; }
 #${ROOT_ID}.hidden-all { visibility: hidden !important; opacity: 0 !important; }
@@ -403,29 +370,6 @@
 
   const hit = document.createElement("div");
   hit.className = "uniss-hit";
-
-  const chrome = document.createElement("div");
-  chrome.className = "uniss-chrome";
-
-  const hint = document.createElement("span");
-  hint.className = "uniss-chrome-hint";
-
-  const btnVisible = document.createElement("button");
-  btnVisible.type = "button";
-  btnVisible.className = "uniss-btn";
-
-  const btnFull = document.createElement("button");
-  btnFull.type = "button";
-  btnFull.className = "uniss-btn";
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "uniss-btn danger";
-
-  chrome.appendChild(hint);
-  chrome.appendChild(btnVisible);
-  chrome.appendChild(btnFull);
-  chrome.appendChild(btnCancel);
 
   const box = document.createElement("div");
   box.className = "uniss-box";
@@ -458,7 +402,6 @@
   root.appendChild(style);
   root.appendChild(dim);
   root.appendChild(hit);
-  root.appendChild(chrome);
   root.appendChild(box);
   root.appendChild(badge);
   root.appendChild(actions);
@@ -487,10 +430,6 @@
   });
 
   function applyStrings() {
-    hint.textContent = t("regionInstruct");
-    btnVisible.textContent = t("regionSaveVisible");
-    btnFull.textContent = t("regionSaveFull");
-    btnCancel.textContent = t("regionCancel");
     btnCopy.textContent = t("regionCopy");
     btnDownload.textContent = t("regionDownload");
     btnEdit.textContent = t("regionEdit");
@@ -614,7 +553,7 @@
   }
 
   function pierceFromPoint(x, y) {
-    const layers = [hit, chrome, box, actions, badge, dim];
+    const layers = [hit, box, actions, badge, dim];
     for (const pos of Object.keys(handles)) {
       if (handles[pos]) layers.push(handles[pos]);
     }
@@ -719,7 +658,7 @@
     if (capturing) return;
     if (e.button !== 0) return;
     const target = e.target;
-    if (target.closest && target.closest(".uniss-chrome, .uniss-actions, .uniss-handle")) {
+    if (target.closest && target.closest(".uniss-actions, .uniss-handle")) {
       return;
     }
     if (mode === "selected") {
@@ -911,34 +850,6 @@
     teardown();
   }
 
-  async function escapeToFullPage() {
-    if (capturing) return;
-    capturing = true;
-    root.classList.add("hidden-all");
-    try {
-      const stash = await loadRegionStash();
-      const local = storageLocal();
-      const tabId =
-        stash && typeof stash.tabId === "number" ? stash.tabId : null;
-      if (local) {
-        const payload = {
-          unissMode: "full",
-          unissRegionPendingFull: true,
-        };
-        if (tabId != null) payload.unissRegionTabId = tabId;
-        await local.set(payload);
-      }
-      await clearRegionStash();
-      teardown();
-      // Flags already in storage — SW opens popup (avoids page-origin chrome-extension navigation).
-      await openExtensionPageViaSw("popup.html?autostart=full");
-    } catch (err) {
-      const msg =
-        err && err.message ? String(err.message) : t("regionExportFailed");
-      restoreAfterFail(msg);
-    }
-  }
-
   function onKeyDown(e) {
     if (e.key !== "Escape") return;
     e.preventDefault();
@@ -986,18 +897,6 @@
   });
   box.addEventListener("mousedown", onPointerDown, true);
 
-  btnCancel.addEventListener("click", (e) => {
-    e.preventDefault();
-    cancelRegion();
-  });
-  btnVisible.addEventListener("click", (e) => {
-    e.preventDefault();
-    lockSelection({ x: 0, y: 0, w: window.innerWidth, h: window.innerHeight });
-  });
-  btnFull.addEventListener("click", (e) => {
-    e.preventDefault();
-    escapeToFullPage();
-  });
   btnCopy.addEventListener("click", (e) => {
     e.preventDefault();
     requestCapture("copy");

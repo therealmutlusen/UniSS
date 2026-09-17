@@ -21,6 +21,10 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.30
+
+- Region overlay üst chrome çubuğu (ipucu, görünür/tam sayfa kaydetme ve iptal düğmeleri) kaldırıldı; seçim için hover snap, Esc ile iptal ve Copy/Download/Edit eylemleri korundu.
+
 ## 2.0.29
 
 - Region Edit / Save full: ince service worker (`background.js`) allowlist’li extension sayfalarını `tabs.create` ile açar; sayfa kökeninden `chrome-extension://` navigasyonu (ERR_BLOCKED_BY_CLIENT) kalkar.
