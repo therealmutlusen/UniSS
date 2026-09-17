@@ -618,8 +618,35 @@
 
   async function startRegionCapture(tab) {
     const local = storageLocal();
+    // Keep activeTab hot: focus page, stash a viewport capture + metrics, then inject.
+    try {
+      await api.tabs.update(tab.id, { active: true });
+    } catch (_) {}
+    const dataUrl = await captureVisible(tab.windowId, "png", 100);
+    const vpResults = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => ({
+        w: window.innerWidth,
+        h: window.innerHeight,
+        dpr: window.devicePixelRatio || 1,
+      }),
+    });
+    const viewport =
+      vpResults && vpResults[0] && vpResults[0].result
+        ? vpResults[0].result
+        : { w: 1, h: 1, dpr: 1 };
     if (local) {
-      await local.set({ unissRegionTabId: tab.id, unissMode: "region" });
+      await local.set({
+        unissRegionTabId: tab.id,
+        unissMode: "region",
+        unissRegionStash: {
+          tabId: tab.id,
+          windowId: tab.windowId,
+          dataUrl,
+          viewport,
+          ts: Date.now(),
+        },
+      });
     }
     // Inject during the action click so activeTab covers the page tab.
     await api.scripting.executeScript({

@@ -136,5 +136,8 @@
   "regionCancelled": "Bölge yakalama iptal edildi.",
   "regionFullRedirect": "Tam sayfa yakalama açılıyor…",
   "errRegionCrop": "Seçilen bölge kırpılamadı.",
-  "errRegionNoTab": "Hedef sekme yok. Bu sayfayı kapatıp popup’tan Bölge’yi başlatın."
+  "errRegionNoTab": "Hedef sekme yok. Bu sayfayı kapatıp popup’tan Bölge’yi başlatın.",
+  "errRegionStashMissing": "Bölge anlık görüntüsü süresi doldu veya yok. UniSS simgesine tıklayıp Bölge’yi yeniden başlatın.",
+  "errRegionNeedRestart": "Seçici gösterilemedi. UniSS simgesine tıklayıp Bölge’yi yeniden başlatın.",
+  "errRegionPermission": "Sayfa erişimi sona erdi. UniSS simgesine tıklayıp Bölge’yi yeniden başlatın."
 }

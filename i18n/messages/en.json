@@ -140,5 +140,8 @@
   "regionCancelled": "Region capture cancelled.",
   "regionFullRedirect": "Opening full-page capture…",
   "errRegionCrop": "Could not crop the selected region.",
-  "errRegionNoTab": "No target tab. Close this page and start Region from the popup."
+  "errRegionNoTab": "No target tab. Close this page and start Region from the popup.",
+  "errRegionStashMissing": "Region snapshot expired or missing. Click the UniSS icon and start Region again.",
+  "errRegionNeedRestart": "Could not show the selector. Click the UniSS icon and start Region again.",
+  "errRegionPermission": "Page access expired. Click the UniSS icon and start Region again."
 }

@@ -144,8 +144,14 @@
         return;
       } catch (err) {
         lastErr = err;
+        if (isPermissionError(err)) {
+          throw new Error(t("errRegionPermission"));
+        }
         if (!isTransientTabError(err) && i === 2) break;
       }
+    }
+    if (lastErr && isPermissionError(lastErr)) {
+      throw new Error(t("errRegionPermission"));
     }
     throw new Error(t("errInject"));
   }
@@ -178,22 +184,6 @@
     return q === undefined ? c.toDataURL(mime) : c.toDataURL(mime, q);
   }
 
-  async function captureVisible(windowId) {
-    if (exportFormat === "jpeg") {
-      return api.tabs.captureVisibleTab(windowId, {
-        format: "jpeg",
-        quality: Math.round(exportQuality),
-      });
-    }
-    return api.tabs.captureVisibleTab(windowId, { format: "png" });
-  }
-
-  function sleepFrame() {
-    return new Promise((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(r))
-    );
-  }
-
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
   }
@@ -201,6 +191,48 @@
   function isTransientTabError(err) {
     const msg = err && err.message ? String(err.message) : String(err || "");
     return /cannot be edited|user may be dragging a tab/i.test(msg);
+  }
+
+  function isPermissionError(err) {
+    const msg = err && err.message ? String(err.message) : String(err || "");
+    return /activeTab|host.?permission|'?<all_urls>'?|Cannot access contents|permission/i.test(
+      msg
+    );
+  }
+
+  function friendlyErrorMessage(err) {
+    if (isPermissionError(err)) return t("errRegionPermission");
+    if (isTransientTabError(err)) return t("errInject");
+    const msg = err && err.message ? String(err.message) : String(err || "");
+    if (/activeTab|host.?permission|'?<all_urls>'?|Cannot access contents/i.test(msg)) {
+      return t("errRegionPermission");
+    }
+    return msg || t("errInject");
+  }
+
+  const STASH_MAX_AGE_MS = 30 * 60 * 1000;
+
+  async function loadRegionStash() {
+    const local = storageLocal();
+    if (!local) return null;
+    try {
+      const data = await local.get(["unissRegionStash"]);
+      return data.unissRegionStash || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function clearRegionStash() {
+    const local = storageLocal();
+    if (!local) return;
+    try {
+      await local.remove("unissRegionStash");
+    } catch (_) {
+      try {
+        await local.set({ unissRegionStash: null });
+      } catch (__) {}
+    }
   }
 
   function closeHelperSoon(delayMs) {
@@ -302,8 +334,16 @@
         type: "uniss-region",
         action: "show",
       });
-    } catch (_) {
+      return;
+    } catch (_) {}
+    try {
       await injectOverlay(tabId);
+    } catch (err) {
+      const msg = err && err.message ? String(err.message) : "";
+      if (isPermissionError(err) || msg === t("errRegionPermission")) {
+        throw new Error(t("errRegionNeedRestart"));
+      }
+      throw new Error(friendlyErrorMessage(err));
     }
   }
 
@@ -348,10 +388,23 @@
       if (!tab || !canCaptureUrl(tab.url)) {
         throw new Error(t("errCannotCapture"));
       }
+      // Overlay already absent from stash (captured before inject); hide for UX.
       await hideOverlay(tab.id);
-      await sleepFrame();
-      const raw = await captureVisible(tab.windowId);
-      let dataUrl = await cropToRect(raw, msg.rect, msg.viewport);
+      const stash = await loadRegionStash();
+      const tooOld =
+        !stash ||
+        typeof stash.ts !== "number" ||
+        Date.now() - stash.ts > STASH_MAX_AGE_MS;
+      if (
+        !stash ||
+        stash.tabId !== targetTabId ||
+        !stash.dataUrl ||
+        tooOld
+      ) {
+        throw new Error(t("errRegionStashMissing"));
+      }
+      const viewport = msg.viewport || stash.viewport;
+      let dataUrl = await cropToRect(stash.dataUrl, msg.rect, viewport);
       dataUrl = await encodeOutput(dataUrl, exportFormat, exportQuality);
       const intent = msg.intent || "download";
       if (intent === "copy") {
@@ -364,18 +417,12 @@
         downloadDataUrl(dataUrl);
         setStatus(t("statusDownloadStarted"), "ok");
       }
+      await clearRegionStash();
       await teardownOverlay(tab.id);
       closeHelperSoon(120);
     } catch (err) {
       console.error(err);
-      setStatus(
-        isTransientTabError(err)
-          ? t("errInject")
-          : err && err.message
-            ? err.message
-            : String(err),
-        "err"
-      );
+      setStatus(friendlyErrorMessage(err), "err");
       try {
         await api.tabs.sendMessage(targetTabId, {
           type: "uniss-region",
@@ -396,6 +443,7 @@
     busy = true;
     setStatus(t("regionFullRedirect"));
     try {
+      await clearRegionStash();
       const local = storageLocal();
       if (local) {
         await local.set({
@@ -412,14 +460,7 @@
       setStatus(t("regionFullRedirect"), "ok");
       closeHelperSoon(80);
     } catch (err) {
-      setStatus(
-        isTransientTabError(err)
-          ? t("errInject")
-          : err && err.message
-            ? err.message
-            : String(err),
-        "err"
-      );
+      setStatus(friendlyErrorMessage(err), "err");
     } finally {
       busy = false;
     }
@@ -433,6 +474,7 @@
       return true;
     }
     if (msg.action === "cancel") {
+      clearRegionStash();
       setStatus(t("regionCancelled"));
       if (sendResponse) sendResponse({ ok: true });
       closeHelperSoon(50);
@@ -471,10 +513,27 @@
     api.runtime.onMessage.addListener(onMessage);
     setStatus(t("regionWaiting"));
     try {
-      // Popup usually injects first (activeTab). Delay + retry avoid Chrome
-      // "Tabs cannot be edited right now" while the helper tab is settling.
-      await sleep(80);
-      await injectOverlay(targetTabId);
+      // Prefer show on an overlay the popup already injected (activeTab).
+      try {
+        await api.tabs.sendMessage(targetTabId, {
+          type: "uniss-region",
+          action: "show",
+        });
+        try {
+          await api.tabs.sendMessage(targetTabId, {
+            type: "uniss-region",
+            action: "strings",
+            strings: regionStrings(),
+          });
+        } catch (_) {}
+        setStatus(t("regionWaiting"), "ok");
+      } catch (_) {
+        // Popup usually injects first (activeTab). Delay + retry avoid Chrome
+        // "Tabs cannot be edited right now" while the helper tab is settling.
+        await sleep(80);
+        await injectOverlay(targetTabId);
+        setStatus(t("regionWaiting"), "ok");
+      }
     } catch (err) {
       try {
         await api.tabs.sendMessage(targetTabId, {
@@ -484,7 +543,12 @@
         });
         setStatus(t("regionWaiting"), "ok");
       } catch (e2) {
-        setStatus(t("errInject"), "err");
+        setStatus(
+          isPermissionError(err) || isPermissionError(e2)
+            ? t("errRegionNeedRestart")
+            : t("errInject"),
+          "err"
+        );
       }
     }
   }
@@ -492,10 +556,22 @@
   if (reinjectBtn) {
     reinjectBtn.addEventListener("click", async () => {
       try {
-        await injectOverlay(targetTabId);
+        try {
+          await api.tabs.sendMessage(targetTabId, {
+            type: "uniss-region",
+            action: "show",
+          });
+        } catch (_) {
+          await injectOverlay(targetTabId);
+        }
         setStatus(t("regionWaiting"), "ok");
       } catch (err) {
-        setStatus(t("errInject"), "err");
+        setStatus(
+          isPermissionError(err)
+            ? t("errRegionNeedRestart")
+            : friendlyErrorMessage(err),
+          "err"
+        );
       }
     });
   }
