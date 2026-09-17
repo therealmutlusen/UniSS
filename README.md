@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.20. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.21. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -17,6 +17,7 @@ Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https
 ## Ne işe yarar
 
 - **Görünür alan:** sekmenin o anda ekranda görünen kısmı
+- **Bölge / öğe:** Firefox benzeri seçici; üzerine gelince DOM öğesine yapışır, tıklayınca kilitler, sürükleyince serbest dikdörtgen; görünür kesişim kırpılır (kaydırarak birleştirme yok)
 - **Tam sayfa:** sayfayı kaydırıp dilimleri birleştirir (sabit üst çubuklar gizlenir, yakalama bitince geri gelir)
 - **Düzenle:** kalem, çizgi, vurgu, dikdörtgen, elips, ok, yazı, kırp; seç / taşı / sil / geri al
 - **Kaydet:** PNG, JPEG veya WebP indir; destekleyen tarayıcıda panoya kopyala
@@ -28,8 +29,8 @@ Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır. `chrome://`
 
 1. Yakalamak istediğiniz **http** veya **https** sayfasını açın.
 2. Araç çubuğundaki UniSS simgesine tıklayın.
-3. **Visible area** veya **Full page** seçin, **Capture**’a basın.
-4. Önizleme gelince **Download**, **Copy to clipboard** veya **Edit**.
+3. **Visible area**, **Region** veya **Full page** seçin, **Capture**’a basın.
+4. **Region:** sayfada öğe/bölge seçin; **Copy** / **Download** / **Edit**. Diğer modlarda önizleme gelince aynı işlemler popup’tan.
 
 Ayarlarda “Capture immediately when the extension is clicked” açıksa popup açılınca varsayılan modla yakalama hemen başlar.
 
@@ -56,7 +57,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 
 - **File format:** PNG (kayıpsız), JPEG, WebP
 - **Image quality:** JPEG ve WebP için 10–100 (varsayılan 92). PNG’de kalite kaydırıcısı yok
-- **Default mode:** Visible area veya Full page
+- **Default mode:** Visible area, Region veya Full page
 - **Capture immediately…:** açıkken simgeye basınca hemen yakalar
 - **Show page title and URL…:** açıkken görüntünün üstüne tam genişlikte siyah şerit; solda başlık ve adres
 - **Language:** UniSS arayüz dili (varsayılan İngilizce)

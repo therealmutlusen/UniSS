@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-i18n-title="regionTitle">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>UniSS Region</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #080b14;
+      --text: #eef2ff;
+      --muted: #93a0bd;
+      --accent: #6ea8ff;
+      --ok: #34d399;
+      --danger: #fb7185;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --bg: #e7eefc; --text: #0f172a; --muted: #5b6b86; }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); }
+    body { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .card {
+      width: min(420px, 100%);
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+    h1 { margin: 0 0 8px; font-size: 18px; font-weight: 650; }
+    p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    #status { margin-top: 14px; font-size: 13px; }
+    #status.ok { color: var(--ok); }
+    #status.err { color: var(--danger); }
+    .actions { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font: 600 13px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      min-height: 40px;
+    }
+    button.primary {
+      background: color-mix(in srgb, var(--accent) 70%, #4f7cff);
+      border-color: transparent;
+      color: #0b1220;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1 data-i18n="regionTitle">Region capture</h1>
+    <p data-i18n="regionPageHint">Select a region or element in the page tab. This helper tab can stay in the background.</p>
+    <p id="status" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button id="reinject" type="button" class="primary" data-i18n="regionReinject">Show selector again</button>
+      <button id="closeTab" type="button" data-i18n="close">Close</button>
+    </div>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="region.js"></script>
+</body>
+</html>

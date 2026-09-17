@@ -97,7 +97,7 @@
       "unissAutoCaptureOnClick",
       "unissPageInfoBar",
     ]);
-    if (data.unissMode === "full" || data.unissMode === "visible") {
+    if (data.unissMode === "full" || data.unissMode === "visible" || data.unissMode === "region") {
       const radio = document.querySelector(
         `input[name="mode"][value="${data.unissMode}"]`
       );
@@ -122,6 +122,27 @@
   }
 
   async function getActiveTab() {
+    // Region "Save full page" opens popup.html?autostart=full as a tab; prefer the
+    // stored page tab so we do not try to capture the helper/popup tab itself.
+    try {
+      const local = storageLocal();
+      if (local) {
+        const data = await local.get(["unissRegionTabId", "unissRegionPendingFull"]);
+        if (data.unissRegionPendingFull && typeof data.unissRegionTabId === "number") {
+          try {
+            const tab = await api.tabs.get(data.unissRegionTabId);
+            if (tab && canCapture(tab)) {
+              await local.set({ unissRegionPendingFull: false });
+              try {
+                await api.tabs.update(tab.id, { active: true });
+              } catch (_) {}
+              return tab;
+            }
+          } catch (_) {}
+          await local.set({ unissRegionPendingFull: false });
+        }
+      }
+    } catch (_) {}
     const tabs = await api.tabs.query({ active: true, currentWindow: true });
     return tabs && tabs[0];
   }
@@ -581,6 +602,46 @@
     setReadyButtons(true);
   }
 
+  function regionOverlayStrings() {
+    return {
+      regionInstruct: t("regionInstruct"),
+      regionSaveVisible: t("regionSaveVisible"),
+      regionSaveFull: t("regionSaveFull"),
+      regionCancel: t("regionCancel"),
+      regionCopy: t("regionCopy"),
+      regionDownload: t("regionDownload"),
+      regionEdit: t("regionEdit"),
+      regionCapturing: t("regionCapturing"),
+      regionSize: t("regionSize"),
+    };
+  }
+
+  async function startRegionCapture(tab) {
+    const local = storageLocal();
+    if (local) {
+      await local.set({ unissRegionTabId: tab.id, unissMode: "region" });
+    }
+    // Inject during the action click so activeTab covers the page tab.
+    await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["region-overlay.js"],
+    });
+    try {
+      await api.tabs.sendMessage(tab.id, {
+        type: "uniss-region",
+        action: "strings",
+        strings: regionOverlayStrings(),
+      });
+    } catch (_) {}
+    await api.tabs.create({
+      url: api.runtime.getURL("region.html") + "?tabId=" + encodeURIComponent(String(tab.id)),
+      active: false,
+    });
+    try {
+      window.close();
+    } catch (_) {}
+  }
+
   async function capture() {
     if (capturing) return;
     capturing = true;
@@ -596,6 +657,11 @@
         throw new Error(t("errCannotCapture"));
       }
       const mode = selectedMode();
+      if (mode === "region") {
+        setStatus(t("regionStarting"));
+        await startRegionCapture(tab);
+        return;
+      }
       if (mode === "full") {
         const result = await captureFullPage(tab);
         const withInfo = await applyPageInfoBar(result.dataUrl, tab);
@@ -690,6 +756,16 @@
       syncCaptureButtonLabel();
       window.UniSSI18n.applyDom(document);
       updateHints();
+      let forceFull = false;
+      try {
+        const u = new URL(location.href);
+        forceFull = u.searchParams.get("autostart") === "full";
+      } catch (_) {}
+      if (forceFull) {
+        const radio = document.querySelector('input[name="mode"][value="full"]');
+        if (radio) radio.checked = true;
+        return capture();
+      }
       if (autoCaptureOnClick) {
         return capture();
       }

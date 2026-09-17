@@ -150,7 +150,7 @@
     qualityEl.value = String(
       typeof data.unissQuality === "number" ? data.unissQuality : 92
     );
-    modeEl.value = data.unissMode === "full" ? "full" : "visible";
+    modeEl.value = data.unissMode === "full" || data.unissMode === "region" ? data.unissMode : "visible";
     autoCaptureEl.checked = data.unissAutoCaptureOnClick === true;
     pageInfoBarEl.checked = data.unissPageInfoBar === true;
     fillLanguages();
