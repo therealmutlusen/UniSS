@@ -626,12 +626,23 @@
       target: { tabId: tab.id },
       files: ["region-overlay.js"],
     });
+    const probe = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => !!document.getElementById("uniss-region-root"),
+    });
+    if (!probe || !probe[0] || !probe[0].result) {
+      throw new Error(t("errInject"));
+    }
     try {
       await api.tabs.sendMessage(tab.id, {
         type: "uniss-region",
         action: "strings",
         strings: regionOverlayStrings(),
       });
+    } catch (_) {}
+    // Keep the page tab focused so the overlay is obvious.
+    try {
+      await api.tabs.update(tab.id, { active: true });
     } catch (_) {}
     await api.tabs.create({
       url: api.runtime.getURL("region.html") + "?tabId=" + encodeURIComponent(String(tab.id)),

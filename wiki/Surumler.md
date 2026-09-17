@@ -21,7 +21,7 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
-## 2.0.21
+## 2.0.22
 
 - Bölge / öğe seçimi (Firefox benzeri): popup → `region.html` orkestratör + `region-overlay.js`; Copy / Download / Edit; görünür kesişim kırpma.
 - Varsayılan moda Region eklendi.

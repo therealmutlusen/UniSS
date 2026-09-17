@@ -110,12 +110,22 @@
       target: { tabId },
       files: ["region-overlay.js"],
     });
+    const probe = await api.scripting.executeScript({
+      target: { tabId },
+      func: () => !!document.getElementById("uniss-region-root"),
+    });
+    if (!probe || !probe[0] || !probe[0].result) {
+      throw new Error(t("errInject"));
+    }
     try {
       await api.tabs.sendMessage(tabId, {
         type: "uniss-region",
         action: "strings",
         strings: regionStrings(),
       });
+    } catch (_) {}
+    try {
+      await api.tabs.update(tabId, { active: true });
     } catch (_) {}
   }
 

@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.21). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.22). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.21.zip`. `manifest.json` is at the zip root.
+Package: run `./pack.sh` from the extension root. Upload `uniss-2.0.22.zip`. `manifest.json` is at the zip root.
 
 First-wave stores: Chrome Web Store, Edge Add-ons, Firefox AMO (listed). Opera Add-ons later. Safari is not a target.
 

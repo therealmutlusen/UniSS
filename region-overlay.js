@@ -1,5 +1,7 @@
 (() => {
-  if (window.__unissRegionActive) return;
+  if (window.__unissRegionTeardown) {
+    try { window.__unissRegionTeardown(); } catch (_) {}
+  }
   window.__unissRegionActive = true;
 
   const api =
@@ -57,12 +59,24 @@
   style.textContent = `
 #${ROOT_ID} {
   all: initial;
+  display: block !important;
   position: fixed !important;
   inset: 0 !important;
   z-index: 2147483646 !important;
   pointer-events: none !important;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
   -webkit-font-smoothing: antialiased !important;
+}
+#${ROOT_ID} .uniss-dim {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+#${ROOT_ID}.has-box .uniss-dim {
+  /* Selection box provides its own cutout shadow; hide flat dim to avoid double darkening */
+  opacity: 0 !important;
 }
 #${ROOT_ID} *, #${ROOT_ID} *::before, #${ROOT_ID} *::after { box-sizing: border-box !important; }
 #${ROOT_ID} .uniss-hit {
@@ -85,7 +99,8 @@
   max-width: calc(100vw - 24px) !important;
   padding: 8px 10px !important;
   border-radius: 12px !important;
-  background: rgba(18, 24, 38, 0.92) !important;
+  background: rgba(15, 23, 42, 0.96) !important;
+  outline: 2px solid rgba(110,168,255,0.55) !important;
   border: 1px solid rgba(255,255,255,0.16) !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
   color: #eef2ff !important;
@@ -181,6 +196,9 @@
   root.id = ROOT_ID;
   root.setAttribute("data-uniss", "region");
 
+  const dim = document.createElement("div");
+  dim.className = "uniss-dim";
+
   const hit = document.createElement("div");
   hit.className = "uniss-hit";
 
@@ -232,6 +250,7 @@
   actions.appendChild(btnEdit);
 
   root.appendChild(style);
+  root.appendChild(dim);
   root.appendChild(hit);
   root.appendChild(chrome);
   root.appendChild(box);
@@ -297,8 +316,10 @@
     if (!r || r.w < 1 || r.h < 1) {
       box.style.display = "none";
       badge.style.display = "none";
+      root.classList.remove("has-box");
       return;
     }
+    root.classList.add("has-box");
     const c = clampRect(r);
     box.style.display = "block";
     box.style.left = c.x + "px";
