@@ -121,6 +121,18 @@
     } catch (_) {}
   }
 
+  async function waitForPendingFull(timeoutMs = 10000) {
+    const local = storageLocal();
+    if (!local) return false;
+    const deadline = Date.now() + timeoutMs;
+    while (true) {
+      const data = await local.get(["unissRegionPendingFull"]);
+      if (data && data.unissRegionPendingFull) return true;
+      if (Date.now() >= deadline) return false;
+      await new Promise((resolve) => setTimeout(resolve, 75));
+    }
+  }
+
   async function getActiveTab() {
     // Region "Save full page" opens popup.html?autostart=full as a tab; prefer the
     // stored page tab so we do not try to capture the helper/popup tab itself.
@@ -793,18 +805,21 @@
 
   window.UniSSI18n.init()
     .then(() => loadSettings())
-    .then(() => {
+    .then(async () => {
       syncCaptureButtonLabel();
       window.UniSSI18n.applyDom(document);
       updateHints();
       let forceFull = false;
+      let waitForFull = false;
       try {
         const u = new URL(location.href);
         forceFull = u.searchParams.get("autostart") === "full";
+        waitForFull = u.searchParams.get("wait") === "1";
       } catch (_) {}
       if (forceFull) {
         const radio = document.querySelector('input[name="mode"][value="full"]');
         if (radio) radio.checked = true;
+        if (waitForFull) await waitForPendingFull();
         return capture();
       }
       if (autoCaptureOnClick) {

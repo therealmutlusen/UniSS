@@ -21,6 +21,11 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.27
+
+- Region Edit ve tam sayfa akışı gerçek extension URL’sini tıklama gesture’ında açar; `chrome-extension://invalid/` navigasyonu önlenir.
+- Editor ve full-page popup, storage handoff tamamlanana kadar kısa süre yeniden dener.
+
 ## 2.0.26
 
 - Bölge yakalama: `region.html` yardımcı sekmesi kaldırıldı; export (Copy/Download/Edit) overlay’de (odaklı sayfa → pano “Document is not focused” hatası giderildi).

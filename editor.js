@@ -4,6 +4,13 @@
     return api && api.storage && api.storage.local;
   }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
+  const waitForEditImage = (() => {
+    try {
+      return new URL(location.href).searchParams.get("wait") === "1";
+    } catch (_) {
+      return false;
+    }
+  })();
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
@@ -1772,11 +1779,18 @@
       setStatus(t("errNoEditImage"), "err", { toast: true });
       return;
     }
-    const data = await local.get([
-      "unissEditImage",
-      "unissFormat",
-      "unissQuality",
-    ]);
+    let data = {};
+    const deadline = Date.now() + 10000;
+    while (true) {
+      data = await local.get([
+        "unissEditImage",
+        "unissFormat",
+        "unissQuality",
+      ]);
+      if (data && data.unissEditImage) break;
+      if (!waitForEditImage || Date.now() >= deadline) break;
+      await new Promise((resolve) => setTimeout(resolve, 75));
+    }
     if (["png", "jpeg", "webp"].includes(data.unissFormat)) exportFormat = data.unissFormat;
     if (typeof data.unissQuality === "number") exportQuality = data.unissQuality;
     const dataUrl = data && data.unissEditImage;
