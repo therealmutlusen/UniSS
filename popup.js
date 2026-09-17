@@ -24,6 +24,22 @@
   let autoCaptureOnClick = false;
   let pageInfoBar = false;
 
+  async function activateTab(tabId, { retries = 8, delayMs = 80 } = {}) {
+    let lastErr;
+    for (let i = 0; i < retries; i++) {
+      try {
+        await api.tabs.update(tabId, { active: true });
+        return;
+      } catch (err) {
+        lastErr = err;
+        const msg = err && err.message ? String(err.message) : String(err || "");
+        if (!/cannot be edited|dragging a tab/i.test(msg)) throw err;
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
+  }
+
   function setStatus(text, kind) {
     if (!statusEl) return;
     const msg = text || "";
@@ -146,7 +162,7 @@
             if (tab && canCapture(tab)) {
               await local.set({ unissRegionPendingFull: false });
               try {
-                await api.tabs.update(tab.id, { active: true });
+                await activateTab(tab.id);
               } catch (_) {}
               return tab;
             }
@@ -639,7 +655,7 @@
     const local = storageLocal();
     // Keep activeTab hot: focus page, stash a viewport capture + metrics, then inject.
     try {
-      await api.tabs.update(tab.id, { active: true });
+      await activateTab(tab.id);
     } catch (_) {}
     const dataUrl = await captureVisible(tab.windowId, "png", 100);
     const vpResults = await api.scripting.executeScript({
@@ -688,7 +704,7 @@
     } catch (_) {}
     // Overlay owns export; keep the page focused (no region.html helper tab).
     try {
-      await api.tabs.update(tab.id, { active: true });
+      await activateTab(tab.id);
     } catch (_) {}
     try {
       window.close();

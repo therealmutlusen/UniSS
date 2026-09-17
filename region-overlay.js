@@ -279,6 +279,13 @@
   cursor: pointer !important;
   min-height: 36px !important;
   white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+#${ROOT_ID} .uniss-btn svg {
+  flex-shrink: 0 !important;
+  display: block !important;
 }
 #${ROOT_ID} .uniss-btn:hover { background: rgba(110,168,255,0.22) !important; }
 #${ROOT_ID} .uniss-btn.primary {
@@ -429,10 +436,53 @@
     handles[pos] = h;
   });
 
+  function createSvgIcon(parts, size = 15) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", String(size));
+    svg.setAttribute("height", String(size));
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    for (const part of parts) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", part.tag);
+      for (const [k, v] of Object.entries(part.attrs)) {
+        el.setAttribute(k, v);
+      }
+      svg.appendChild(el);
+    }
+    return svg;
+  }
+
+  function setButtonLabel(btn, iconParts, label) {
+    while (btn.firstChild) btn.removeChild(btn.firstChild);
+    btn.appendChild(createSvgIcon(iconParts));
+    const span = document.createElement("span");
+    span.textContent = label;
+    btn.appendChild(span);
+  }
+
+  const ICON_COPY = [
+    { tag: "path", attrs: { d: "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" } },
+    { tag: "rect", attrs: { x: "8", y: "2", width: "8", height: "4", rx: "1", ry: "1" } },
+  ];
+  const ICON_DOWNLOAD = [
+    { tag: "path", attrs: { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" } },
+    { tag: "polyline", attrs: { points: "7 10 12 15 17 10" } },
+    { tag: "line", attrs: { x1: "12", y1: "15", x2: "12", y2: "3" } },
+  ];
+  const ICON_EDIT = [
+    { tag: "path", attrs: { d: "M12 20h9" } },
+    { tag: "path", attrs: { d: "M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" } },
+  ];
+
   function applyStrings() {
-    btnCopy.textContent = t("regionCopy");
-    btnDownload.textContent = t("regionDownload");
-    btnEdit.textContent = t("regionEdit");
+    setButtonLabel(btnCopy, ICON_COPY, t("regionCopy"));
+    setButtonLabel(btnDownload, ICON_DOWNLOAD, t("regionDownload"));
+    setButtonLabel(btnEdit, ICON_EDIT, t("regionEdit"));
   }
   applyStrings();
 

@@ -21,6 +21,11 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.31
+
+- Region/full odak: `tabs.update({ active: true })` için `activateTab` yeniden denemesi (sekme sürüklenirken “cannot be edited” hatası).
+- Region overlay Copy / Download / Edit düğmelerine inline SVG ikonlar (metin etiketleri korundu).
+
 ## 2.0.30
 
 - Region overlay üst chrome çubuğu (ipucu, görünür/tam sayfa kaydetme ve iptal düğmeleri) kaldırıldı; seçim için hover snap, Esc ile iptal ve Copy/Download/Edit eylemleri korundu.
