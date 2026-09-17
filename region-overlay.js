@@ -25,6 +25,13 @@
     regionEdit: "Edit",
     regionCapturing: "Capturing…",
     regionSize: "{w} × {h}",
+    errClipboard: "Copying images to the clipboard is not supported in this browser.",
+    errClipboardDenied: "Could not copy to the clipboard. Try again or use Download.",
+    errRegionCrop: "Could not crop the selected region.",
+    errRegionStashMissing: "Region snapshot expired or missing. Click the UniSS icon and start Region again.",
+    errImageLoad: "Could not load the captured image.",
+    errMetrics: "Could not read page dimensions.",
+    regionExportFailed: "Could not export the selection. Try again.",
   };
   let strings = Object.assign({}, defaults, window.__unissRegionStrings || {});
 
@@ -38,14 +45,193 @@
     return s;
   }
 
-  function send(payload) {
-    if (!api || !api.runtime || !api.runtime.sendMessage) return;
+  function storageLocal() {
+    return api && api.storage && api.storage.local;
+  }
+
+  const STASH_MAX_AGE_MS = 30 * 60 * 1000;
+
+  function extFor(format) {
+    if (format === "jpeg") return "jpg";
+    if (format === "webp") return "webp";
+    return "png";
+  }
+
+  function stamp() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return (
+      d.getFullYear() +
+      "-" +
+      p(d.getMonth() + 1) +
+      "-" +
+      p(d.getDate()) +
+      "_" +
+      p(d.getHours()) +
+      "-" +
+      p(d.getMinutes()) +
+      "-" +
+      p(d.getSeconds())
+    );
+  }
+
+  async function loadRegionStash() {
+    const local = storageLocal();
+    if (!local) return null;
     try {
-      const p = api.runtime.sendMessage(
-        Object.assign({ type: "uniss-region" }, payload)
-      );
-      if (p && typeof p.then === "function") p.catch(() => {});
+      const data = await local.get(["unissRegionStash"]);
+      return data.unissRegionStash || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function clearRegionStash() {
+    const local = storageLocal();
+    if (!local) return;
+    try {
+      await local.remove("unissRegionStash");
+    } catch (_) {
+      try {
+        await local.set({ unissRegionStash: null });
+      } catch (__) {}
+    }
+  }
+
+  async function loadExportSettings() {
+    const local = storageLocal();
+    let format = "png";
+    let quality = 92;
+    if (!local) return { format, quality };
+    try {
+      const data = await local.get(["unissFormat", "unissQuality"]);
+      if (["png", "jpeg", "webp"].includes(data.unissFormat)) {
+        format = data.unissFormat;
+      }
+      if (typeof data.unissQuality === "number") quality = data.unissQuality;
     } catch (_) {}
+    return { format, quality };
+  }
+
+  function loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(t("errImageLoad")));
+      img.src = dataUrl;
+    });
+  }
+
+  async function cropToRect(dataUrl, rect, viewport, format, quality) {
+    const img = await loadImage(dataUrl);
+    const bw = img.naturalWidth || img.width;
+    const bh = img.naturalHeight || img.height;
+    const vw = (viewport && viewport.w) || 1;
+    let scale = bw / vw;
+    if (!Number.isFinite(scale) || scale <= 0) {
+      scale = (viewport && viewport.dpr) || 1;
+    }
+    let sx = Math.floor(rect.x * scale);
+    let sy = Math.floor(rect.y * scale);
+    let sw = Math.floor(rect.w * scale);
+    let sh = Math.floor(rect.h * scale);
+    if (sx < 0) {
+      sw += sx;
+      sx = 0;
+    }
+    if (sy < 0) {
+      sh += sy;
+      sy = 0;
+    }
+    if (sx + sw > bw) sw = bw - sx;
+    if (sy + sh > bh) sh = bh - sy;
+    if (sw < 1 || sh < 1) throw new Error(t("errRegionCrop"));
+    const c = document.createElement("canvas");
+    c.width = sw;
+    c.height = sh;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error(t("errMetrics"));
+    if (format === "jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, sw, sh);
+    }
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+    const q =
+      format === "png" ? undefined : Math.min(1, Math.max(0.1, quality / 100));
+    if (format === "webp") {
+      try {
+        return c.toDataURL("image/webp", q);
+      } catch (_) {}
+    }
+    if (format === "jpeg") {
+      return c.toDataURL("image/jpeg", q);
+    }
+    try {
+      return c.toDataURL("image/png");
+    } catch (_) {
+      return c.toDataURL("image/jpeg", 0.92);
+    }
+  }
+
+  function downloadDataUrl(dataUrl, format) {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = "uniss-region-" + stamp() + "." + extFor(format);
+    a.rel = "noopener";
+    (document.body || document.documentElement).appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  async function copyDataUrl(dataUrl) {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      throw new Error(t("errClipboard"));
+    }
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type || "image/png"]: blob }),
+      ]);
+    } catch (err) {
+      const msg = err && err.message ? String(err.message) : String(err || "");
+      if (/not focused|Document is not focused|NotAllowedError|Permission/i.test(msg)) {
+        throw new Error(t("errClipboardDenied"));
+      }
+      throw new Error(t("errClipboardDenied"));
+    }
+  }
+
+  async function openExtensionPage(pathWithQuery) {
+    if (!api || !api.runtime || !api.runtime.getURL) {
+      throw new Error(t("regionExportFailed"));
+    }
+    const url = api.runtime.getURL(pathWithQuery);
+    // Prefer window.open first — user just clicked; tabs.create is usually
+    // unavailable in the isolated world without a "tabs" permission.
+    try {
+      const w = window.open(url, "_blank");
+      if (w) return;
+    } catch (_) {}
+    if (api.tabs && typeof api.tabs.create === "function") {
+      try {
+        await api.tabs.create({ url, active: true });
+        return;
+      } catch (_) {}
+    }
+    throw new Error(t("regionExportFailed"));
+  }
+
+  async function openEditor(dataUrl, format, quality) {
+    const local = storageLocal();
+    if (!local) throw new Error(t("regionExportFailed"));
+    await local.set({
+      unissEditImage: dataUrl,
+      unissEditTs: Date.now(),
+      unissFormat: format,
+      unissQuality: quality,
+    });
+    await openExtensionPage("editor.html");
   }
 
   function removeExisting() {
@@ -190,6 +376,22 @@
 #${ROOT_ID}.capturing .uniss-actions,
 #${ROOT_ID}.capturing .uniss-handle { display: none !important; }
 #${ROOT_ID}.hidden-all { visibility: hidden !important; opacity: 0 !important; }
+#${ROOT_ID} .uniss-toast {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 24px !important;
+  transform: translateX(-50%) !important;
+  z-index: 6 !important;
+  max-width: min(420px, calc(100vw - 24px)) !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  background: rgba(18, 24, 38, 0.96) !important;
+  border: 1px solid rgba(251,113,133,0.45) !important;
+  color: #fecdd3 !important;
+  font: 600 12px/1.35 Inter, ui-sans-serif, system-ui, sans-serif !important;
+  pointer-events: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+}
 `;
 
   const root = document.createElement("div");
@@ -249,6 +451,10 @@
   actions.appendChild(btnDownload);
   actions.appendChild(btnEdit);
 
+  const toast = document.createElement("div");
+  toast.className = "uniss-toast";
+  toast.style.display = "none";
+
   root.appendChild(style);
   root.appendChild(dim);
   root.appendChild(hit);
@@ -256,6 +462,7 @@
   root.appendChild(box);
   root.appendChild(badge);
   root.appendChild(actions);
+  root.appendChild(toast);
   document.documentElement.appendChild(root);
 
   const handles = {};
@@ -633,17 +840,102 @@
     e.preventDefault();
   }
 
-  function requestCapture(intent) {
+  let toastTimer = null;
+  function showToast(msg) {
+    if (!toast) return;
+    toast.textContent = msg || t("regionExportFailed");
+    toast.style.display = "block";
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.style.display = "none";
+    }, 4200);
+  }
+
+  function restoreAfterFail(message) {
+    root.classList.remove("hidden-all");
+    root.classList.remove("capturing");
+    capturing = false;
+    layoutHandlesAndActions();
+    if (message) showToast(message);
+  }
+
+  async function requestCapture(intent) {
     if (!rect || capturing) return;
     capturing = true;
     root.classList.add("capturing");
     root.classList.add("hidden-all");
-    send({
-      action: "capture",
-      intent: intent,
-      rect: clampRect(rect),
-      viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio || 1 },
-    });
+    if (toast) toast.style.display = "none";
+    try {
+      const stash = await loadRegionStash();
+      const tooOld =
+        !stash ||
+        typeof stash.ts !== "number" ||
+        Date.now() - stash.ts > STASH_MAX_AGE_MS;
+      if (!stash || !stash.dataUrl || tooOld) {
+        throw new Error(t("errRegionStashMissing"));
+      }
+      const { format, quality } = await loadExportSettings();
+      const viewport =
+        stash.viewport || {
+          w: window.innerWidth,
+          h: window.innerHeight,
+          dpr: window.devicePixelRatio || 1,
+        };
+      const dataUrl = await cropToRect(
+        stash.dataUrl,
+        clampRect(rect),
+        viewport,
+        format,
+        quality
+      );
+      if (intent === "copy") {
+        await copyDataUrl(dataUrl);
+      } else if (intent === "edit") {
+        await openEditor(dataUrl, format, quality);
+      } else {
+        downloadDataUrl(dataUrl, format);
+      }
+      await clearRegionStash();
+      teardown();
+    } catch (err) {
+      const msg =
+        err && err.message ? String(err.message) : t("regionExportFailed");
+      restoreAfterFail(msg);
+    }
+  }
+
+  async function cancelRegion() {
+    try {
+      await clearRegionStash();
+    } catch (_) {}
+    teardown();
+  }
+
+  async function escapeToFullPage() {
+    if (capturing) return;
+    capturing = true;
+    root.classList.add("hidden-all");
+    try {
+      const stash = await loadRegionStash();
+      const local = storageLocal();
+      const tabId =
+        stash && typeof stash.tabId === "number" ? stash.tabId : null;
+      if (local) {
+        const payload = {
+          unissMode: "full",
+          unissRegionPendingFull: true,
+        };
+        if (tabId != null) payload.unissRegionTabId = tabId;
+        await local.set(payload);
+      }
+      await clearRegionStash();
+      teardown();
+      await openExtensionPage("popup.html?autostart=full");
+    } catch (err) {
+      const msg =
+        err && err.message ? String(err.message) : t("regionExportFailed");
+      restoreAfterFail(msg);
+    }
   }
 
   function onKeyDown(e) {
@@ -654,8 +946,7 @@
       unlockToCrosshair();
       return;
     }
-    send({ action: "cancel" });
-    teardown();
+    cancelRegion();
   }
 
   function onRuntimeMessage(msg) {
@@ -696,8 +987,7 @@
 
   btnCancel.addEventListener("click", (e) => {
     e.preventDefault();
-    send({ action: "cancel" });
-    teardown();
+    cancelRegion();
   });
   btnVisible.addEventListener("click", (e) => {
     e.preventDefault();
@@ -705,8 +995,7 @@
   });
   btnFull.addEventListener("click", (e) => {
     e.preventDefault();
-    send({ action: "escape-full" });
-    root.classList.add("hidden-all");
+    escapeToFullPage();
   });
   btnCopy.addEventListener("click", (e) => {
     e.preventDefault();
@@ -725,6 +1014,5 @@
     api.runtime.onMessage.addListener(onRuntimeMessage);
   }
 
-  send({ action: "ready" });
   window.__unissRegionTeardown = teardown;
 })();

@@ -21,6 +21,11 @@ Zip git’e konmaz (`uniss-*.zip` ignore).
 
 Mağaza paneline aynı zip ayrıca yüklenir; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.26
+
+- Bölge yakalama: `region.html` yardımcı sekmesi kaldırıldı; export (Copy/Download/Edit) overlay’de (odaklı sayfa → pano “Document is not focused” hatası giderildi).
+- Esc/iptal yalnızca overlay + stash temizler; “Show selector again” UX kalktı (yeniden Region başlatmak yeterli).
+
 ## 2.0.22
 
 - Bölge / öğe seçimi (Firefox benzeri): popup → `region.html` orkestratör + `region-overlay.js`; Copy / Download / Edit; görünür kesişim kırpma.

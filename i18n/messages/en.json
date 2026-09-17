@@ -46,6 +46,7 @@
   "errCannotCapture": "This page cannot be captured (chrome://, about:, store pages, etc.). Open a normal http/https tab.",
   "errImageLoad": "Could not load the captured image.",
   "errClipboard": "Copying images to the clipboard is not supported in this browser.",
+  "errClipboardDenied": "Could not copy to the clipboard. Try again or use Download.",
   "errInject": "Could not inject a script into the page.",
   "errMetrics": "Could not read page dimensions.",
   "errNoEditImage": "No image to edit. Capture from the popup, then press Edit.",
@@ -124,7 +125,7 @@
   "cropActions": "Crop",
   "modeRegion": "Region",
   "regionTitle": "Region capture",
-  "regionPageHint": "Select a region or element in the page tab. This helper tab can stay in the background.",
+  "regionPageHint": "Select a region or element on the page.",
   "regionReinject": "Show selector again",
   "regionInstruct": "Hover to snap · click to lock · drag for a free rectangle · Esc cancels",
   "regionSaveVisible": "Save visible area",
@@ -135,7 +136,7 @@
   "regionEdit": "Edit",
   "regionCapturing": "Capturing…",
   "regionSize": "{w} × {h}",
-  "regionStarting": "Opening region selector…",
+  "regionStarting": "Starting region selector…",
   "regionWaiting": "Waiting for a selection on the page…",
   "regionCancelled": "Region capture cancelled.",
   "regionFullRedirect": "Opening full-page capture…",
@@ -143,5 +144,6 @@
   "errRegionNoTab": "No target tab. Close this page and start Region from the popup.",
   "errRegionStashMissing": "Region snapshot expired or missing. Click the UniSS icon and start Region again.",
   "errRegionNeedRestart": "Could not show the selector. Click the UniSS icon and start Region again.",
-  "errRegionPermission": "Page access expired. Click the UniSS icon and start Region again."
+  "errRegionPermission": "Page access expired. Click the UniSS icon and start Region again.",
+  "regionExportFailed": "Could not export the selection. Try again."
 }

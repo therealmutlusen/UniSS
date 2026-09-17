@@ -613,6 +613,13 @@
       regionEdit: t("regionEdit"),
       regionCapturing: t("regionCapturing"),
       regionSize: t("regionSize"),
+      errClipboard: t("errClipboard"),
+      errClipboardDenied: t("errClipboardDenied"),
+      errRegionCrop: t("errRegionCrop"),
+      errRegionStashMissing: t("errRegionStashMissing"),
+      errImageLoad: t("errImageLoad"),
+      errMetrics: t("errMetrics"),
+      regionExportFailed: t("regionExportFailed"),
     };
   }
 
@@ -667,49 +674,7 @@
         strings: regionOverlayStrings(),
       });
     } catch (_) {}
-    const regionPage = api.runtime.getURL("region.html");
-    const helperUrl =
-      regionPage + "?tabId=" + encodeURIComponent(String(tab.id));
-    let helpers = [];
-    try {
-      helpers = await api.tabs.query({ url: regionPage + "*" });
-    } catch (_) {
-      try {
-        const all = await api.tabs.query({});
-        helpers = (all || []).filter(
-          (h) =>
-            h.url &&
-            (h.url === regionPage || h.url.startsWith(regionPage + "?"))
-        );
-      } catch (__) {}
-    }
-    if (helpers.length) {
-      let reused = false;
-      for (let attempt = 0; attempt < 3 && !reused; attempt++) {
-        if (attempt) await new Promise((r) => setTimeout(r, 80));
-        try {
-          await api.tabs.update(helpers[0].id, {
-            url: helperUrl,
-            active: false,
-          });
-          reused = true;
-        } catch (_) {}
-      }
-      if (!reused) {
-        await api.tabs.create({ url: helperUrl, active: false });
-        try {
-          await api.tabs.remove(helpers[0].id);
-        } catch (_) {}
-      }
-      for (let i = 1; i < helpers.length; i++) {
-        try {
-          await api.tabs.remove(helpers[i].id);
-        } catch (__) {}
-      }
-    } else {
-      await api.tabs.create({ url: helperUrl, active: false });
-    }
-    // Keep the page tab focused so the overlay is obvious.
+    // Overlay owns export; keep the page focused (no region.html helper tab).
     try {
       await api.tabs.update(tab.id, { active: true });
     } catch (_) {}

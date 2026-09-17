@@ -15,7 +15,7 @@ Sekmenin o anda ekranda görünen kısmı. Sayfaya script enjekte etmez.
 
 ## Bölge / öğe
 
-Popup’tan **Region** seçilince yardımcı bir `region.html` sekmesi açılır (service worker yok) ve sayfaya seçici enjekte edilir.
+Popup’tan **Region** seçilince (service worker yok) seçici doğrudan sayfaya enjekte edilir; Copy / Download / Edit overlay’den çalışır (ayrı yardımcı sekme yok).
 
 - Üzerine gelince DOM adayına (kesik çizgi + boyut rozeti) yapışır; tıklayınca kilitler.
 - Köşegen ~40px’den uzun sürükleme serbest dikdörtgen seçer.
