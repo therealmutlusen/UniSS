@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UniSS",
-  "version": "2.0.27",
+  "version": "2.0.28",
   "description": "UniSS: capture, annotate, download. 71 UI languages (default English).",
   "action": {
     "default_title": "UniSS",
@@ -18,6 +18,9 @@
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "permissions": [
     "activeTab",

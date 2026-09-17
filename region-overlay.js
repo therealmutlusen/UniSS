@@ -202,45 +202,36 @@
     }
   }
 
-  function openExtensionPageForGesture(pathWithQuery) {
-    const opened = { url: null, win: null };
-    if (!api || !api.runtime || !api.runtime.getURL) {
-      opened.error = new Error(t("regionExportFailed"));
-      return opened;
-    }
-    try {
-      opened.url = api.runtime.getURL(pathWithQuery);
-      opened.win = window.open(opened.url, "_blank");
-    } catch (_) {}
-    return opened;
-  }
-
-  async function finishExtensionPageOpen(opened) {
-    if (!opened) throw new Error(t("regionExportFailed"));
-    if (opened.error) throw opened.error;
-    if (opened.win) return;
-    if (opened.url && api.tabs && typeof api.tabs.create === "function") {
-      try {
-        await api.tabs.create({ url: opened.url, active: true });
-        return;
-      } catch (_) {}
-    }
-    throw new Error(t("regionExportFailed"));
-  }
-
-  async function openEditor(dataUrl, format, quality, opened) {
-    const local = storageLocal();
-    if (!local) {
-      if (opened && opened.win) try { opened.win.close(); } catch (_) {}
+  /** Ask the thin service worker to open an allowlisted extension page (no page-origin navigation). */
+  async function openExtensionPageViaSw(pathWithQuery) {
+    if (!api || !api.runtime || typeof api.runtime.sendMessage !== "function") {
       throw new Error(t("regionExportFailed"));
     }
+    let res;
+    try {
+      res = await api.runtime.sendMessage({
+        type: "uniss-open",
+        path: pathWithQuery,
+      });
+    } catch (_) {
+      throw new Error(t("regionExportFailed"));
+    }
+    if (!res || res.ok !== true) {
+      throw new Error(t("regionExportFailed"));
+    }
+  }
+
+  async function openEditor(dataUrl, format, quality) {
+    const local = storageLocal();
+    if (!local) throw new Error(t("regionExportFailed"));
     await local.set({
       unissEditImage: dataUrl,
       unissEditTs: Date.now(),
       unissFormat: format,
       unissQuality: quality,
     });
-    await finishExtensionPageOpen(opened);
+    // Storage already written — SW opens editor (tabs.create needs no user gesture).
+    await openExtensionPageViaSw("editor.html");
   }
 
   function removeExisting() {
@@ -874,9 +865,6 @@
     root.classList.add("capturing");
     root.classList.add("hidden-all");
     if (toast) toast.style.display = "none";
-    // Open the real extension URL during the click gesture; never retarget about:blank.
-    const editOpen =
-      intent === "edit" ? openExtensionPageForGesture("editor.html?wait=1") : null;
     try {
       const stash = await loadRegionStash();
       const tooOld =
@@ -903,16 +891,13 @@
       if (intent === "copy") {
         await copyDataUrl(dataUrl);
       } else if (intent === "edit") {
-        await openEditor(dataUrl, format, quality, editOpen);
+        await openEditor(dataUrl, format, quality);
       } else {
         downloadDataUrl(dataUrl, format);
       }
       await clearRegionStash();
       teardown();
     } catch (err) {
-      if (editOpen && editOpen.win) {
-        try { editOpen.win.close(); } catch (_) {}
-      }
       const msg =
         err && err.message ? String(err.message) : t("regionExportFailed");
       restoreAfterFail(msg);
@@ -930,10 +915,6 @@
     if (capturing) return;
     capturing = true;
     root.classList.add("hidden-all");
-    // Open the real extension URL during the click gesture; storage is written below.
-    const fullOpen = openExtensionPageForGesture(
-      "popup.html?autostart=full&wait=1"
-    );
     try {
       const stash = await loadRegionStash();
       const local = storageLocal();
@@ -949,11 +930,9 @@
       }
       await clearRegionStash();
       teardown();
-      await finishExtensionPageOpen(fullOpen);
+      // Flags already in storage — SW opens popup (avoids page-origin chrome-extension navigation).
+      await openExtensionPageViaSw("popup.html?autostart=full");
     } catch (err) {
-      if (fullOpen && fullOpen.win) {
-        try { fullOpen.win.close(); } catch (_) {}
-      }
       const msg =
         err && err.message ? String(err.message) : t("regionExportFailed");
       restoreAfterFail(msg);
