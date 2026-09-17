@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.18. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.19. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -18,7 +18,7 @@ Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https
 
 - **Görünür alan:** sekmenin o anda ekranda görünen kısmı
 - **Tam sayfa:** sayfayı kaydırıp dilimleri birleştirir (sabit üst çubuklar gizlenir, yakalama bitince geri gelir)
-- **Düzenle:** kalem, çizgi, vurgu, dikdörtgen, elips, ok, yazı; seç / taşı / sil / geri al
+- **Düzenle:** kalem, çizgi, vurgu, dikdörtgen, elips, ok, yazı, kırp; seç / taşı / sil / geri al
 - **Kaydet:** PNG, JPEG veya WebP indir; destekleyen tarayıcıda panoya kopyala
 - **Ayarlar:** format, kalite, varsayılan mod, tıklayınca otomatik yakala, sayfa başlığı/URL şeridi, arayüz dili
 
@@ -40,6 +40,7 @@ Ayarlarda “Capture immediately when the extension is clicked” açıksa popup
 | Araç | Ne yapar |
 | --- | --- |
 | Select / Move | Çizimi seç, taşı, köşelerden boyutlandır |
+| Crop | Görüntüyü kırp (Enter uygula, Esc iptal; Shift oranı kilitler) |
 | Pen | Serbest çizim |
 | Line | Düz çizgi |
 | Highlight | Yarı saydam vurgu |
@@ -47,7 +48,7 @@ Ayarlarda “Capture immediately when the extension is clicked” açıksa popup
 | Arrow | Ok |
 | Text | Tuval üzerinde yazı (sayfaya HTML enjekte edilmez) |
 
-Dikdörtgen, elips, ok veya yazı eklenince araç Select / Move’a geçer. Seçili şekil veya yazıda renk, kalınlık, yazı tipi ve punto panelleri görünür. Geri al: **Cmd/Ctrl+Z**. Seçimi sil: **Delete** veya **Backspace**. Yakınlaştırma yalnızca tuvalde: **Cmd/Ctrl + kaydırma**, **Cmd/Ctrl +** / **-**, sığdır **Cmd/Ctrl+0** (üst çubuk ölçeklenmez). İndir ve kopyala düzenleyiciden de çalışır.
+Dikdörtgen, elips, ok veya yazı eklenince araç Select / Move’a geçer. Seçili şekil veya yazıda renk, kalınlık, yazı tipi ve punto panelleri görünür. Geri al: **Cmd/Ctrl+Z** (kırpma sonrası bir önceki bitmap’i de geri alır). Seçimi sil: **Delete** veya **Backspace**. Kırp: **c**, Enter uygula, Esc iptal. Yakınlaştırma yalnızca tuvalde: **Cmd/Ctrl + kaydırma**, **Cmd/Ctrl +** / **-**, sığdır **Cmd/Ctrl+0** (üst çubuk ölçeklenmez). İndir ve kopyala düzenleyiciden de çalışır.
 
 ### Ayarlar
 

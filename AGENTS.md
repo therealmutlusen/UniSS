@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.18`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests, no service worker). Version is in `manifest.json` (`2.0.19`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -43,7 +43,7 @@ No `background`, `content_scripts`, `host_permissions`, or options_ui. Settings 
 
 ## Browser compatibility
 
-Current targets (version `2.0.18`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.19`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -81,7 +81,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.18`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.19`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -167,13 +167,14 @@ HTML English copy is the fallback before `init()`. Do not switch to `_locales/` 
 
 ## Editor
 
-Canvas overlay on the captured bitmap. Tools: `select`, `pen`, `line`, `highlight`, `rect`, `ellipse`, `arrow`, `text`.
+Canvas overlay on the captured bitmap. Tools: `select`, `crop`, `pen`, `line`, `highlight`, `rect`, `ellipse`, `arrow`, `text`.
 
 - Text is `ctx.fillText` after `window.prompt` — never inject HTML into the page or canvas
 - Select: move + resize handles (text: corners only, uniform scale)
-- Style panels (`#shapeStyle`, `#textStyle`) show only while a matching shape is selected
-- Undo pops the last shape; there is no redo stack
-- Pointer events on `#canvas`; Cmd/Ctrl+Z undo; Delete/Backspace deletes selection
+- Crop (`data-tool="crop"`, shortcut `c`): free rectangle with ~6% inset default; Shift while resizing locks aspect; Apply bakes baseImage+shapes into a new bitmap, clears `shapes[]`, does **not** rewrite `unissEditImage`; Cancel discards the rect. Single-level crop undo via Cmd/Ctrl+Z restores previous baseImage + shapes + canvas size (extends beyond `shapes.pop()`)
+- Style panels (`#shapeStyle`, `#textStyle`) show only while a matching shape is selected; `#cropActions` shows in crop mode
+- Undo pops the last shape (or restores the last crop); there is no redo stack
+- Pointer events on `#canvas`; Cmd/Ctrl+Z undo; Delete/Backspace deletes selection; Enter/Esc apply/cancel crop
 
 ## Full-page capture details (`popup.js`)
 

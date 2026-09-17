@@ -408,6 +408,62 @@ html, body {
 #canvas.tool-select.resize-e,
 #canvas.tool-select.resize-w { cursor: ew-resize; }
 
+
+#canvas.tool-crop { cursor: grab; }
+#canvas.tool-crop.crop-moving { cursor: move; }
+#canvas.tool-crop.crop-resizing { cursor: grab; }
+#canvas.tool-crop.resize-nw,
+#canvas.tool-crop.resize-se { cursor: nwse-resize; }
+#canvas.tool-crop.resize-ne,
+#canvas.tool-crop.resize-sw { cursor: nesw-resize; }
+#canvas.tool-crop.resize-n,
+#canvas.tool-crop.resize-s { cursor: ns-resize; }
+#canvas.tool-crop.resize-e,
+#canvas.tool-crop.resize-w { cursor: ew-resize; }
+
+.crop-actions {
+  align-items: center;
+  gap: 6px;
+  padding-inline: 6px;
+}
+.chip-btn {
+  appearance: none;
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--panel));
+}
+.chip-btn.primary {
+  background: color-mix(in srgb, var(--accent) 55%, var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--glass-border));
+  color: #fff;
+}
+.chip-btn.primary:hover {
+  background: color-mix(in srgb, var(--accent) 72%, var(--panel));
+}
+.crop-hint {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-inline: 4px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1100px) {
+  .crop-hint { display: none; }
+}
+
 @media (max-width: 900px) {
   .toolbar { justify-content: flex-start; }
   .toolbar-actions { margin-left: auto; }
