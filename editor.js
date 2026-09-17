@@ -33,6 +33,9 @@
   const zoomInBtn = document.getElementById("zoomIn");
   const zoomOutBtn = document.getElementById("zoomOut");
   const zoomResetBtn = document.getElementById("zoomReset");
+  const cropActionsEl = document.getElementById("cropActions");
+  const cropApplyBtn = document.getElementById("cropApply");
+  const cropCancelBtn = document.getElementById("cropCancel");
 
   const DEFAULT_FONT = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
 
@@ -74,6 +77,17 @@
   let pinchStartScale = null;
   const ZOOM_MIN = 0.1;
   const ZOOM_MAX = 8;
+  const CROP_INSET = 0.06;
+  const CROP_HANDLE_HIT = 14;
+  const CROP_MIN = 1;
+  let cropRect = null;
+  let cropMoving = false;
+  let cropResizing = false;
+  let cropResizeHandle = null;
+  let cropOrigin = null;
+  let cropSnapshot = null;
+  let cropAspect = null;
+  let cropUndoSnapshot = null;
 
   function mimeFor(format) {
     if (format === "jpeg") return "image/jpeg";
@@ -931,26 +945,358 @@
     ctx.restore();
   }
 
+  function cloneShapesList(list) {
+    return (list || []).map((s) => cloneShape(s));
+  }
+
+  function normalizeCropRect(r) {
+    if (!r) return null;
+    let x = r.x;
+    let y = r.y;
+    let w = r.w;
+    let h = r.h;
+    if (w < 0) {
+      x += w;
+      w = -w;
+    }
+    if (h < 0) {
+      y += h;
+      h = -h;
+    }
+    return { x, y, w, h };
+  }
+
+  function clampCropRect(r) {
+    const n = normalizeCropRect(r);
+    if (!n || !baseImage) return null;
+    const maxW = canvas.width;
+    const maxH = canvas.height;
+    let { x, y, w, h } = n;
+    w = Math.max(CROP_MIN, Math.min(w, maxW));
+    h = Math.max(CROP_MIN, Math.min(h, maxH));
+    x = Math.max(0, Math.min(x, maxW - w));
+    y = Math.max(0, Math.min(y, maxH - h));
+    return { x, y, w, h };
+  }
+
+  function defaultCropRect() {
+    if (!baseImage) return null;
+    const insetX = Math.max(1, Math.round(canvas.width * CROP_INSET));
+    const insetY = Math.max(1, Math.round(canvas.height * CROP_INSET));
+    let x = insetX;
+    let y = insetY;
+    let w = canvas.width - insetX * 2;
+    let h = canvas.height - insetY * 2;
+    if (w < CROP_MIN || h < CROP_MIN) {
+      return clampCropRect({ x: 0, y: 0, w: canvas.width, h: canvas.height });
+    }
+    return clampCropRect({ x, y, w, h });
+  }
+
+  function syncCropActions() {
+    if (cropActionsEl) cropActionsEl.hidden = tool !== "crop";
+  }
+
+  function clearCropInteraction() {
+    cropMoving = false;
+    cropResizing = false;
+    cropResizeHandle = null;
+    cropOrigin = null;
+    cropSnapshot = null;
+    cropAspect = null;
+    canvas.classList.remove("crop-moving", "crop-resizing");
+  }
+
+  function discardCropRect() {
+    cropRect = null;
+    clearCropInteraction();
+    clearResizeCursor();
+  }
+
+  function paintCropOverlay() {
+    if (tool !== "crop" || !cropRect) return;
+    const r = normalizeCropRect(cropRect);
+    if (!r) return;
+    const { x, y, w, h } = r;
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.rect(x, y, w, h);
+    ctx.fill("evenodd");
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.95)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+    ctx.setLineDash([]);
+    const hs = 9;
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 1.5;
+    for (const handle of handlesForBounds(r, false)) {
+      ctx.fillRect(handle.x - hs / 2, handle.y - hs / 2, hs, hs);
+      ctx.strokeRect(handle.x - hs / 2, handle.y - hs / 2, hs, hs);
+    }
+    ctx.restore();
+  }
+
+  function hitTestCropHandle(p) {
+    if (!cropRect) return null;
+    const b = normalizeCropRect(cropRect);
+    if (!b) return null;
+    for (const h of handlesForBounds(b, false)) {
+      if (Math.abs(p.x - h.x) <= CROP_HANDLE_HIT && Math.abs(p.y - h.y) <= CROP_HANDLE_HIT) {
+        return h;
+      }
+    }
+    return null;
+  }
+
+  function pointInCropRect(p) {
+    const b = normalizeCropRect(cropRect);
+    if (!b) return false;
+    return p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
+  }
+
+  function computeCropResized(b0, handle, origin, p, lockAspect) {
+    let left = b0.x;
+    let top = b0.y;
+    let right = b0.x + b0.w;
+    let bottom = b0.y + b0.h;
+    const dx = p.x - origin.x;
+    const dy = p.y - origin.y;
+    if (handle === "w" || handle === "nw" || handle === "sw") left = b0.x + dx;
+    if (handle === "e" || handle === "ne" || handle === "se") right = b0.x + b0.w + dx;
+    if (handle === "n" || handle === "nw" || handle === "ne") top = b0.y + dy;
+    if (handle === "s" || handle === "sw" || handle === "se") bottom = b0.y + b0.h + dy;
+
+    let flipW = false;
+    let flipH = false;
+    if (right < left) {
+      const t = left;
+      left = right;
+      right = t;
+      flipW = true;
+    }
+    if (bottom < top) {
+      const t = top;
+      top = bottom;
+      bottom = t;
+      flipH = true;
+    }
+
+    let w = Math.max(CROP_MIN, right - left);
+    let h = Math.max(CROP_MIN, bottom - top);
+    let x = left;
+    let y = top;
+
+    if (lockAspect && cropAspect && cropAspect > 0) {
+      const aspect = cropAspect;
+      const isEdgeW = handle === "w" || handle === "e";
+      const isEdgeH = handle === "n" || handle === "s";
+      if (isEdgeW) {
+        h = Math.max(CROP_MIN, w / aspect);
+        y = b0.y + (b0.h - h) / 2;
+      } else if (isEdgeH) {
+        w = Math.max(CROP_MIN, h * aspect);
+        x = b0.x + (b0.w - w) / 2;
+      } else {
+        const preferW = Math.abs(dx) * b0.h >= Math.abs(dy) * b0.w;
+        if (preferW) h = Math.max(CROP_MIN, w / aspect);
+        else w = Math.max(CROP_MIN, h * aspect);
+        const fromLeft = handle === "nw" || handle === "sw" || handle === "w";
+        const fromTop = handle === "nw" || handle === "ne" || handle === "n";
+        // After possible flip, anchor using original opposite edge
+        const origRight = b0.x + b0.w;
+        const origBottom = b0.y + b0.h;
+        if (fromLeft) x = origRight - w;
+        else x = b0.x;
+        if (fromTop) y = origBottom - h;
+        else y = b0.y;
+      }
+    }
+
+    void flipW;
+    void flipH;
+    return clampCropRect({ x, y, w, h });
+  }
+
+  function nudgeCrop(dx, dy) {
+    if (tool !== "crop" || !cropRect) return;
+    const n = normalizeCropRect(cropRect);
+    if (!n) return;
+    cropRect = clampCropRect({ x: n.x + dx, y: n.y + dy, w: n.w, h: n.h });
+    redraw();
+  }
+
+  function snapshotBitmapSource(source, w, h) {
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, w);
+    c.height = Math.max(1, h);
+    if (source) c.getContext("2d").drawImage(source, 0, 0);
+    return c;
+  }
+
+  function bakeFlattenedCanvas() {
+    const prevSelected = selectedId;
+    const prevDraft = draft;
+    const prevCrop = cropRect;
+    const prevTool = tool;
+    selectedId = null;
+    draft = null;
+    cropRect = null;
+    tool = "select";
+    redraw();
+    const baked = snapshotBitmapSource(canvas, canvas.width, canvas.height);
+    selectedId = prevSelected;
+    draft = prevDraft;
+    cropRect = prevCrop;
+    tool = prevTool;
+    return baked;
+  }
+
+  function applyCrop() {
+    if (tool !== "crop" || !cropRect || !baseImage) return;
+    const r = clampCropRect(normalizeCropRect(cropRect));
+    if (!r || r.w < 1 || r.h < 1) {
+      setStatus(t("statusCropTooSmall"), "err", { toast: true });
+      return;
+    }
+    const sx = Math.round(r.x);
+    const sy = Math.round(r.y);
+    const sw = Math.max(1, Math.round(r.w));
+    const sh = Math.max(1, Math.round(r.h));
+    if (sw < 1 || sh < 1) {
+      setStatus(t("statusCropTooSmall"), "err", { toast: true });
+      return;
+    }
+
+    cropUndoSnapshot = {
+      baseImage: snapshotBitmapSource(baseImage, canvas.width, canvas.height),
+      shapes: cloneShapesList(shapes),
+      width: canvas.width,
+      height: canvas.height,
+    };
+
+    const baked = bakeFlattenedCanvas();
+    const cropped = document.createElement("canvas");
+    cropped.width = sw;
+    cropped.height = sh;
+    cropped.getContext("2d").drawImage(baked, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    baseImage = cropped;
+    canvas.width = sw;
+    canvas.height = sh;
+    shapes = [];
+    selectedId = null;
+    draft = null;
+    discardCropRect();
+    tool = "select";
+    document.querySelectorAll(".tool").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tool === tool);
+    });
+    canvas.classList.toggle("tool-text", false);
+    canvas.classList.toggle("tool-select", true);
+    canvas.classList.toggle("tool-crop", false);
+    syncStylePanel();
+    syncCropActions();
+    viewScale = fitScale();
+    viewScaleIsFit = true;
+    applyViewScale();
+    redraw();
+    setStatus(t("statusCropped"), "ok", { toast: true });
+  }
+
+  function cancelCrop() {
+    if (tool !== "crop") return;
+    discardCropRect();
+    tool = "select";
+    document.querySelectorAll(".tool").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tool === tool);
+    });
+    canvas.classList.toggle("tool-text", false);
+    canvas.classList.toggle("tool-select", true);
+    canvas.classList.toggle("tool-crop", false);
+    syncStylePanel();
+    syncCropActions();
+    redraw();
+    setStatus(t("statusCropCancelled"), "ok", { toast: true });
+  }
+
+  function restoreCropUndo() {
+    if (!cropUndoSnapshot) return false;
+    const snap = cropUndoSnapshot;
+    cropUndoSnapshot = null;
+    baseImage = snap.baseImage;
+    shapes = cloneShapesList(snap.shapes);
+    canvas.width = snap.width;
+    canvas.height = snap.height;
+    selectedId = null;
+    draft = null;
+    if (tool === "crop") {
+      discardCropRect();
+      tool = "select";
+      document.querySelectorAll(".tool").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.tool === tool);
+      });
+      canvas.classList.toggle("tool-text", false);
+      canvas.classList.toggle("tool-select", true);
+      canvas.classList.toggle("tool-crop", false);
+    }
+    syncStylePanel();
+    syncCropActions();
+    viewScale = fitScale();
+    viewScaleIsFit = true;
+    applyViewScale();
+    redraw();
+    return true;
+  }
+
   function redraw() {
     if (!baseImage) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(baseImage, 0, 0);
     for (const s of shapes) paintShape(s);
     if (draft) paintShape(draft);
-    const selected = shapes.find((s) => s.id === selectedId);
+    const selected = tool === "crop" ? null : shapes.find((s) => s.id === selectedId);
     if (selected) paintSelection(selected);
+    paintCropOverlay();
     deleteBtn.disabled = !selected;
   }
 
   function setTool(next) {
     if (isEditingText() && next !== tool) commitTextEdit();
+    if (tool === "crop" && next !== "crop") {
+      discardCropRect();
+    }
     tool = next;
     document.querySelectorAll(".tool").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.tool === tool);
     });
     canvas.classList.toggle("tool-text", tool === "text");
     canvas.classList.toggle("tool-select", tool === "select");
+    canvas.classList.toggle("tool-crop", tool === "crop");
+    if (tool === "crop") {
+      selectedId = null;
+      draft = null;
+      drawing = false;
+      moving = false;
+      resizing = false;
+      clearCropInteraction();
+      cropRect = defaultCropRect();
+      syncStylePanel();
+      syncCropActions();
+      clearResizeCursor();
+      redraw();
+      setStatus(t("statusCropping"));
+      return;
+    }
     syncStylePanel();
+    syncCropActions();
     setStatus(t("toolStatus", { tool: toolLabel(tool) }));
   }
 
@@ -965,6 +1311,7 @@
         arrow: t("toolArrow"),
         text: t("toolText"),
         highlight: t("toolHighlight"),
+        crop: t("toolCrop"),
       }[name] || name
     );
   }
@@ -1007,6 +1354,33 @@
     }
     const p = pointerPos(e);
     const style = styleOf();
+
+    if (tool === "crop") {
+      const handle = hitTestCropHandle(p);
+      if (handle) {
+        cropResizing = true;
+        cropResizeHandle = handle.id;
+        cropOrigin = p;
+        cropSnapshot = normalizeCropRect(cropRect);
+        cropAspect = cropSnapshot ? cropSnapshot.w / Math.max(cropSnapshot.h, 1e-6) : 1;
+        canvas.classList.add("crop-resizing");
+        setResizeCursor(handle.id);
+        canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+      if (pointInCropRect(p)) {
+        cropMoving = true;
+        cropOrigin = p;
+        cropSnapshot = normalizeCropRect(cropRect);
+        canvas.classList.add("crop-moving");
+        clearResizeCursor();
+        canvas.style.cursor = "move";
+        canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+      startPan(e);
+      return;
+    }
 
     if (tool === "select") {
       if (selectedId != null) {
@@ -1119,6 +1493,41 @@
       return;
     }
     const p = pointerPos(e);
+    if (cropResizing && cropSnapshot && cropOrigin && cropResizeHandle) {
+      cropRect = computeCropResized(
+        cropSnapshot,
+        cropResizeHandle,
+        cropOrigin,
+        p,
+        !!e.shiftKey
+      );
+      setResizeCursor(cropResizeHandle);
+      redraw();
+      return;
+    }
+    if (cropMoving && cropSnapshot && cropOrigin) {
+      const dx = p.x - cropOrigin.x;
+      const dy = p.y - cropOrigin.y;
+      cropRect = clampCropRect({
+        x: cropSnapshot.x + dx,
+        y: cropSnapshot.y + dy,
+        w: cropSnapshot.w,
+        h: cropSnapshot.h,
+      });
+      canvas.style.cursor = "move";
+      redraw();
+      return;
+    }
+    if (tool === "crop" && !cropMoving && !cropResizing) {
+      const handle = hitTestCropHandle(p);
+      if (handle) {
+        setResizeCursor(handle.id);
+        return;
+      }
+      clearResizeCursor();
+      canvas.style.cursor = pointInCropRect(p) ? "move" : "grab";
+      return;
+    }
     if (resizing && selectedId != null && moveOrigin && moveSnapshot && resizeHandle) {
       const target = shapes.find((s) => s.id === selectedId);
       if (!target) return;
@@ -1177,6 +1586,14 @@
       panStart = null;
       canvas.classList.remove("panning");
       try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      return;
+    }
+    if (cropResizing || cropMoving) {
+      clearCropInteraction();
+      clearResizeCursor();
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      if (cropRect) cropRect = clampCropRect(normalizeCropRect(cropRect));
+      redraw();
       return;
     }
     if (resizing) {
@@ -1261,12 +1678,22 @@
       setStatus(t("statusUndone"), "ok", { toast: true });
       return;
     }
-    if (!shapes.length) return;
-    const removed = shapes.pop();
-    if (removed && removed.id === selectedId) selectedId = null;
-    syncStylePanel();
-    redraw();
-    setStatus(t("statusUndone"), "ok", { toast: true });
+    if (tool === "crop") {
+      cancelCrop();
+      return;
+    }
+    if (shapes.length) {
+      const removed = shapes.pop();
+      if (removed && removed.id === selectedId) selectedId = null;
+      syncStylePanel();
+      redraw();
+      setStatus(t("statusUndone"), "ok", { toast: true });
+      return;
+    }
+    if (restoreCropUndo()) {
+      setStatus(t("statusUndone"), "ok", { toast: true });
+      return;
+    }
   }
 
   function clearDrawings() {
@@ -1281,21 +1708,36 @@
 
   function exportHref() {
     if (isEditingText()) commitTextEdit();
+    const prevCrop = cropRect;
+    const prevSelected = selectedId;
+    if (tool === "crop") {
+      cropRect = null;
+      selectedId = null;
+    }
     redraw();
     const mime = mimeFor(exportFormat);
-    if (exportFormat === "png") return canvas.toDataURL(mime);
-    const q = Math.min(1, Math.max(0.1, exportQuality / 100));
-    if (exportFormat === "jpeg") {
-      const c = document.createElement("canvas");
-      c.width = canvas.width;
-      c.height = canvas.height;
-      const cctx = c.getContext("2d");
-      cctx.fillStyle = "#ffffff";
-      cctx.fillRect(0, 0, c.width, c.height);
-      cctx.drawImage(canvas, 0, 0);
-      return c.toDataURL(mime, q);
+    let href;
+    if (exportFormat === "png") {
+      href = canvas.toDataURL(mime);
+    } else {
+      const q = Math.min(1, Math.max(0.1, exportQuality / 100));
+      if (exportFormat === "jpeg") {
+        const c = document.createElement("canvas");
+        c.width = canvas.width;
+        c.height = canvas.height;
+        const cctx = c.getContext("2d");
+        cctx.fillStyle = "#ffffff";
+        cctx.fillRect(0, 0, c.width, c.height);
+        cctx.drawImage(canvas, 0, 0);
+        href = c.toDataURL(mime, q);
+      } else {
+        href = canvas.toDataURL(mime, q);
+      }
     }
-    return canvas.toDataURL(mime, q);
+    cropRect = prevCrop;
+    selectedId = prevSelected;
+    if (tool === "crop") redraw();
+    return href;
   }
 
   function download() {
@@ -1363,6 +1805,8 @@
     btn.addEventListener("click", () => setTool(btn.dataset.tool));
   });
   undoBtn.addEventListener("click", undo);
+  if (cropApplyBtn) cropApplyBtn.addEventListener("click", applyCrop);
+  if (cropCancelBtn) cropCancelBtn.addEventListener("click", cancelCrop);
   clearBtn.addEventListener("click", clearDrawings);
   deleteBtn.addEventListener("click", deleteSelected);
   downloadBtn.addEventListener("click", download);
@@ -1572,6 +2016,30 @@
       return;
     }
     if (typing) return;
+    if (tool === "crop") {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyCrop();
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        cancelCrop();
+        return;
+      }
+      const arrow = {
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1],
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+      }[e.key];
+      if (arrow) {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        nudgeCrop(arrow[0] * step, arrow[1] * step);
+        return;
+      }
+    }
     if (e.key === "Delete" || e.key === "Backspace") {
       if (selectedId != null) {
         e.preventDefault();
@@ -1580,6 +2048,7 @@
       return;
     }
     if (e.key === "v" || e.key === "V") setTool("select");
+    if (e.key === "c" || e.key === "C") setTool("crop");
   });
 
   window.UniSSI18n.init()

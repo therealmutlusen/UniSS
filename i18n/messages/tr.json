@@ -107,5 +107,15 @@
   "aboutPrivacy": "Gizlilik politikası",
   "aboutPrivacyOpen": "Aç",
   "aboutLicense": "Lisans",
-  "aboutLicenseValue": "MIT"
+  "aboutLicenseValue": "MIT",
+  "tipCrop": "Kırp",
+  "toolCrop": "Kırp",
+  "statusCropping": "Kırp — sürükleyerek taşıyın, tutamaçlarla boyutlandırın. Enter uygula, Esc iptal.",
+  "statusCropped": "Kırpıldı.",
+  "statusCropCancelled": "Kırpma iptal edildi.",
+  "statusCropTooSmall": "Kırpma alanı çok küçük.",
+  "cropApply": "Uygula",
+  "cropCancel": "İptal",
+  "cropHint": "Enter uygula · Esc iptal · Shift oranı kilitler",
+  "cropActions": "Kırp"
 }

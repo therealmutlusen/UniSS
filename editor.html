@@ -19,6 +19,9 @@
           <button type="button" class="icon-btn tool active" data-tool="select" data-i18n-tip="tipSelect" data-tip="Select / Move" aria-label="Select / Move">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
           </button>
+          <button type="button" class="icon-btn tool" data-tool="crop" data-i18n-tip="tipCrop" data-tip="Crop" aria-label="Crop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+          </button>
         </div>
 
         <div class="seg" role="group" aria-label="Draw">
@@ -83,6 +86,13 @@
             <input id="textScale" type="range" min="50" max="300" value="100" step="1" aria-label="Scale text" />
             <span id="textScaleVal" class="chip-val">100%</span>
           </label>
+        </div>
+        <div class="seg style-seg crop-actions" id="cropActions" hidden role="group" data-i18n="cropActions" data-i18n-attr="aria-label" aria-label="Crop">
+          <button type="button" id="cropApply" class="chip-btn primary" data-i18n="cropApply">Apply</button>
+          <button type="button" id="cropCancel" class="chip-btn" data-i18n="cropCancel">Cancel</button>
+          <button type="button" id="cropHint" class="icon-btn crop-hint-btn" data-i18n-tip="cropHint" data-tip="Enter apply · Esc cancel · Shift locks aspect" aria-label="Enter apply · Esc cancel · Shift locks aspect">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          </button>
         </div>
       </div>
 

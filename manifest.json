@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UniSS",
-  "version": "2.0.18",
+  "version": "2.0.20",
   "description": "UniSS: capture, annotate, download. 71 UI languages (default English).",
   "action": {
     "default_title": "UniSS",

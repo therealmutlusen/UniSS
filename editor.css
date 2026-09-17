@@ -408,6 +408,69 @@ html, body {
 #canvas.tool-select.resize-e,
 #canvas.tool-select.resize-w { cursor: ew-resize; }
 
+
+#canvas.tool-crop { cursor: grab; }
+#canvas.tool-crop.crop-moving { cursor: move; }
+#canvas.tool-crop.crop-resizing { cursor: grab; }
+#canvas.tool-crop.resize-nw,
+#canvas.tool-crop.resize-se { cursor: nwse-resize; }
+#canvas.tool-crop.resize-ne,
+#canvas.tool-crop.resize-sw { cursor: nesw-resize; }
+#canvas.tool-crop.resize-n,
+#canvas.tool-crop.resize-s { cursor: ns-resize; }
+#canvas.tool-crop.resize-e,
+#canvas.tool-crop.resize-w { cursor: ew-resize; }
+
+.crop-actions {
+  align-items: center;
+  gap: 6px;
+  padding-inline: 6px;
+}
+.chip-btn {
+  appearance: none;
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip-btn:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+}
+.chip-btn.primary {
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 12px color-mix(in srgb, var(--accent-2) 28%, transparent);
+}
+.chip-btn.primary:hover {
+  filter: brightness(1.06);
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+}
+.crop-hint-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.crop-hint-btn:hover,
+.crop-hint-btn:focus-visible {
+  color: var(--text);
+}
+.crop-hint-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 @media (max-width: 900px) {
   .toolbar { justify-content: flex-start; }
   .toolbar-actions { margin-left: auto; }
@@ -454,13 +517,25 @@ html, body {
   gap: 2px;
   padding: 3px;
   border-radius: 14px;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+  border: 1px solid color-mix(in srgb, var(--text) 22%, var(--glass-border));
   box-shadow:
     inset 0 1px 0 var(--specular-soft),
     var(--shadow-md);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
+  color: var(--text);
+}
+.zoom-controls .icon-btn {
+  color: var(--text);
+  opacity: 1;
+}
+.zoom-controls .icon-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: var(--accent-strong);
+}
+.zoom-controls .icon-btn:disabled {
+  opacity: 0.45;
 }
 
 .zoom-controls .icon-btn[data-tip]::after {

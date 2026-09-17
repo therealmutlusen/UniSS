@@ -1,6 +1,6 @@
 # Tarayıcılar
 
-Sürüm 2.0.18, Manifest V3, tek paket.
+Sürüm 2.0.20, Manifest V3, tek paket.
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
