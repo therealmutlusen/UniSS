@@ -202,13 +202,29 @@
     }
   }
 
-  async function openExtensionPage(pathWithQuery) {
+  function openBlankForGesture() {
+    try {
+      return window.open("about:blank", "_blank");
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function openExtensionPage(pathWithQuery, existingWin) {
     if (!api || !api.runtime || !api.runtime.getURL) {
+      if (existingWin) try { existingWin.close(); } catch (_) {}
       throw new Error(t("regionExportFailed"));
     }
     const url = api.runtime.getURL(pathWithQuery);
-    // Prefer window.open first — user just clicked; tabs.create is usually
-    // unavailable in the isolated world without a "tabs" permission.
+    if (existingWin) {
+      try {
+        existingWin.location.href = url;
+        return;
+      } catch (_) {
+        try { existingWin.close(); } catch (__) {}
+      }
+    }
+    // Prefer window.open — tabs.create is usually unavailable here.
     try {
       const w = window.open(url, "_blank");
       if (w) return;
@@ -222,16 +238,19 @@
     throw new Error(t("regionExportFailed"));
   }
 
-  async function openEditor(dataUrl, format, quality) {
+  async function openEditor(dataUrl, format, quality, existingWin) {
     const local = storageLocal();
-    if (!local) throw new Error(t("regionExportFailed"));
+    if (!local) {
+      if (existingWin) try { existingWin.close(); } catch (_) {}
+      throw new Error(t("regionExportFailed"));
+    }
     await local.set({
       unissEditImage: dataUrl,
       unissEditTs: Date.now(),
       unissFormat: format,
       unissQuality: quality,
     });
-    await openExtensionPage("editor.html");
+    await openExtensionPage("editor.html", existingWin);
   }
 
   function removeExisting() {
@@ -865,6 +884,8 @@
     root.classList.add("capturing");
     root.classList.add("hidden-all");
     if (toast) toast.style.display = "none";
+    // Preserve user gesture for Edit (window.open after await is often blocked).
+    const gestureWin = intent === "edit" ? openBlankForGesture() : null;
     try {
       const stash = await loadRegionStash();
       const tooOld =
@@ -891,13 +912,16 @@
       if (intent === "copy") {
         await copyDataUrl(dataUrl);
       } else if (intent === "edit") {
-        await openEditor(dataUrl, format, quality);
+        await openEditor(dataUrl, format, quality, gestureWin);
       } else {
         downloadDataUrl(dataUrl, format);
       }
       await clearRegionStash();
       teardown();
     } catch (err) {
+      if (gestureWin) {
+        try { gestureWin.close(); } catch (_) {}
+      }
       const msg =
         err && err.message ? String(err.message) : t("regionExportFailed");
       restoreAfterFail(msg);
@@ -915,6 +939,7 @@
     if (capturing) return;
     capturing = true;
     root.classList.add("hidden-all");
+    const gestureWin = openBlankForGesture();
     try {
       const stash = await loadRegionStash();
       const local = storageLocal();
@@ -930,8 +955,11 @@
       }
       await clearRegionStash();
       teardown();
-      await openExtensionPage("popup.html?autostart=full");
+      await openExtensionPage("popup.html?autostart=full", gestureWin);
     } catch (err) {
+      if (gestureWin) {
+        try { gestureWin.close(); } catch (_) {}
+      }
       const msg =
         err && err.message ? String(err.message) : t("regionExportFailed");
       restoreAfterFail(msg);
