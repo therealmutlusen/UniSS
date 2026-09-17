@@ -1,6 +1,6 @@
 # Mağaza
 
-Canlı: **[Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn)** (item `fdgaihefghcccapchpkfamphcgopoebn`, 2.0.24) ve **[Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/)** (slug `uniss`, 2.0.24). Edge Add-ons henüz yok; aynı zip, ayrı yükleme. Opera Add-ons sonra. Safari yok.
+Canlı: **[Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn)** (item `fdgaihefghcccapchpkfamphcgopoebn`, 2.0.25) ve **[Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/)** (slug `uniss`, 2.0.25). Edge Add-ons henüz yok; aynı zip, ayrı yükleme. Opera Add-ons sonra. Safari yok.
 
 Listing taslağı (İngilizce, izin gerekçeleri, reviewer notları): [`store/LISTING.md`](https://github.com/therealmutlusen/UniSS/blob/main/store/LISTING.md)
 

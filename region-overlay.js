@@ -407,27 +407,45 @@
   }
 
   function pierceFromPoint(x, y) {
-    root.style.pointerEvents = "none";
-    hit.style.pointerEvents = "none";
-    let el = null;
+    const layers = [hit, chrome, box, actions, badge, dim];
+    for (const pos of Object.keys(handles)) {
+      if (handles[pos]) layers.push(handles[pos]);
+    }
+    const saved = layers.map((node) => ({
+      node,
+      value: node.style.getPropertyValue("pointer-events"),
+      priority: node.style.getPropertyPriority("pointer-events"),
+    }));
     try {
-      el = document.elementFromPoint(x, y);
-      let guard = 0;
-      while (el && el.shadowRoot && guard < 8) {
-        const inner = el.shadowRoot.elementFromPoint(x, y);
-        if (!inner || inner === el) break;
-        el = inner;
-        guard++;
+      for (const { node } of saved) {
+        node.style.setProperty("pointer-events", "none", "important");
       }
-    } catch (_) {
-      el = null;
+      let el = null;
+      try {
+        el = document.elementFromPoint(x, y);
+        let guard = 0;
+        while (el && el.shadowRoot && guard < 8) {
+          const inner = el.shadowRoot.elementFromPoint(x, y);
+          if (!inner || inner === el) break;
+          el = inner;
+          guard++;
+        }
+      } catch (_) {
+        el = null;
+      }
+      if (el && (el === root || (el.closest && el.closest("#" + ROOT_ID)))) {
+        return null;
+      }
+      return el;
+    } finally {
+      for (const { node, value, priority } of saved) {
+        if (value) {
+          node.style.setProperty("pointer-events", value, priority);
+        } else {
+          node.style.removeProperty("pointer-events");
+        }
+      }
     }
-    hit.style.pointerEvents = "auto";
-    root.style.pointerEvents = "";
-    if (el && (el === root || (el.closest && el.closest("#" + ROOT_ID)))) {
-      return null;
-    }
-    return el;
   }
 
   function getBestRectForElement(el) {
