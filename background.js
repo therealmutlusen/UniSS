@@ -20,6 +20,8 @@
     if (path.startsWith("/") || path.startsWith("\\") || path.includes("..")) {
       return null;
     }
+    // Defense-in-depth: region.html helper tab removed in 2.0.26 — never allow.
+    if (/region\.html/i.test(path)) return null;
     let end = path.length;
     const q = path.indexOf("?");
     const h = path.indexOf("#");
@@ -28,6 +30,22 @@
     const base = path.slice(0, end);
     if (!ALLOWED_PAGES.has(base)) return null;
     return path;
+  }
+
+  /** Retry when Chrome tab strip is briefly busy (drag / “Tabs cannot be edited”). */
+  async function withTabStripRetry(fn, { retries = 8, delayMs = 60 } = {}) {
+    let lastErr;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastErr = err;
+        const msg = err && err.message ? String(err.message) : String(err || "");
+        if (!/cannot be edited|dragging a tab/i.test(msg)) throw err;
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
   }
 
   function reply(sendResponse, payload) {
@@ -55,7 +73,7 @@
       return true;
     }
     const url = api.runtime.getURL(path);
-    Promise.resolve(api.tabs.create({ url, active: true }))
+    withTabStripRetry(() => api.tabs.create({ url, active: true }))
       .then(() => {
         reply(sendResponse, { ok: true });
       })

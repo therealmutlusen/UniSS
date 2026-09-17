@@ -31,12 +31,12 @@
   let autoCaptureOnClick = false;
   let pageInfoBar = false;
 
-  async function activateTab(tabId, { retries = 8, delayMs = 80 } = {}) {
+  /** Retry when Chrome tab strip is briefly busy (drag / “Tabs cannot be edited”). */
+  async function withTabStripRetry(fn, { retries = 8, delayMs = 60 } = {}) {
     let lastErr;
     for (let i = 0; i < retries; i++) {
       try {
-        await api.tabs.update(tabId, { active: true });
-        return;
+        return await fn();
       } catch (err) {
         lastErr = err;
         const msg = err && err.message ? String(err.message) : String(err || "");
@@ -45,6 +45,14 @@
       }
     }
     throw lastErr;
+  }
+
+  async function activateTab(tabId, opts) {
+    return withTabStripRetry(() => api.tabs.update(tabId, { active: true }), opts);
+  }
+
+  async function createTab(createProps, opts) {
+    return withTabStripRetry(() => api.tabs.create(createProps), opts);
   }
 
   function setStatus(text, kind) {
@@ -714,7 +722,7 @@
         strings: regionOverlayStrings(),
       });
     } catch (_) {}
-    // Overlay owns export; keep the page focused (no region.html helper tab).
+    // Overlay owns export; keep the page focused. Helper tab region.html intentionally removed (2.0.26+).
     try {
       await activateTab(tab.id);
     } catch (_) {}
@@ -814,12 +822,12 @@
       unissFormat: exportFormat,
       unissQuality: exportQuality,
     });
-    await api.tabs.create({ url: api.runtime.getURL("editor.html") });
+    await createTab({ url: api.runtime.getURL("editor.html"), active: true });
     setStatus(t("statusEditorOpened"), "ok");
   }
 
   async function openSettings() {
-    await api.tabs.create({ url: api.runtime.getURL("settings.html") });
+    await createTab({ url: api.runtime.getURL("settings.html"), active: true });
   }
 
   document.querySelectorAll('input[name="mode"]').forEach((el) => {
