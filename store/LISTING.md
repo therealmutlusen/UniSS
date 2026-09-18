@@ -14,7 +14,7 @@ First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Fir
 
 ## Single purpose
 
-Capture the visible tab or a full page, then download, copy, or annotate locally.
+Capture a web page (visible area, region, or full page), then download, copy, or annotate the image locally on the device.
 
 ## Short description (≤132 characters)
 
@@ -24,34 +24,39 @@ UniSS: capture, annotate, download. 71 UI languages (default English).
 
 ## Full description
 
-UniSS captures the current web page from the toolbar, then lets you download, copy, or annotate the image on your device.
+UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon on an HTTP or HTTPS page to capture what you need, then download, copy, or annotate the image without leaving your browser.
 
 **Capture**
 
-- Visible area of the active tab
-- Region / element selection (Firefox-style hover snap, free rectangle; viewport crop only)
-- Full page: UniSS scrolls the tab, hides fixed chrome, and stitches slices on a canvas
-- HTTP and HTTPS pages only (`chrome://`, `about:`, and store pages cannot be captured)
+• Visible area — the portion of the active tab currently on screen
+• Region — select an element or free rectangle on the page (hover snap; crop of the visible viewport)
+• Full page — scrolls the tab, temporarily hides fixed chrome, and stitches slices into one image
+• Scope — HTTP and HTTPS pages only; browser and store pages (for example chrome:// or about:) cannot be captured
 
 **Annotate**
 
-- Pen, line, rectangle, ellipse, arrow, text, and highlight
-- Select, move, resize, delete, and undo
-- Text is drawn on the canvas; it is not injected into the page
+• Tools — pen, highlight, line, rectangle, ellipse, arrow, and text
+• Edit — select, move, resize, crop, delete, and undo
+• Text is drawn onto the image canvas only; nothing is injected into the live page
 
-**Save**
+**Export**
 
-- Download PNG, JPEG, or WebP (quality is in Settings)
-- Copy the image to the clipboard when the browser supports image clipboard write
+• Download as PNG, JPEG, or WebP (quality configurable in Settings)
+• Copy to the clipboard as an image where the browser supports image clipboard write
 
 **Settings**
 
-- Default capture mode, format, quality, and UI language
-- 71 interface languages; English is the default
+• Default capture mode, image format, quality, and interface language
+• 71 UI languages; English is the default
 
-Screenshots stay in the browser’s local extension storage. UniSS does not send captures, page content, or analytics to a server. There is no account and no remote script.
+**Privacy and permissions**
 
-Permissions are `activeTab`, `scripting`, and `storage` only.
+Captures and settings remain in the browser’s local extension storage on your device. UniSS does not create accounts, contact remote servers, load remote scripts, or send analytics.
+
+Permissions used: activeTab, scripting, and storage only.
+
+Support: support@mutlusen.com
+Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 ## Category
 
