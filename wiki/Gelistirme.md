@@ -4,7 +4,7 @@ Ayrıntılı ajan notları repodaki `AGENTS.md` içindedir. Mağaza listing’in
 
 ## Ne
 
-Vanilla MV3: bundler yok, npm yok, test yok, service worker yok. `manifest.json` içeren klasörü yükleyin.
+Vanilla MV3: bundler yok, npm yok, test yok. İnce service worker yalnızca allowlist’li extension sekmelerini açar. `manifest.json` içeren klasörü yükleyin.
 
 Popup, düzenleyici, ayarlar ayrı HTML sayfalarıdır. `background`, `content_scripts`, `host_permissions`, `options_ui` yok.
 

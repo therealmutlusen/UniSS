@@ -2,15 +2,27 @@
 
 1. Yakalamak istediğiniz **http** veya **https** sayfasını açın.
 2. Araç çubuğundaki UniSS simgesine tıklayın.
-3. **Visible area** (görünür alan) veya **Full page** (tam sayfa) seçin.
+3. **Visible area** (görünür alan), **Region** (bölge/öğe) veya **Full page** (tam sayfa) seçin.
 4. **Capture**’a basın.
-5. Önizleme gelince **Download**, **Copy to clipboard** veya **Edit**.
+5. **Region:** sayfada seçim yapın; **Copy** / **Download** / **Edit**. Diğer modlarda önizleme gelince aynı işlemler popup’tan.
 
 `chrome://`, `about:`, mağaza sayfaları ve benzeri iç sayfalar yakalanmaz.
 
 ## Görünür alan
 
 Sekmenin o anda ekranda görünen kısmı. Sayfaya script enjekte etmez.
+
+
+## Bölge / öğe
+
+Popup’tan **Region** seçilince seçici doğrudan sayfaya enjekte edilir; Copy / Download / Edit overlay’den çalışır (ayrı yardımcı sekme yok). Edit / tam sayfa için ince service worker yalnızca extension sekmesi açar.
+
+- Üzerine gelince DOM adayına (kesik çizgi + boyut rozeti) yapışır; tıklayınca kilitler.
+- Köşegen ~40px’den uzun sürükleme serbest dikdörtgen seçer.
+- Seçimden sonra tutamaçlarla yeniden boyutlandırın; **Copy**, **Download**, **Edit**.
+- Yalnızca görünür alan kırpılır; öğe viewport’tan büyükse kesişim alınır (kaydırarak birleştirme yok).
+- Ana belge: çapraz kökenli iframe’lerin içine girilmez; gerekirse iframe kutusuna yapışır.
+- Esc: seçili → nişangâh → kapat. Overlay’de **Görünür alanı kaydet** / **Tüm sayfayı kaydet** / **Vazgeç** kısayolları vardır.
 
 ## Tam sayfa
 

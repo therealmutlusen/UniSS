@@ -26,9 +26,17 @@
     return res.json();
   }
 
+  const LOCALE_CODE_RE = /^[a-z]{2}(-[A-Za-z]+)?$/;
+
+  function isAllowedLocale(code) {
+    if (typeof code !== "string" || !LOCALE_CODE_RE.test(code)) return false;
+    if (!languages.length) return code === DEFAULT_LOCALE;
+    return languages.some((lang) => lang && lang.code === code);
+  }
+
   async function loadLocale(code) {
     const en = await fetchJson("i18n/messages/en.json");
-    let chosen = code || DEFAULT_LOCALE;
+    let chosen = isAllowedLocale(code) ? code : DEFAULT_LOCALE;
     let data = en;
     if (chosen !== "en") {
       try {

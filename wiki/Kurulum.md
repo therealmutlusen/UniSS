@@ -20,7 +20,7 @@ Edge Add-ons henüz yok. Edge’de Chrome Web Store veya paketlenmemiş yükleme
 
 ## Edge, Brave, Opera, Vivaldi
 
-Aynı klasör, aynı zip.
+Aynı klasör; Chromium için `-chrome` zip’i.
 
 | Tarayıcı | Eklentiler sayfası |
 | --- | --- |
@@ -37,12 +37,12 @@ Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uni
 
 Geçici (geliştirme):
 
-1. `about:debugging#/runtime/this-firefox`
-2. **Bu Firefox** → **Geçici eklenti yükle** → `manifest.json`
+1. `./pack.sh firefox` çalıştırıp `uniss-<sürüm>-firefox.zip` dosyasını açın.
+2. `about:debugging#/runtime/this-firefox` → **Bu Firefox** → **Geçici eklenti yükle** → açılan klasördeki `manifest.json`
 3. Firefox kapanınca eklenti kalkar; yeniden yükleyin
 
 ## Zip’den yükleme
 
-Release’deki `uniss-<sürüm>.zip` dosyasını açın. Zip **kökünde** `manifest.json` vardır. Açılan klasörü unpacked olarak yükleyin; zip dosyasının kendisini seçmeyin.
+Release’deki `uniss-<sürüm>-chrome.zip` dosyasını açın (Firefox için `uniss-<sürüm>-firefox.zip`). Zip **kökünde** `manifest.json` vardır. Açılan klasörü unpacked olarak yükleyin; zip dosyasının kendisini seçmeyin.
 
 Sonraki: [[Kullanim]].

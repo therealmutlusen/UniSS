@@ -55,9 +55,9 @@
 html, body { margin: 0; }
 
 body {
-  width: 360px;
-  min-width: 360px;
-  max-width: 360px;
+  width: 372px;
+  min-width: 372px;
+  max-width: 372px;
   color: var(--text);
   background:
     radial-gradient(420px 180px at 0% -20%, color-mix(in srgb, var(--accent-strong) 28%, transparent), transparent 60%),
@@ -184,7 +184,7 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr auto;
   align-items: center;
   gap: 4px;
   background: var(--surface);
@@ -196,12 +196,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
+  min-width: 0;
   min-height: var(--target);
-  padding: 8px;
-  font-size: 12.5px;
+  padding: 8px 4px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
   cursor: pointer;
   border-radius: 10px;
   color: var(--muted);

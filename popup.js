@@ -3,6 +3,11 @@
   function storageLocal() {
     return api && api.storage && api.storage.local;
   }
+  // The injected Region content script cannot read Chrome storage.session (trusted contexts only),
+  // so keep the short-lived stash in storage.local.
+  function stashStorage() {
+    return storageLocal();
+  }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
 
   const MAX_FULL_HEIGHT_CSS = 16000;
@@ -22,7 +27,31 @@
   let exportFormat = "png";
   let exportQuality = 92;
   let autoCaptureOnClick = false;
-  let pageInfoBar = false;
+  let pageInfoBar = true;
+
+  /** Retry when Chrome tab strip is briefly busy (drag / “Tabs cannot be edited”). */
+  async function withTabStripRetry(fn, { retries = 8, delayMs = 60 } = {}) {
+    let lastErr;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastErr = err;
+        const msg = err && err.message ? String(err.message) : String(err || "");
+        if (!/cannot be edited|dragging a tab/i.test(msg)) throw err;
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
+  }
+
+  async function activateTab(tabId, opts) {
+    return withTabStripRetry(() => api.tabs.update(tabId, { active: true }), opts);
+  }
+
+  async function createTab(createProps, opts) {
+    return withTabStripRetry(() => api.tabs.create(createProps), opts);
+  }
 
   function setStatus(text, kind) {
     if (!statusEl) return;
@@ -97,7 +126,7 @@
       "unissAutoCaptureOnClick",
       "unissPageInfoBar",
     ]);
-    if (data.unissMode === "full" || data.unissMode === "visible") {
+    if (data.unissMode === "full" || data.unissMode === "visible" || data.unissMode === "region") {
       const radio = document.querySelector(
         `input[name="mode"][value="${data.unissMode}"]`
       );
@@ -110,7 +139,7 @@
       exportQuality = data.unissQuality;
     }
     autoCaptureOnClick = data.unissAutoCaptureOnClick === true;
-    pageInfoBar = data.unissPageInfoBar === true;
+    pageInfoBar = data.unissPageInfoBar !== false;
     updateHints();
   }
 
@@ -121,7 +150,40 @@
     } catch (_) {}
   }
 
+  async function waitForPendingFull(timeoutMs = 10000) {
+    const local = storageLocal();
+    if (!local) return false;
+    const deadline = Date.now() + timeoutMs;
+    while (true) {
+      const data = await local.get(["unissRegionPendingFull"]);
+      if (data && data.unissRegionPendingFull) return true;
+      if (Date.now() >= deadline) return false;
+      await new Promise((resolve) => setTimeout(resolve, 75));
+    }
+  }
+
   async function getActiveTab() {
+    // Region "Save full page" opens popup.html?autostart=full as a tab; prefer the
+    // stored page tab so we do not try to capture the helper/popup tab itself.
+    try {
+      const local = storageLocal();
+      if (local) {
+        const data = await local.get(["unissRegionTabId", "unissRegionPendingFull"]);
+        if (data.unissRegionPendingFull && typeof data.unissRegionTabId === "number") {
+          try {
+            const tab = await api.tabs.get(data.unissRegionTabId);
+            if (tab && canCapture(tab)) {
+              await local.set({ unissRegionPendingFull: false });
+              try {
+                await activateTab(tab.id);
+              } catch (_) {}
+              return tab;
+            }
+          } catch (_) {}
+          await local.set({ unissRegionPendingFull: false });
+        }
+      }
+    } catch (_) {}
     const tabs = await api.tabs.query({ active: true, currentWindow: true });
     return tabs && tabs[0];
   }
@@ -581,6 +643,94 @@
     setReadyButtons(true);
   }
 
+  function regionOverlayStrings() {
+    return {
+      regionInstruct: t("regionInstruct"),
+      regionSaveVisible: t("regionSaveVisible"),
+      regionSaveFull: t("regionSaveFull"),
+      regionCancel: t("regionCancel"),
+      regionCopy: t("regionCopy"),
+      regionDownload: t("regionDownload"),
+      regionEdit: t("regionEdit"),
+      regionCapturing: t("regionCapturing"),
+      regionSize: t("regionSize"),
+      errClipboard: t("errClipboard"),
+      errClipboardDenied: t("errClipboardDenied"),
+      errRegionCrop: t("errRegionCrop"),
+      errRegionStashMissing: t("errRegionStashMissing"),
+      errImageLoad: t("errImageLoad"),
+      errMetrics: t("errMetrics"),
+      regionExportFailed: t("regionExportFailed"),
+    };
+  }
+
+  async function startRegionCapture(tab) {
+    const local = storageLocal();
+    // Keep activeTab hot: focus page, stash a viewport capture + metrics, then inject.
+    try {
+      await activateTab(tab.id);
+    } catch (_) {}
+    const dataUrl = await captureVisible(tab.windowId, "png", 100);
+    const vpResults = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => ({
+        w: window.innerWidth,
+        h: window.innerHeight,
+        dpr: window.devicePixelRatio || 1,
+      }),
+    });
+    const viewport =
+      vpResults && vpResults[0] && vpResults[0].result
+        ? vpResults[0].result
+        : { w: 1, h: 1, dpr: 1 };
+    if (local) {
+      await local.set({
+        unissRegionTabId: tab.id,
+        unissMode: "region",
+      });
+    }
+    const stashStore = stashStorage();
+    if (stashStore) {
+      await stashStore.set({
+        unissRegionStash: {
+          tabId: tab.id,
+          windowId: tab.windowId,
+          dataUrl,
+          viewport,
+          title: tab.title || "",
+          url: tab.url || "",
+          ts: Date.now(),
+        },
+      });
+    }
+    // Inject during the action click so activeTab covers the page tab.
+    await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["region-overlay.js"],
+    });
+    const probe = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => !!document.getElementById("uniss-region-root"),
+    });
+    if (!probe || !probe[0] || !probe[0].result) {
+      throw new Error(t("errInject"));
+    }
+    try {
+      await api.tabs.sendMessage(tab.id, {
+        type: "uniss-region",
+        action: "strings",
+        strings: regionOverlayStrings(),
+      });
+    } catch (_) {}
+    // Overlay owns export; keep the page focused. Helper tab region.html intentionally removed (2.0.26+).
+    try {
+      await activateTab(tab.id);
+    } catch (_) {}
+    try {
+      window.close();
+    } catch (_) {}
+  }
+
   async function capture() {
     if (capturing) return;
     capturing = true;
@@ -596,6 +746,11 @@
         throw new Error(t("errCannotCapture"));
       }
       const mode = selectedMode();
+      if (mode === "region") {
+        setStatus(t("regionStarting"));
+        await startRegionCapture(tab);
+        return;
+      }
       if (mode === "full") {
         const result = await captureFullPage(tab);
         const withInfo = await applyPageInfoBar(result.dataUrl, tab);
@@ -629,6 +784,26 @@
     }
   }
 
+  function dataUrlToBlob(dataUrl) {
+    const parts = String(dataUrl || "").split(",");
+    if (parts.length !== 2 || !/^data:/i.test(parts[0])) {
+      throw new Error("Invalid image data");
+    }
+    const match = parts[0].match(/^data:([^;,]+)/i);
+    const mime = match ? match[1].toLowerCase() : "application/octet-stream";
+    let binary;
+    try {
+      binary = atob(parts[1]);
+    } catch (_) {
+      throw new Error("Invalid image data");
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
   function download() {
     if (!lastDataUrl) return;
     const a = document.createElement("a");
@@ -642,18 +817,22 @@
 
   async function copy() {
     if (!lastDataUrl) return;
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      setStatus(t("errClipboard"), "err");
+      return;
+    }
     try {
-      const res = await fetch(lastDataUrl);
-      const blob = await res.blob();
-      if (!navigator.clipboard || !window.ClipboardItem) {
-        throw new Error(t("errClipboard"));
-      }
+      const blob = dataUrlToBlob(lastDataUrl);
       await navigator.clipboard.write([
         new ClipboardItem({ [blob.type || "image/png"]: blob }),
       ]);
       setStatus(t("statusCopied"), "ok");
     } catch (err) {
-      setStatus(err && err.message ? err.message : String(err), "err");
+      const message = err && err.message ? String(err.message) : String(err || "");
+      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image/i.test(message)
+        ? t("errClipboardDenied")
+        : message;
+      setStatus(userMessage || t("errClipboardDenied"), "err");
     }
   }
 
@@ -667,12 +846,12 @@
       unissFormat: exportFormat,
       unissQuality: exportQuality,
     });
-    await api.tabs.create({ url: api.runtime.getURL("editor.html") });
+    await createTab({ url: api.runtime.getURL("editor.html"), active: true });
     setStatus(t("statusEditorOpened"), "ok");
   }
 
   async function openSettings() {
-    await api.tabs.create({ url: api.runtime.getURL("settings.html") });
+    await createTab({ url: api.runtime.getURL("settings.html"), active: true });
   }
 
   document.querySelectorAll('input[name="mode"]').forEach((el) => {
@@ -686,10 +865,23 @@
 
   window.UniSSI18n.init()
     .then(() => loadSettings())
-    .then(() => {
+    .then(async () => {
       syncCaptureButtonLabel();
       window.UniSSI18n.applyDom(document);
       updateHints();
+      let forceFull = false;
+      let waitForFull = false;
+      try {
+        const u = new URL(location.href);
+        forceFull = u.searchParams.get("autostart") === "full";
+        waitForFull = u.searchParams.get("wait") === "1";
+      } catch (_) {}
+      if (forceFull) {
+        const radio = document.querySelector('input[name="mode"][value="full"]');
+        if (radio) radio.checked = true;
+        if (waitForFull) await waitForPendingFull();
+        return capture();
+      }
       if (autoCaptureOnClick) {
         return capture();
       }

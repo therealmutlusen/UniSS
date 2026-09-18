@@ -1,20 +1,20 @@
 # Tarayıcılar
 
-Sürüm 2.0.20, Manifest V3, tek paket.
+Sürüm 2.0.37, Manifest V3. Chromium için `-chrome`, Firefox AMO için `-firefox` paketi.
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
 | Chrome | Evet | MV3; [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) veya paketlenmemiş |
-| Microsoft Edge | Evet | Chromium; Chrome ile aynı zip; Edge Add-ons ayrı yükleme |
-| Brave | Evet | Chromium; Chrome ile aynı zip |
-| Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
-| Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; [AMO](https://addons.mozilla.org/firefox/addon/uniss/) veya geçici yükleme |
+| Microsoft Edge | Evet | Chromium; `-chrome` zip’i; Edge Add-ons ayrı yükleme |
+| Brave | Evet | Chromium; `-chrome` zip’i |
+| Opera | Evet | Chromium; `-chrome` zip’i. Opera Add-ons listing henüz yok |
+| Vivaldi | Evet | Chromium; `-chrome` zip’i |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; `-firefox` zip’i / geçici yükleme |
 | Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedef değil |
 
 
-Chromium `chrome.*` kullanır; `browser_specific_settings` yok sayılır. Firefox `browser.*` (yoksa `chrome`).
+Chromium `chrome.*` kullanır; `browser_specific_settings` yok sayılır. Firefox `browser.*` (yoksa `chrome`). Kaynak manifest service-worker-only’dir; Firefox paketi `background.scripts` alanını ekler.
 
 ## Sınırlar
 

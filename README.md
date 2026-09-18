@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.20. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.37. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -17,6 +17,7 @@ Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https
 ## Ne işe yarar
 
 - **Görünür alan:** sekmenin o anda ekranda görünen kısmı
+- **Bölge / öğe:** Firefox benzeri seçici; üzerine gelince DOM öğesine yapışır, tıklayınca kilitler, sürükleyince serbest dikdörtgen; görünür kesişim kırpılır (kaydırarak birleştirme yok)
 - **Tam sayfa:** sayfayı kaydırıp dilimleri birleştirir (sabit üst çubuklar gizlenir, yakalama bitince geri gelir)
 - **Düzenle:** kalem, çizgi, vurgu, dikdörtgen, elips, ok, yazı, kırp; seç / taşı / sil / geri al
 - **Kaydet:** PNG, JPEG veya WebP indir; destekleyen tarayıcıda panoya kopyala
@@ -28,8 +29,8 @@ Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır. `chrome://`
 
 1. Yakalamak istediğiniz **http** veya **https** sayfasını açın.
 2. Araç çubuğundaki UniSS simgesine tıklayın.
-3. **Visible area** veya **Full page** seçin, **Capture**’a basın.
-4. Önizleme gelince **Download**, **Copy to clipboard** veya **Edit**.
+3. **Visible area**, **Region** veya **Full page** seçin, **Capture**’a basın.
+4. **Region:** sayfada öğe/bölge seçin; **Copy** / **Download** / **Edit**. Diğer modlarda önizleme gelince aynı işlemler popup’tan.
 
 Ayarlarda “Capture immediately when the extension is clicked” açıksa popup açılınca varsayılan modla yakalama hemen başlar.
 
@@ -56,7 +57,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 
 - **File format:** PNG (kayıpsız), JPEG, WebP
 - **Image quality:** JPEG ve WebP için 10–100 (varsayılan 92). PNG’de kalite kaydırıcısı yok
-- **Default mode:** Visible area veya Full page
+- **Default mode:** Visible area, Region veya Full page
 - **Capture immediately…:** açıkken simgeye basınca hemen yakalar
 - **Show page title and URL…:** açıkken görüntünün üstüne tam genişlikte siyah şerit; solda başlık ve adres
 - **Language:** UniSS arayüz dili (varsayılan İngilizce)
@@ -74,7 +75,7 @@ Edge Add-ons henüz yok. Edge’de Chrome Web Store veya aşağıdaki paketlenme
 
 Geliştirici / kaynak klasör: build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
 
-**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>.zip`.
+**[Son sürüm ZIP’i indir](https://github.com/therealmutlusen/UniSS/releases/latest)** — Release sayfasındaki `uniss-<sürüm>-chrome.zip` (Firefox için `uniss-<sürüm>-firefox.zip`).
 
 ### Chrome
 
@@ -95,19 +96,21 @@ Aynı klasör.
 
 Geliştirici modu → paketlenmemiş yükle → bu klasör → güncellemede Yenile.
 
+> **Geliştirici notu:** Paketlenmemiş yükleme için arşivlenmiş zip'leri değil, güncel kaynak kodunu içeren repo kökünü kullanın. `chrome://extensions`'ta yükseltme sonrası eski `region.js` stack'leri Errors altında kalırsa **Clear all** ile temizleyin.
+
 ### Firefox (115+, masaüstü)
 
 Kalıcı kurulum: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/). Android hedef değil.
 
 Geçici (geliştirme):
 
-1. `about:debugging#/runtime/this-firefox`
-2. **Bu Firefox** → **Geçici eklenti yükle** → `manifest.json`
+1. `./pack.sh firefox` ile `uniss-<sürüm>-firefox.zip` üretin ve zip’i açın.
+2. `about:debugging#/runtime/this-firefox` → **Bu Firefox** → **Geçici eklenti yükle** → açılan klasördeki `manifest.json`
 3. Firefox kapanınca eklenti kalkar; yeniden yükleyin
 
 ## Tarayıcı uyumluluğu
 
-Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa `chrome`).
+Mağaza hedeflerine göre iki Manifest V3 zip’i vardır: Chromium için `-chrome`, Firefox AMO için `-firefox`. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa `chrome`).
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |
@@ -116,7 +119,7 @@ Tek zip, Manifest V3. Chromium `chrome.*` kullanır; Firefox `browser.*` (yoksa 
 | Brave | Evet | Chromium; Chrome ile aynı zip |
 | Opera | Evet | Chromium; aynı zip. Opera Add-ons listing henüz yok |
 | Vivaldi | Evet | Chromium; Chrome ile aynı zip |
-| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; [AMO](https://addons.mozilla.org/firefox/addon/uniss/) veya `about:debugging` geçici yükleme |
+| Firefox 115+ (masaüstü) | Evet | gecko id `uniss@uniss.app`; AMO için `-firefox` zip’i veya geçici yükleme |
 | Firefox Android | Hayır | `gecko_android` yok |
 | Safari | Hayır | Hedeflenmedi |
 
@@ -134,7 +137,7 @@ Ayrıntı: [gizlilik politikası](https://therealmutlusen.github.io/UniSS/store/
 
 ## Mağaza paketi (geliştirici)
 
-Kökte `./pack.sh` → `uniss-<sürüm>.zip` (`manifest.json` zip kökünde). Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions zip’i [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
+Kökte `./pack.sh` veya `./pack.sh chrome` → `uniss-<sürüm>-chrome.zip`; `./pack.sh firefox` → `uniss-<sürüm>-firefox.zip`. Chrome hedefi ayrıca eski release workflow adı olan `uniss-<sürüm>.zip` alias’ını üretir. Her zip’in kökünde `manifest.json` vardır; paketlerde `scripts/` ve `.sh` dosyaları yoktur. Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions chrome zip alias’ını [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
 
 ## Lisans
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UniSS",
-  "version": "2.0.20",
+  "version": "2.0.38",
   "description": "UniSS: capture, annotate, download. 71 UI languages (default English).",
   "action": {
     "default_title": "UniSS",
@@ -19,6 +19,9 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "permissions": [
     "activeTab",
     "scripting",
@@ -34,6 +37,6 @@
     }
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self';"
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'self'; base-uri 'self'; connect-src 'self'; img-src 'self' data: blob:;"
   }
 }

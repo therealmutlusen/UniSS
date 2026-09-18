@@ -4,6 +4,13 @@
     return api && api.storage && api.storage.local;
   }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
+  const waitForEditImage = (() => {
+    try {
+      return new URL(location.href).searchParams.get("wait") === "1";
+    } catch (_) {
+      return false;
+    }
+  })();
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
@@ -93,6 +100,44 @@
     if (format === "jpeg") return "image/jpeg";
     if (format === "webp") return "image/webp";
     return "image/png";
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const parts = String(dataUrl || "").split(",");
+    if (parts.length !== 2 || !/^data:/i.test(parts[0])) {
+      throw new Error("Invalid image data");
+    }
+    const match = parts[0].match(/^data:([^;,]+)/i);
+    const mime = match ? match[1].toLowerCase() : "application/octet-stream";
+    let binary;
+    try {
+      binary = atob(parts[1]);
+    } catch (_) {
+      throw new Error("Invalid image data");
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
+  function canvasToBlob(sourceCanvas, mime, quality) {
+    return new Promise((resolve, reject) => {
+      if (!sourceCanvas || typeof sourceCanvas.toBlob !== "function") {
+        reject(new Error("Canvas export unavailable"));
+        return;
+      }
+      try {
+        sourceCanvas.toBlob(
+          (blob) => blob ? resolve(blob) : reject(new Error("Canvas export failed")),
+          mime,
+          quality
+        );
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
   function extFor(format) {
     if (format === "jpeg") return "jpg";
@@ -1706,7 +1751,7 @@
     setStatus(t("statusCleared"), "ok", { toast: true });
   }
 
-  function exportHref() {
+  function renderExportCanvas() {
     if (isEditingText()) commitTextEdit();
     const prevCrop = cropRect;
     const prevSelected = selectedId;
@@ -1714,30 +1759,33 @@
       cropRect = null;
       selectedId = null;
     }
-    redraw();
-    const mime = mimeFor(exportFormat);
-    let href;
-    if (exportFormat === "png") {
-      href = canvas.toDataURL(mime);
-    } else {
-      const q = Math.min(1, Math.max(0.1, exportQuality / 100));
+    try {
+      redraw();
+      const mime = mimeFor(exportFormat);
+      const quality = exportFormat === "png"
+        ? undefined
+        : Math.min(1, Math.max(0.1, exportQuality / 100));
+      let outputCanvas = canvas;
       if (exportFormat === "jpeg") {
-        const c = document.createElement("canvas");
-        c.width = canvas.width;
-        c.height = canvas.height;
-        const cctx = c.getContext("2d");
-        cctx.fillStyle = "#ffffff";
-        cctx.fillRect(0, 0, c.width, c.height);
-        cctx.drawImage(canvas, 0, 0);
-        href = c.toDataURL(mime, q);
-      } else {
-        href = canvas.toDataURL(mime, q);
+        outputCanvas = document.createElement("canvas");
+        outputCanvas.width = canvas.width;
+        outputCanvas.height = canvas.height;
+        const outputCtx = outputCanvas.getContext("2d");
+        outputCtx.fillStyle = "#ffffff";
+        outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+        outputCtx.drawImage(canvas, 0, 0);
       }
+      return { canvas: outputCanvas, mime, quality };
+    } finally {
+      cropRect = prevCrop;
+      selectedId = prevSelected;
+      if (tool === "crop") redraw();
     }
-    cropRect = prevCrop;
-    selectedId = prevSelected;
-    if (tool === "crop") redraw();
-    return href;
+  }
+
+  function exportHref() {
+    const exported = renderExportCanvas();
+    return exported.canvas.toDataURL(exported.mime, exported.quality);
   }
 
   function download() {
@@ -1751,18 +1799,28 @@
   }
 
   async function copy() {
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      setStatus(t("errClipboard"), "err", { toast: true });
+      return;
+    }
     try {
-      const res = await fetch(exportHref());
-      const blob = await res.blob();
-      if (!navigator.clipboard || !window.ClipboardItem) {
-        throw new Error(t("errClipboard"));
+      let blob;
+      try {
+        const exported = renderExportCanvas();
+        blob = await canvasToBlob(exported.canvas, exported.mime, exported.quality);
+      } catch (_) {
+        blob = dataUrlToBlob(exportHref());
       }
       await navigator.clipboard.write([
         new ClipboardItem({ [blob.type || "image/png"]: blob }),
       ]);
       setStatus(t("statusCopied"), "ok", { toast: true });
     } catch (err) {
-      setStatus(err && err.message ? err.message : String(err), "err", { toast: true });
+      const message = err && err.message ? String(err.message) : String(err || "");
+      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image|Canvas export/i.test(message)
+        ? t("errClipboardDenied")
+        : message;
+      setStatus(userMessage || t("errClipboardDenied"), "err", { toast: true });
     }
   }
 
@@ -1772,11 +1830,18 @@
       setStatus(t("errNoEditImage"), "err", { toast: true });
       return;
     }
-    const data = await local.get([
-      "unissEditImage",
-      "unissFormat",
-      "unissQuality",
-    ]);
+    let data = {};
+    const deadline = Date.now() + 10000;
+    while (true) {
+      data = await local.get([
+        "unissEditImage",
+        "unissFormat",
+        "unissQuality",
+      ]);
+      if (data && data.unissEditImage) break;
+      if (!waitForEditImage || Date.now() >= deadline) break;
+      await new Promise((resolve) => setTimeout(resolve, 75));
+    }
     if (["png", "jpeg", "webp"].includes(data.unissFormat)) exportFormat = data.unissFormat;
     if (typeof data.unissQuality === "number") exportQuality = data.unissQuality;
     const dataUrl = data && data.unissEditImage;
