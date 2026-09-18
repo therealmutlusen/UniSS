@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.36). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.37). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.36-chrome.zip` to CWS/Edge and `uniss-2.0.36-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.37-chrome.zip` to CWS/Edge and `uniss-2.0.37-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
 

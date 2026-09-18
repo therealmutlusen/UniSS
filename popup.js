@@ -782,6 +782,26 @@
     }
   }
 
+  function dataUrlToBlob(dataUrl) {
+    const parts = String(dataUrl || "").split(",");
+    if (parts.length !== 2 || !/^data:/i.test(parts[0])) {
+      throw new Error("Invalid image data");
+    }
+    const match = parts[0].match(/^data:([^;,]+)/i);
+    const mime = match ? match[1].toLowerCase() : "application/octet-stream";
+    let binary;
+    try {
+      binary = atob(parts[1]);
+    } catch (_) {
+      throw new Error("Invalid image data");
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
   function download() {
     if (!lastDataUrl) return;
     const a = document.createElement("a");
@@ -795,18 +815,22 @@
 
   async function copy() {
     if (!lastDataUrl) return;
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      setStatus(t("errClipboard"), "err");
+      return;
+    }
     try {
-      const res = await fetch(lastDataUrl);
-      const blob = await res.blob();
-      if (!navigator.clipboard || !window.ClipboardItem) {
-        throw new Error(t("errClipboard"));
-      }
+      const blob = dataUrlToBlob(lastDataUrl);
       await navigator.clipboard.write([
         new ClipboardItem({ [blob.type || "image/png"]: blob }),
       ]);
       setStatus(t("statusCopied"), "ok");
     } catch (err) {
-      setStatus(err && err.message ? err.message : String(err), "err");
+      const message = err && err.message ? String(err.message) : String(err || "");
+      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image/i.test(message)
+        ? t("errClipboardDenied")
+        : message;
+      setStatus(userMessage || t("errClipboardDenied"), "err");
     }
   }
 

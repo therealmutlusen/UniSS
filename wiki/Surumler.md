@@ -21,6 +21,11 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.37
+
+- Clipboard image copying converts `data:` URLs to `Blob` objects directly instead of fetching them, avoiding Firefox `NetworkError` failures on large captures. Editor export prefers canvas `toBlob`, with Download guidance on clipboard failures.
+- Chrome and Firefox packages: `uniss-2.0.37-chrome.zip` and `uniss-2.0.37-firefox.zip`.
+
 ## 2.0.36
 
 - Dual store packages: `./pack.sh` or `./pack.sh chrome` writes `uniss-2.0.36-chrome.zip`; `./pack.sh firefox` writes `uniss-2.0.36-firefox.zip`.
