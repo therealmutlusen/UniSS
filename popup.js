@@ -27,7 +27,7 @@
   let exportFormat = "png";
   let exportQuality = 92;
   let autoCaptureOnClick = false;
-  let pageInfoBar = false;
+  let pageInfoBar = true;
 
   /** Retry when Chrome tab strip is briefly busy (drag / “Tabs cannot be edited”). */
   async function withTabStripRetry(fn, { retries = 8, delayMs = 60 } = {}) {
@@ -139,7 +139,7 @@
       exportQuality = data.unissQuality;
     }
     autoCaptureOnClick = data.unissAutoCaptureOnClick === true;
-    pageInfoBar = data.unissPageInfoBar === true;
+    pageInfoBar = data.unissPageInfoBar !== false;
     updateHints();
   }
 
@@ -697,6 +697,8 @@
           windowId: tab.windowId,
           dataUrl,
           viewport,
+          title: tab.title || "",
+          url: tab.url || "",
           ts: Date.now(),
         },
       });

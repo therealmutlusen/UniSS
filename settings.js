@@ -20,7 +20,7 @@
     format: "png",
     mode: "visible",
     autoCapture: false,
-    pageInfoBar: false,
+    pageInfoBar: true,
   };
   let saved = {
     format: DEFAULTS.format,
@@ -152,7 +152,7 @@
     );
     modeEl.value = data.unissMode === "full" || data.unissMode === "region" ? data.unissMode : "visible";
     autoCaptureEl.checked = data.unissAutoCaptureOnClick === true;
-    pageInfoBarEl.checked = data.unissPageInfoBar === true;
+    pageInfoBarEl.checked = data.unissPageInfoBar !== false;
     fillLanguages();
     if (data.unissLocale) localeEl.value = data.unissLocale;
     fillAboutVersion();

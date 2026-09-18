@@ -112,15 +112,109 @@
     const local = storageLocal();
     let format = "png";
     let quality = 92;
-    if (!local) return { format, quality };
+    let pageInfoBar = true;
+    if (!local) return { format, quality, pageInfoBar };
     try {
-      const data = await local.get(["unissFormat", "unissQuality"]);
+      const data = await local.get([
+        "unissFormat",
+        "unissQuality",
+        "unissPageInfoBar",
+      ]);
       if (["png", "jpeg", "webp"].includes(data.unissFormat)) {
         format = data.unissFormat;
       }
       if (typeof data.unissQuality === "number") quality = data.unissQuality;
+      pageInfoBar = data.unissPageInfoBar !== false;
     } catch (_) {}
-    return { format, quality };
+    return { format, quality, pageInfoBar };
+  }
+
+  function fitCanvasText(ctx, text, maxWidth) {
+    const s = String(text || "");
+    if (!s || ctx.measureText(s).width <= maxWidth) return s;
+    const ell = "…";
+    let lo = 0;
+    let hi = s.length;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (ctx.measureText(s.slice(0, mid) + ell).width <= maxWidth) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo > 0 ? s.slice(0, lo) + ell : ell;
+  }
+
+  async function overlayPageInfoBar(dataUrl, title, url) {
+    const img = await loadImage(dataUrl);
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    if (!w || !h) return dataUrl;
+    const titleText = String(title || "").trim();
+    const urlText = String(url || "").trim();
+    if (!titleText && !urlText) return dataUrl;
+
+    const scale = Math.max(1, w / 1280);
+    const padX = Math.max(12, Math.round(16 * scale));
+    const padY = Math.max(8, Math.round(10 * scale));
+    const titleSize = Math.max(13, Math.round(15 * scale));
+    const urlSize = Math.max(11, Math.round(12 * scale));
+    const lineGap = Math.max(3, Math.round(4 * scale));
+    const lines = [];
+    if (titleText) {
+      lines.push({ text: titleText, size: titleSize, weight: "600", color: "#ffffff" });
+    }
+    if (urlText) {
+      lines.push({ text: urlText, size: urlSize, weight: "400", color: "#d4d4d4" });
+    }
+    let textBlock = 0;
+    for (let i = 0; i < lines.length; i++) {
+      textBlock += lines[i].size;
+      if (i < lines.length - 1) textBlock += lineGap;
+    }
+    const barH = padY * 2 + textBlock;
+    const extend = h + barH <= 16384;
+    const outH = extend ? h + barH : h;
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = outH;
+    const ctx = c.getContext("2d");
+    if (!ctx) return dataUrl;
+    if (extend) ctx.drawImage(img, 0, barH);
+    else ctx.drawImage(img, 0, 0);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, w, barH);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    const maxTextW = Math.max(0, w - padX * 2);
+    let y = padY;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      ctx.fillStyle = line.color;
+      ctx.font = `${line.weight} ${line.size}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+      ctx.fillText(fitCanvasText(ctx, line.text, maxTextW), padX, y);
+      y += line.size + lineGap;
+    }
+    try {
+      return c.toDataURL("image/png");
+    } catch (_) {
+      try {
+        return c.toDataURL("image/jpeg", 0.92);
+      } catch (__) {
+        return dataUrl;
+      }
+    }
+  }
+
+  async function applyPageInfoBar(dataUrl, stash, enabled) {
+    if (!enabled || !dataUrl) return dataUrl;
+    const title =
+      (stash && stash.title) ||
+      (typeof document !== "undefined" ? document.title : "") ||
+      "";
+    const url =
+      (stash && stash.url) ||
+      (typeof location !== "undefined" ? location.href : "") ||
+      "";
+    return overlayPageInfoBar(dataUrl, title, url);
   }
 
   function loadImage(dataUrl) {
@@ -900,20 +994,21 @@
       if (!stash || !stash.dataUrl) {
         throw new Error(t("errRegionStashMissing"));
       }
-      const { format, quality } = await loadExportSettings();
+      const { format, quality, pageInfoBar } = await loadExportSettings();
       const viewport =
         stash.viewport || {
           w: window.innerWidth,
           h: window.innerHeight,
           dpr: window.devicePixelRatio || 1,
         };
-      const dataUrl = await cropToRect(
+      let dataUrl = await cropToRect(
         stash.dataUrl,
         clampRect(rect),
         viewport,
         format,
         quality
       );
+      dataUrl = await applyPageInfoBar(dataUrl, stash, pageInfoBar);
       if (intent === "copy") {
         await copyDataUrl(dataUrl);
       } else if (intent === "edit") {

@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.37). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.38). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.37-chrome.zip` to CWS/Edge and `uniss-2.0.37-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.38-chrome.zip` to CWS/Edge and `uniss-2.0.38-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
 
@@ -46,7 +46,7 @@ UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon
 
 **Settings**
 
-• Default capture mode, image format, quality, and interface language
+• Default capture mode, image format, quality, page title/URL bar, and interface language
 • 71 UI languages; English is the default
 
 **Privacy and permissions**
@@ -57,6 +57,15 @@ Permissions used: activeTab, scripting, and storage only.
 
 Support: support@mutlusen.com
 Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
+
+**What's new**
+
+**2.0.38** — Editor “Copied to clipboard” toast uses a solid high-contrast pill so it stays readable over light page content. Page title and URL bar defaults to on for new installs, and Region Copy/Download/Edit now bake the same top bar into the image when the setting is enabled (Visible/Full already did).
+
+**2.0.37** — Clipboard copy on Firefox no longer fails with “NetworkError when attempting to fetch resource” on large or annotated captures. Images are written to the clipboard as Blobs (the editor prefers canvas toBlob) instead of fetching data: URLs.
+
+**2.0.36** — Separate store packages: Chromium builds use a service-worker background only; the Firefox package adds an event-page scripts fallback required by AMO. Packaging excludes development scripts from the zip.
+
 
 ## Category
 
