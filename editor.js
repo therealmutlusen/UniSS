@@ -1824,6 +1824,19 @@
     }
   }
 
+  const EDIT_IMAGE_TTL_MS = 30 * 60 * 1000;
+
+  async function clearEditHandoff(local) {
+    if (!local) return;
+    try {
+      await local.remove(["unissEditImage", "unissEditTs"]);
+    } catch (_) {
+      try {
+        await local.set({ unissEditImage: null, unissEditTs: null });
+      } catch (__) {}
+    }
+  }
+
   async function loadImage() {
     const local = storageLocal();
     if (!local) {
@@ -1835,6 +1848,7 @@
     while (true) {
       data = await local.get([
         "unissEditImage",
+        "unissEditTs",
         "unissFormat",
         "unissQuality",
       ]);
@@ -1846,6 +1860,12 @@
     if (typeof data.unissQuality === "number") exportQuality = data.unissQuality;
     const dataUrl = data && data.unissEditImage;
     if (!dataUrl) {
+      setStatus(t("errNoEditImage"), "err", { toast: true });
+      return;
+    }
+    const ts = data && data.unissEditTs;
+    if (typeof ts !== "number" || Date.now() - ts > EDIT_IMAGE_TTL_MS) {
+      await clearEditHandoff(local);
       setStatus(t("errNoEditImage"), "err", { toast: true });
       return;
     }
@@ -1864,6 +1884,8 @@
     setTool("select");
     redraw();
     setStatus("", "ok");
+    // Drop the large handoff payload once the bitmap is in memory.
+    await clearEditHandoff(local);
   }
 
   document.querySelectorAll(".tool").forEach((btn) => {

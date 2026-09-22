@@ -18,16 +18,19 @@
 
   const DEFAULTS = {
     format: "png",
+    quality: 92,
     mode: "visible",
     autoCapture: false,
     pageInfoBar: true,
+    locale: "en",
   };
   let saved = {
     format: DEFAULTS.format,
-    quality: 92,
+    quality: DEFAULTS.quality,
     mode: DEFAULTS.mode,
     autoCapture: DEFAULTS.autoCapture,
     pageInfoBar: DEFAULTS.pageInfoBar,
+    locale: DEFAULTS.locale,
   };
 
   function t(key, vars) {
@@ -69,10 +72,12 @@
       mode: modeEl.value,
       autoCapture: !!autoCaptureEl.checked,
       pageInfoBar: !!pageInfoBarEl.checked,
+      locale: localeEl.value || DEFAULTS.locale,
     };
   }
 
   function isDirty() {
+    // Locale auto-persists on change (see localeEl listener); Save tracks the rest.
     const c = currentCapture();
     return (
       c.format !== saved.format ||
@@ -87,9 +92,11 @@
     const c = currentCapture();
     return (
       c.format === DEFAULTS.format &&
+      c.quality === DEFAULTS.quality &&
       c.mode === DEFAULTS.mode &&
       c.autoCapture === DEFAULTS.autoCapture &&
-      c.pageInfoBar === DEFAULTS.pageInfoBar
+      c.pageInfoBar === DEFAULTS.pageInfoBar &&
+      c.locale === DEFAULTS.locale
     );
   }
 
@@ -182,11 +189,20 @@
     setStatus(t("saved"), "ok");
   }
 
-  function applyDefaults() {
+  async function applyDefaults() {
     formatEl.value = DEFAULTS.format;
+    qualityEl.value = String(DEFAULTS.quality);
     modeEl.value = DEFAULTS.mode;
     autoCaptureEl.checked = DEFAULTS.autoCapture;
     pageInfoBarEl.checked = DEFAULTS.pageInfoBar;
+    // Locale auto-persists; reset also writes en immediately.
+    localeEl.value = DEFAULTS.locale;
+    try {
+      await window.UniSSI18n.setLocale(DEFAULTS.locale);
+      fillLanguages();
+      localeEl.value = DEFAULTS.locale;
+    } catch (_) {}
+    saved.locale = DEFAULTS.locale;
     syncQualityVisibility();
     syncButtons();
   }
@@ -205,6 +221,8 @@
     await window.UniSSI18n.setLocale(localeEl.value);
     fillLanguages();
     localeEl.value = window.UniSSI18n.getLocale();
+    saved.locale = localeEl.value;
+    syncButtons();
   });
   saveBtn.addEventListener("click", () => save());
   if (resetBtn) resetBtn.addEventListener("click", () => applyDefaults());

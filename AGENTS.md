@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.38`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.39`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -9,9 +9,9 @@ Read this file before changing code. Prefer surgical edits; do not rewrite whole
 Capture the visible tab or stitch a full-page screenshot, then download, copy, or annotate. Three extension pages: popup, editor, settings. Thin SW opens those pages from the region overlay (avoids page-origin `chrome-extension://` navigation). Region selection runs as an injected overlay on the page.
 
 - Visible capture: `tabs.captureVisibleTab`
-- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL), injects `region-overlay.js` into the focused page (no helper tab); overlay hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (page is focused → clipboard works); Edit and Save-full ask the thin SW to `tabs.create` extension pages (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch). Main document only (open shadow pierced; cross-origin iframe = outer box).
+- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL), injects `region-overlay.js` into the focused page (no helper tab); overlay locks page scroll (overflow hidden + wheel/touch preventDefault; keyboard scroll cancels and clears stash); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (page is focused → clipboard works); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
-- Edit image is handed off through `storage.local` (`unissEditImage`), then `tabs.create` opens `editor.html`
+- Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor clears the handoff after a successful load (QuotaExceeded → user-facing errQuota)
 - Download is an `<a download>` click (no `downloads` permission)
 - Copy uses `ClipboardItem` (fails on browsers without image clipboard write)
 
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.37`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.39`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,12 +84,12 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.37`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.39`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
 - Do not push a commit that leaves the version unchanged.
-- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.17`). Workflow runs `./pack.sh` and attaches the zip. Tag must match the manifest or the job fails. Do not tag every commit.
+- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.17`). Workflow runs `./pack.sh chrome` and `./pack.sh firefox` and attaches both zips (plus the chrome alias). Tag must match the manifest or the job fails. Do not tag every commit.
 - Do not cancel a CWS/AMO review that is already queued unless the zip or listing icon is wrong.
 
 ## Store packaging
@@ -150,8 +150,8 @@ Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_
 | `unissQuality` | number, JPEG/WebP quality (settings default 92) |
 | `unissAutoCaptureOnClick` | boolean; popup auto-runs capture on open |
 | `unissLocale` | language code; missing → `en` |
-| `unissEditImage` | data URL for the editor |
-| `unissEditTs` | timestamp when editor image was stored |
+| `unissEditImage` | data URL for the editor; removed after successful editor load or when TTL expires |
+| `unissEditTs` | timestamp when editor image was stored (~30 min TTL) |
 | `unissRegionTabId` | tab id for in-progress region capture |
 | `unissRegionStash` | capture-at-start PNG dataUrl + viewport `{w,h,dpr}` + tabId/windowId/ts; `storage.local` only; ~5 min TTL; removed after export/cancel/unload |
 

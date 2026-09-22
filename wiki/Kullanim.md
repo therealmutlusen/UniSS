@@ -15,7 +15,7 @@ Sekmenin o anda ekranda görünen kısmı. Sayfaya script enjekte etmez.
 
 ## Bölge / öğe
 
-Popup’tan **Region** seçilince seçici doğrudan sayfaya enjekte edilir; Copy / Download / Edit overlay’den çalışır (ayrı yardımcı sekme yok). Edit / tam sayfa için ince service worker yalnızca extension sekmesi açar.
+Popup’tan **Region** seçilince seçici doğrudan sayfaya enjekte edilir; Copy / Download / Edit overlay’den çalışır (ayrı yardımcı sekme yok; Save-full yok). Sayfa kaydırması overlay açıkken kilitlenir. Edit için ince service worker `editor.html?wait=1` sekmesini açar.
 
 - Üzerine gelince DOM adayına (kesik çizgi + boyut rozeti) yapışır; tıklayınca kilitler.
 - Köşegen ~40px’den uzun sürükleme serbest dikdörtgen seçer.

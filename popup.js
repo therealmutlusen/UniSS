@@ -97,11 +97,6 @@
   }
 
   function updateHints() {
-    const q =
-      exportFormat === "png"
-        ? "kayıpsız"
-        : `kalite ${exportQuality}`;
-    const qLabel = exportFormat === "png" ? t("qualityLossless") : t("qualityValue", { n: exportQuality });
     // format hint text removed — info icon + tooltip provides the details
     downloadBtn.textContent = t("downloadFmt", { fmt: extFor(exportFormat).toUpperCase() });
   }
@@ -150,40 +145,7 @@
     } catch (_) {}
   }
 
-  async function waitForPendingFull(timeoutMs = 10000) {
-    const local = storageLocal();
-    if (!local) return false;
-    const deadline = Date.now() + timeoutMs;
-    while (true) {
-      const data = await local.get(["unissRegionPendingFull"]);
-      if (data && data.unissRegionPendingFull) return true;
-      if (Date.now() >= deadline) return false;
-      await new Promise((resolve) => setTimeout(resolve, 75));
-    }
-  }
-
   async function getActiveTab() {
-    // Region "Save full page" opens popup.html?autostart=full as a tab; prefer the
-    // stored page tab so we do not try to capture the helper/popup tab itself.
-    try {
-      const local = storageLocal();
-      if (local) {
-        const data = await local.get(["unissRegionTabId", "unissRegionPendingFull"]);
-        if (data.unissRegionPendingFull && typeof data.unissRegionTabId === "number") {
-          try {
-            const tab = await api.tabs.get(data.unissRegionTabId);
-            if (tab && canCapture(tab)) {
-              await local.set({ unissRegionPendingFull: false });
-              try {
-                await activateTab(tab.id);
-              } catch (_) {}
-              return tab;
-            }
-          } catch (_) {}
-          await local.set({ unissRegionPendingFull: false });
-        }
-      }
-    } catch (_) {}
     const tabs = await api.tabs.query({ active: true, currentWindow: true });
     return tabs && tabs[0];
   }
@@ -646,20 +608,22 @@
   function regionOverlayStrings() {
     return {
       regionInstruct: t("regionInstruct"),
-      regionSaveVisible: t("regionSaveVisible"),
-      regionSaveFull: t("regionSaveFull"),
       regionCancel: t("regionCancel"),
       regionCopy: t("regionCopy"),
       regionDownload: t("regionDownload"),
       regionEdit: t("regionEdit"),
       regionCapturing: t("regionCapturing"),
       regionSize: t("regionSize"),
+      regionCopied: t("regionCopied"),
+      regionDownloaded: t("regionDownloaded"),
+      regionScrollCancelled: t("regionScrollCancelled"),
       errClipboard: t("errClipboard"),
       errClipboardDenied: t("errClipboardDenied"),
       errRegionCrop: t("errRegionCrop"),
       errRegionStashMissing: t("errRegionStashMissing"),
       errImageLoad: t("errImageLoad"),
       errMetrics: t("errMetrics"),
+      errQuota: t("errQuota"),
       regionExportFailed: t("regionExportFailed"),
     };
   }
@@ -840,13 +804,24 @@
     if (!lastDataUrl) return;
     const local = storageLocal();
     if (!local) return;
-    await local.set({
-      unissEditImage: lastDataUrl,
-      unissEditTs: Date.now(),
-      unissFormat: exportFormat,
-      unissQuality: exportQuality,
-    });
-    await createTab({ url: api.runtime.getURL("editor.html"), active: true });
+    try {
+      await local.set({
+        unissEditImage: lastDataUrl,
+        unissEditTs: Date.now(),
+        unissFormat: exportFormat,
+        unissQuality: exportQuality,
+      });
+    } catch (err) {
+      const name = err && err.name ? String(err.name) : "";
+      const msg = err && err.message ? String(err.message) : String(err || "");
+      if (name === "QuotaExceededError" || /quota/i.test(msg)) {
+        setStatus(t("errQuota"), "err");
+        return;
+      }
+      setStatus(msg || t("errQuota"), "err");
+      return;
+    }
+    await createTab({ url: api.runtime.getURL("editor.html?wait=1"), active: true });
     setStatus(t("statusEditorOpened"), "ok");
   }
 
@@ -869,19 +844,6 @@
       syncCaptureButtonLabel();
       window.UniSSI18n.applyDom(document);
       updateHints();
-      let forceFull = false;
-      let waitForFull = false;
-      try {
-        const u = new URL(location.href);
-        forceFull = u.searchParams.get("autostart") === "full";
-        waitForFull = u.searchParams.get("wait") === "1";
-      } catch (_) {}
-      if (forceFull) {
-        const radio = document.querySelector('input[name="mode"][value="full"]');
-        if (radio) radio.checked = true;
-        if (waitForFull) await waitForPendingFull();
-        return capture();
-      }
       if (autoCaptureOnClick) {
         return capture();
       }

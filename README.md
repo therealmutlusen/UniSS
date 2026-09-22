@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.37. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.39. Arayüz varsayılanı İngilizce; 71 dil.
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -137,7 +137,7 @@ Ayrıntı: [gizlilik politikası](https://therealmutlusen.github.io/UniSS/store/
 
 ## Mağaza paketi (geliştirici)
 
-Kökte `./pack.sh` veya `./pack.sh chrome` → `uniss-<sürüm>-chrome.zip`; `./pack.sh firefox` → `uniss-<sürüm>-firefox.zip`. Chrome hedefi ayrıca eski release workflow adı olan `uniss-<sürüm>.zip` alias’ını üretir. Her zip’in kökünde `manifest.json` vardır; paketlerde `scripts/` ve `.sh` dosyaları yoktur. Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions chrome zip alias’ını [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
+Kökte `./pack.sh` veya `./pack.sh chrome` → `uniss-<sürüm>-chrome.zip`; `./pack.sh firefox` → `uniss-<sürüm>-firefox.zip`. Chrome hedefi ayrıca eski release workflow adı olan `uniss-<sürüm>.zip` alias’ını üretir. Her zip’in kökünde `manifest.json` vardır; paketlerde `scripts/` ve `.sh` dosyaları yoktur. Sürüm yayınlamak için `manifest.json` içindeki `version`’ı yükselt, commit et, `v2.0.12` gibi bir etiket push et. Actions chrome + firefox zip’lerini (ve chrome alias’ını) [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar (otomatik notlar). Listing taslağı `store/LISTING.md`. Mağaza gizlilik URL’si yukarıdaki GitHub Pages adresi.
 
 ## Lisans
 

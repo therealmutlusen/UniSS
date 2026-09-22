@@ -13,13 +13,24 @@ Etiket (`v2.0.12`) her commit’te atılmaz; yalnızca GitHub Release için.
 1. `manifest.json` `version` → örn. `2.0.12`
 2. Commit, `main`e push
 3. `git tag v2.0.12 && git push origin v2.0.12`
-4. Actions `./pack.sh` çalıştırır; chrome zip’ini ve release workflow uyumluluk alias’ını [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar, notları üretir
+4. Actions `./pack.sh chrome` ve `./pack.sh firefox` çalıştırır; `-chrome`, `-firefox` ve chrome alias zip’lerini [Releases](https://github.com/therealmutlusen/UniSS/releases) altına koyar, notları üretir
 
 Etiket `v` öneki olmadan manifest ile **aynı** olmalıdır (`v2.0.12` ↔ `2.0.12`). Uyuşmazsa job durur.
 
 Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.20 arşivi `store/archive/` altında tutulur.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
+
+## 2.0.39
+
+- Region: sayfa kaydırma kilidi (overflow + wheel/touch); klavye kaydırması stash’i iptal eder.
+- Edit handoff: 30 dk TTL, yükleme sonrası `unissEditImage` temizliği, QuotaExceeded mesajı; `editor.html?wait=1`.
+- Region Save-full ölü yolu kaldırıldı (yalnızca Copy / Download / Edit).
+- Release CI çift paket (chrome + firefox). Settings Reset kalite 92 + dil en.
+
+## 2.0.38
+
+- Editor panoya kopyalandı toast’ı yüksek kontrast; Region Copy/Download/Edit sayfa bilgi şeridini uygular (varsayılan açık).
 
 ## 2.0.37
 

@@ -23,12 +23,17 @@
     regionEdit: "Edit",
     regionCapturing: "Capturing…",
     regionSize: "{w} × {h}",
+    regionInstruct: "Hover to snap · click to lock · drag for a free rectangle · Esc cancels",
+    regionCopied: "Copied to clipboard.",
+    regionDownloaded: "Download started.",
+    regionScrollCancelled: "Page scrolled — region capture cancelled. Start Region again.",
     errClipboard: "Copying images to the clipboard is not supported in this browser.",
     errClipboardDenied: "Could not copy to the clipboard. Try again or use Download.",
     errRegionCrop: "Could not crop the selected region.",
     errRegionStashMissing: "Region snapshot expired or missing. Click the UniSS icon and start Region again.",
     errImageLoad: "Could not load the captured image.",
     errMetrics: "Could not read page dimensions.",
+    errQuota: "Image is too large for browser storage. Try a smaller region or PNG quality, or download instead of Edit.",
     regionExportFailed: "Could not export the selection. Try again.",
   };
   // Strings arrive via runtime message from popup; no window string global.
@@ -347,14 +352,23 @@
   async function openEditor(dataUrl, format, quality) {
     const local = storageLocal();
     if (!local) throw new Error(t("regionExportFailed"));
-    await local.set({
-      unissEditImage: dataUrl,
-      unissEditTs: Date.now(),
-      unissFormat: format,
-      unissQuality: quality,
-    });
+    try {
+      await local.set({
+        unissEditImage: dataUrl,
+        unissEditTs: Date.now(),
+        unissFormat: format,
+        unissQuality: quality,
+      });
+    } catch (err) {
+      const name = err && err.name ? String(err.name) : "";
+      const msg = err && err.message ? String(err.message) : String(err || "");
+      if (name === "QuotaExceededError" || /quota/i.test(msg)) {
+        throw new Error(t("errQuota"));
+      }
+      throw new Error(t("regionExportFailed"));
+    }
     // Storage already written — SW opens editor (tabs.create needs no user gesture).
-    await openExtensionPageViaSw("editor.html");
+    await openExtensionPageViaSw("editor.html?wait=1");
   }
 
   function removeExisting() {
@@ -493,6 +507,29 @@
   pointer-events: none !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
 }
+#${ROOT_ID} .uniss-toast.ok {
+  border-color: rgba(110,168,255,0.55) !important;
+  color: #e0ecff !important;
+}
+#${ROOT_ID} .uniss-instruct {
+  position: fixed !important;
+  top: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 6 !important;
+  max-width: min(560px, calc(100vw - 24px)) !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  background: rgba(18, 24, 38, 0.92) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  color: #eef2ff !important;
+  font: 600 12px/1.35 Inter, ui-sans-serif, system-ui, sans-serif !important;
+  pointer-events: none !important;
+  text-align: center !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
+}
+#${ROOT_ID}.has-box .uniss-instruct,
+#${ROOT_ID}.capturing .uniss-instruct { display: none !important; }
 `;
 
   const root = document.createElement("div");
@@ -533,6 +570,9 @@
   toast.className = "uniss-toast";
   toast.style.display = "none";
 
+  const instruct = document.createElement("div");
+  instruct.className = "uniss-instruct";
+
   root.appendChild(style);
   root.appendChild(dim);
   root.appendChild(hit);
@@ -540,6 +580,7 @@
   root.appendChild(badge);
   root.appendChild(actions);
   root.appendChild(toast);
+  root.appendChild(instruct);
   document.documentElement.appendChild(root);
 
   const handles = {};
@@ -610,6 +651,7 @@
     setButtonLabel(btnCopy, ICON_COPY, t("regionCopy"));
     setButtonLabel(btnDownload, ICON_DOWNLOAD, t("regionDownload"));
     setButtonLabel(btnEdit, ICON_EDIT, t("regionEdit"));
+    if (instruct) instruct.textContent = t("regionInstruct");
   }
   applyStrings();
 
@@ -727,6 +769,10 @@
     window.removeEventListener("keydown", onKeyDown, true);
     window.removeEventListener("pagehide", onPageUnload, true);
     window.removeEventListener("beforeunload", onPageUnload, true);
+    window.removeEventListener("wheel", onWheelLock, wheelOpts);
+    window.removeEventListener("touchmove", onTouchLock, touchOpts);
+    window.removeEventListener("scroll", onScrollGuard, true);
+    restoreScrollLock();
     if (window[TEARDOWN_KEY] === teardown) {
       try {
         delete window[TEARDOWN_KEY];
@@ -965,14 +1011,20 @@
   }
 
   let toastTimer = null;
-  function showToast(msg) {
+  function showToast(msg, kind) {
     if (!toast) return;
     toast.textContent = msg || t("regionExportFailed");
+    toast.classList.toggle("ok", kind === "ok");
     toast.style.display = "block";
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       toast.style.display = "none";
-    }, 4200);
+      toast.classList.remove("ok");
+    }, kind === "ok" ? 900 : 4200);
+  }
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   function restoreAfterFail(message) {
@@ -1011,12 +1063,21 @@
       dataUrl = await applyPageInfoBar(dataUrl, stash, pageInfoBar);
       if (intent === "copy") {
         await copyDataUrl(dataUrl);
+        await clearRegionStash();
+        // Reveal root so success toast is visible (hidden-all uses opacity on parent).
+        root.classList.remove("hidden-all");
+        showToast(t("regionCopied"), "ok");
+        await sleep(750);
       } else if (intent === "edit") {
         await openEditor(dataUrl, format, quality);
+        await clearRegionStash();
       } else {
         downloadDataUrl(dataUrl, format);
+        await clearRegionStash();
+        root.classList.remove("hidden-all");
+        showToast(t("regionDownloaded"), "ok");
+        await sleep(750);
       }
-      await clearRegionStash();
       teardown();
     } catch (err) {
       const msg =
@@ -1043,7 +1104,10 @@
     cancelRegion();
   }
 
-  function onRuntimeMessage(msg) {
+  function onRuntimeMessage(msg, sender) {
+    if (sender && sender.id && api && api.runtime && sender.id !== api.runtime.id) {
+      return;
+    }
     if (!msg || msg.type !== "uniss-region") return;
     if (msg.action === "strings" && msg.strings) {
       strings = Object.assign({}, defaults, msg.strings);
@@ -1069,10 +1133,66 @@
     }
   }
 
+  // Keep viewport fixed while the stash is valid (scroll would desync crop).
+  const scrollLock = {
+    htmlOverflow: "",
+    bodyOverflow: "",
+    scrollX: window.scrollX || 0,
+    scrollY: window.scrollY || 0,
+    active: true,
+    cancelling: false,
+  };
+  try {
+    scrollLock.htmlOverflow = document.documentElement.style.overflow || "";
+    scrollLock.bodyOverflow = document.body ? document.body.style.overflow || "" : "";
+    document.documentElement.style.overflow = "hidden";
+    if (document.body) document.body.style.overflow = "hidden";
+  } catch (_) {}
+
+  function restoreScrollLock() {
+    if (!scrollLock.active) return;
+    scrollLock.active = false;
+    try {
+      document.documentElement.style.overflow = scrollLock.htmlOverflow;
+      if (document.body) document.body.style.overflow = scrollLock.bodyOverflow;
+    } catch (_) {}
+  }
+
+  function onWheelLock(e) {
+    e.preventDefault();
+  }
+  function onTouchLock(e) {
+    e.preventDefault();
+  }
+  const wheelOpts = { capture: true, passive: false };
+  const touchOpts = { capture: true, passive: false };
+
+  function onScrollGuard() {
+    if (!scrollLock.active || scrollLock.cancelling || capturing) return;
+    const x = window.scrollX || 0;
+    const y = window.scrollY || 0;
+    if (x === scrollLock.scrollX && y === scrollLock.scrollY) return;
+    scrollLock.cancelling = true;
+    try {
+      window.scrollTo(scrollLock.scrollX, scrollLock.scrollY);
+    } catch (_) {}
+    showToast(t("regionScrollCancelled"));
+    clearRegionStash()
+      .catch(() => {})
+      .finally(() => {
+        try {
+          teardown();
+        } catch (_) {}
+      });
+  }
+
   hit.addEventListener("mousedown", onPointerDown, true);
   window.addEventListener("mousemove", onPointerMove, true);
   window.addEventListener("mouseup", onPointerUp, true);
   window.addEventListener("keydown", onKeyDown, true);
+  window.addEventListener("wheel", onWheelLock, wheelOpts);
+  window.addEventListener("touchmove", onTouchLock, touchOpts);
+  window.addEventListener("scroll", onScrollGuard, true);
 
   Object.keys(handles).forEach((k) => {
     handles[k].addEventListener("mousedown", onPointerDown, true);

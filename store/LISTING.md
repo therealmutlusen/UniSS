@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (2.0.38). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.39; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.38-chrome.zip` to CWS/Edge and `uniss-2.0.38-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.39-chrome.zip` to CWS/Edge and `uniss-2.0.39-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
 
@@ -29,7 +29,7 @@ UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon
 **Capture**
 
 • Visible area — the portion of the active tab currently on screen
-• Region — select an element or free rectangle on the page (hover snap; crop of the visible viewport)
+• Region — select an element or free rectangle on the page (hover snap; crop of the visible viewport; Copy / Download / Edit only — no Save-full)
 • Full page — scrolls the tab, temporarily hides fixed chrome, and stitches slices into one image
 • Scope — HTTP and HTTPS pages only; browser and store pages (for example chrome:// or about:) cannot be captured
 
@@ -59,6 +59,8 @@ Support: support@mutlusen.com
 Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
+
+**2.0.39** — Region locks page scroll while the selector is open (scroll/keyboard cancel clears the stash). Editor handoff (`unissEditImage`) enforces a 30-minute TTL, clears storage after load, and surfaces QuotaExceeded. Dead Region Save-full path removed (Copy/Download/Edit only). GitHub Release dual-packs chrome + firefox zips. Settings Reset restores quality 92 and English locale.
 
 **2.0.38** — Editor “Copied to clipboard” toast uses a solid high-contrast pill so it stays readable over light page content. Page title and URL bar defaults to on for new installs, and Region Copy/Download/Edit now bake the same top bar into the image when the setting is enabled (Visible/Full already did).
 
