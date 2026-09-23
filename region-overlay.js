@@ -79,6 +79,20 @@
     );
   }
 
+  function getBoundTabIds() {
+    return {
+      tabId: window.__unissRegionBoundTabId,
+      windowId: window.__unissRegionBoundWindowId,
+    };
+  }
+
+  async function rejectStashBind(local) {
+    try {
+      if (local) await local.remove(["unissRegionStash", "unissRegionTabId"]);
+    } catch (_) {}
+    throw new Error(t("errRegionStashMissing"));
+  }
+
   async function loadRegionStash() {
     const local = storageLocal();
     if (!local) return null;
@@ -95,8 +109,24 @@
         } catch (_) {}
         return null;
       }
+      const bound = getBoundTabIds();
+      if (
+        typeof stash.tabId !== "number" ||
+        typeof bound.tabId !== "number" ||
+        stash.tabId !== bound.tabId
+      ) {
+        await rejectStashBind(local);
+      }
+      if (
+        typeof stash.windowId === "number" &&
+        typeof bound.windowId === "number" &&
+        stash.windowId !== bound.windowId
+      ) {
+        await rejectStashBind(local);
+      }
       return stash;
-    } catch (_) {
+    } catch (err) {
+      if (err && err.message === t("errRegionStashMissing")) throw err;
       return null;
     }
   }
@@ -110,6 +140,38 @@
       try {
         await local.set({ unissRegionStash: null, unissRegionTabId: null });
       } catch (__) {}
+    }
+  }
+
+  // Eager stash + decoded Image so Copy can use ClipboardItem Promise under user gesture.
+  let stashCache = null; // { stash, img, settings }
+
+  function delay(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  async function waitForTabBind(maxMs) {
+    const deadline = Date.now() + (maxMs || 2000);
+    while (Date.now() < deadline) {
+      if (typeof window.__unissRegionBoundTabId === "number") return true;
+      await delay(40);
+    }
+    return typeof window.__unissRegionBoundTabId === "number";
+  }
+
+  async function prefetchStashCache() {
+    try {
+      await waitForTabBind(2000);
+      const stash = await loadRegionStash();
+      if (!stash || !stash.dataUrl) {
+        stashCache = null;
+        return;
+      }
+      const img = await loadImage(stash.dataUrl);
+      const settings = await loadExportSettings();
+      stashCache = { stash, img, settings };
+    } catch (_) {
+      stashCache = null;
     }
   }
 
@@ -231,8 +293,7 @@
     });
   }
 
-  async function cropToRect(dataUrl, rect, viewport, format, quality) {
-    const img = await loadImage(dataUrl);
+  function cropImgToRect(img, rect, viewport, format, quality) {
     const bw = img.naturalWidth || img.width;
     const bh = img.naturalHeight || img.height;
     const vw = (viewport && viewport.w) || 1;
@@ -280,6 +341,11 @@
     } catch (_) {
       return c.toDataURL("image/jpeg", 0.92);
     }
+  }
+
+  async function cropToRect(dataUrl, rect, viewport, format, quality) {
+    const img = await loadImage(dataUrl);
+    return cropImgToRect(img, rect, viewport, format, quality);
   }
 
   function downloadDataUrl(dataUrl, format) {
@@ -788,6 +854,7 @@
   }
 
   function teardown() {
+    stashCache = null;
     try {
       if (api && api.runtime && api.runtime.onMessage) {
         api.runtime.onMessage.removeListener(onRuntimeMessage);
@@ -1062,49 +1129,186 @@
     if (message) showToast(message);
   }
 
-  async function requestCapture(intent) {
+  async function resolveStashForExport() {
+    if (stashCache && stashCache.stash && stashCache.img) {
+      const bound = getBoundTabIds();
+      const stash = stashCache.stash;
+      if (
+        typeof stash.tabId === "number" &&
+        typeof bound.tabId === "number" &&
+        stash.tabId === bound.tabId
+      ) {
+        if (
+          typeof stash.windowId !== "number" ||
+          typeof bound.windowId !== "number" ||
+          stash.windowId === bound.windowId
+        ) {
+          return stashCache;
+        }
+      }
+    }
+    const stash = await loadRegionStash();
+    if (!stash || !stash.dataUrl) {
+      throw new Error(t("errRegionStashMissing"));
+    }
+    const img = await loadImage(stash.dataUrl);
+    const settings = await loadExportSettings();
+    stashCache = { stash, img, settings };
+    return stashCache;
+  }
+
+  async function buildCroppedDataUrl(cache, format, quality, pageInfoBar) {
+    const stash = cache.stash;
+    const viewport =
+      stash.viewport || {
+        w: window.innerWidth,
+        h: window.innerHeight,
+        dpr: window.devicePixelRatio || 1,
+      };
+    let dataUrl = cropImgToRect(
+      cache.img,
+      clampRect(rect),
+      viewport,
+      format,
+      quality
+    );
+    dataUrl = await applyPageInfoBar(dataUrl, stash, pageInfoBar);
+    return dataUrl;
+  }
+
+  /** Copy: ClipboardItem Promise API keeps user activation (no await before write). */
+  function requestCopyGestureSafe() {
+    if (!rect || capturing) return;
+    if (!stashCache || !stashCache.img || !stashCache.stash) {
+      showToast(t("errRegionStashMissing"));
+      return;
+    }
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      showToast(t("errClipboard"));
+      return;
+    }
+    const bound = getBoundTabIds();
+    const stash = stashCache.stash;
+    if (
+      typeof stash.tabId !== "number" ||
+      typeof bound.tabId !== "number" ||
+      stash.tabId !== bound.tabId
+    ) {
+      clearRegionStash().catch(() => {});
+      stashCache = null;
+      showToast(t("errRegionStashMissing"));
+      return;
+    }
+    if (
+      typeof stash.windowId === "number" &&
+      typeof bound.windowId === "number" &&
+      stash.windowId !== bound.windowId
+    ) {
+      clearRegionStash().catch(() => {});
+      stashCache = null;
+      showToast(t("errRegionStashMissing"));
+      return;
+    }
+
+    capturing = true;
+    root.classList.add("capturing");
+    root.classList.add("hidden-all");
+    if (toast) toast.style.display = "none";
+
+    const cache = stashCache;
+    const pageInfoBar =
+      cache.settings && cache.settings.pageInfoBar !== false;
+
+    const pngBlobPromise = (async () => {
+      let dataUrl = cropImgToRect(
+        cache.img,
+        clampRect(rect),
+        cache.stash.viewport || {
+          w: window.innerWidth,
+          h: window.innerHeight,
+          dpr: window.devicePixelRatio || 1,
+        },
+        "png",
+        100
+      );
+      dataUrl = await applyPageInfoBar(dataUrl, cache.stash, pageInfoBar);
+      return dataUrlToBlob(dataUrl);
+    })();
+
+    navigator.clipboard
+      .write([new ClipboardItem({ "image/png": pngBlobPromise })])
+      .then(async () => {
+        await clearRegionStash();
+        stashCache = null;
+        root.classList.remove("hidden-all");
+        showToast(t("regionCopied"), "ok");
+        await sleep(750);
+        teardown();
+      })
+      .catch(() => {
+        restoreAfterFail(t("errClipboardDenied"));
+      });
+  }
+
+  /** Download: crop from cached Image with minimal awaits, then <a>.click(). */
+  async function requestDownloadGestureSafe() {
     if (!rect || capturing) return;
     capturing = true;
     root.classList.add("capturing");
     root.classList.add("hidden-all");
     if (toast) toast.style.display = "none";
     try {
-      const stash = await loadRegionStash();
-      if (!stash || !stash.dataUrl) {
-        throw new Error(t("errRegionStashMissing"));
-      }
-      const { format, quality, pageInfoBar } = await loadExportSettings();
-      const viewport =
-        stash.viewport || {
-          w: window.innerWidth,
-          h: window.innerHeight,
-          dpr: window.devicePixelRatio || 1,
-        };
-      let dataUrl = await cropToRect(
-        stash.dataUrl,
-        clampRect(rect),
-        viewport,
+      const cache = await resolveStashForExport();
+      const settings = cache.settings || (await loadExportSettings());
+      const { format, quality, pageInfoBar } = settings;
+      const dataUrl = await buildCroppedDataUrl(
+        cache,
         format,
-        quality
+        quality,
+        pageInfoBar
       );
-      dataUrl = await applyPageInfoBar(dataUrl, stash, pageInfoBar);
-      if (intent === "copy") {
-        await copyDataUrl(dataUrl);
-        await clearRegionStash();
-        // Reveal root so success toast is visible (hidden-all uses opacity on parent).
-        root.classList.remove("hidden-all");
-        showToast(t("regionCopied"), "ok");
-        await sleep(750);
-      } else if (intent === "edit") {
-        await openEditor(dataUrl, format, quality);
-        await clearRegionStash();
-      } else {
-        downloadDataUrl(dataUrl, format);
-        await clearRegionStash();
-        root.classList.remove("hidden-all");
-        showToast(t("regionDownloaded"), "ok");
-        await sleep(750);
-      }
+      downloadDataUrl(dataUrl, format);
+      await clearRegionStash();
+      stashCache = null;
+      root.classList.remove("hidden-all");
+      showToast(t("regionDownloaded"), "ok");
+      await sleep(750);
+      teardown();
+    } catch (err) {
+      const msg =
+        err && err.message ? String(err.message) : t("regionExportFailed");
+      restoreAfterFail(msg);
+    }
+  }
+
+  async function requestCapture(intent) {
+    if (intent === "copy") {
+      requestCopyGestureSafe();
+      return;
+    }
+    if (intent === "download") {
+      await requestDownloadGestureSafe();
+      return;
+    }
+    // Edit: async SW open is fine without user-gesture.
+    if (!rect || capturing) return;
+    capturing = true;
+    root.classList.add("capturing");
+    root.classList.add("hidden-all");
+    if (toast) toast.style.display = "none";
+    try {
+      const cache = await resolveStashForExport();
+      const settings = cache.settings || (await loadExportSettings());
+      const { format, quality, pageInfoBar } = settings;
+      const dataUrl = await buildCroppedDataUrl(
+        cache,
+        format,
+        quality,
+        pageInfoBar
+      );
+      await openEditor(dataUrl, format, quality);
+      await clearRegionStash();
+      stashCache = null;
       teardown();
     } catch (err) {
       const msg =
@@ -1117,6 +1321,7 @@
     try {
       await clearRegionStash();
     } catch (_) {}
+    stashCache = null;
     teardown();
   }
 
@@ -1140,23 +1345,14 @@
       strings = Object.assign({}, defaults, msg.strings);
       applyStrings();
       if (rect) setBox(rect, mode === "selected");
-    }
-    if (msg.action === "hide") {
-      root.classList.add("hidden-all");
-    }
-    if (msg.action === "show") {
-      root.classList.remove("hidden-all");
-      root.classList.remove("capturing");
-      capturing = false;
+      loadExportSettings()
+        .then((settings) => {
+          if (stashCache) stashCache.settings = settings;
+        })
+        .catch(() => {});
     }
     if (msg.action === "teardown") {
       cancelRegion();
-    }
-    if (msg.action === "capture-failed") {
-      root.classList.remove("hidden-all");
-      root.classList.remove("capturing");
-      capturing = false;
-      layoutHandlesAndActions();
     }
   }
 
@@ -1347,6 +1543,9 @@
 
   window.addEventListener("pagehide", onPageUnload, true);
   window.addEventListener("beforeunload", onPageUnload, true);
+
+  // After popup bind inject, decode stash once so Copy keeps user activation.
+  prefetchStashCache();
 
   Object.defineProperty(window, TEARDOWN_KEY, {
     value: teardown,

@@ -672,6 +672,15 @@
       target: { tabId: tab.id },
       files: ["region-overlay.js"],
     });
+    // Bind tab/window ids into the page so overlay rejects foreign stash (CWE-668).
+    await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (tabId, windowId) => {
+        window.__unissRegionBoundTabId = tabId;
+        window.__unissRegionBoundWindowId = windowId;
+      },
+      args: [tab.id, tab.windowId],
+    });
     const probe = await api.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => !!document.getElementById("uniss-region-root"),

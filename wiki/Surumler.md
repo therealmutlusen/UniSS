@@ -21,6 +21,12 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.42
+
+- Region stash: overlay yalnızca `stash.tabId` / `windowId` bağlanan sekme ile eşleşirse kabul eder (popup `executeScript` bind).
+- Region Copy: `ClipboardItem` Promise + önbellekli crop ile kullanıcı jesti korunur; Download önbellekten kırpar.
+- wiki Home/Tarayıcılar + LISTING scripting/textOverlay; ölü hide/show/capture-failed ve `i18n/en.json` temizliği.
+
 ## 2.0.41
 
 - Settings Reset tüm varsayılanları `storage.local`’a yazar (ayrı Save gerekmez).

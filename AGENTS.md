@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.41`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.42`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -9,7 +9,7 @@ Read this file before changing code. Prefer surgical edits; do not rewrite whole
 Capture the visible tab or stitch a full-page screenshot, then download, copy, or annotate. Three extension pages: popup, editor, settings. Thin SW opens those pages from the region overlay (avoids page-origin `chrome-extension://` navigation). Region selection runs as an injected overlay on the page.
 
 - Visible capture: `tabs.captureVisibleTab`
-- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId`), injects `region-overlay.js` into the focused page (no helper tab); overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
+- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId` + stash `tabId`/`windowId`), injects `region-overlay.js` then `executeScript({ func, args })` sets `window.__unissRegionBoundTabId` / `__unissRegionBoundWindowId`; overlay rejects stash if bound ids mismatch (clears keys); eager-decodes stash Image for gesture-safe Copy (`ClipboardItem` Promise) and Download; overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG via Promise; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
 - Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor clears the handoff after a successful load (QuotaExceeded → user-facing errQuota)
 - Download is an `<a download>` click (no `downloads` permission)
@@ -29,7 +29,6 @@ settings.html|js|css   format / quality / mode / locale / Privacy clear temp cap
 i18n.js                UniSSI18n on window
 i18n/languages.json    locale picker list (71 codes)
 i18n/messages/*.json   catalogs; en.json is the source of truth
-i18n/en.json           leftover duplicate — do not use; runtime loads messages/
 icons/                 toolbar / store icons 16–128
 brand/                 in-page logos
 README.md              user-facing install + browser matrix (Turkish)
@@ -46,7 +45,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.41`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.42`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,7 +83,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.41`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.42`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -97,7 +96,7 @@ Firefox 115+:
 First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). CWS and Edge use the chrome zip; AMO uses the firefox zip. Opera Add-ons later. Do not submit to Safari.
 
 - `./pack.sh` or `./pack.sh chrome` writes `uniss-<version>-chrome.zip` and the legacy alias `uniss-<version>.zip`; `./pack.sh firefox` writes `uniss-<version>-firefox.zip`. Each has `manifest.json` at the zip root. Use the explicit `-chrome` / `-firefox` names for store uploads; the alias exists for the unchanged release workflow.
-- Excluded from both zips: `AGENTS.md`, `pack.sh`, `scripts/`, every `*.sh`, `store/`, leftover `i18n/en.json`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
+- Excluded from both zips: `AGENTS.md`, `pack.sh`, `scripts/`, every `*.sh`, `store/`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip (answer **Hayır** on the source-code question)
@@ -168,7 +167,6 @@ Runtime: `i18n.js` → `window.UniSSI18n`. Pages call `UniSSI18n.init()` then `t
 - Placeholders: `{n}`, `{total}`, `{fmt}`, `{max}`, `{quality}`, `{tool}` via `{word}` replacement
 - DOM: `data-i18n` (textContent), `data-i18n-attr` (named attribute), `data-i18n-tip` (`data-tip` + `aria-label`), `html[data-i18n-title]`
 - Adding a string: put it in `i18n/messages/en.json` first, then other locale files if you are translating. Update `i18n/languages.json` only when adding a language code
-- Ignore `i18n/en.json` (stale copy, not loaded)
 
 HTML English copy is the fallback before `init()`. Do not switch to `_locales/` chrome.i18n unless rewriting the whole i18n stack.
 

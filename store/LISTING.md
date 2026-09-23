@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.41; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.42; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.41-chrome.zip` to CWS/Edge and `uniss-2.0.41-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.42-chrome.zip` to CWS/Edge and `uniss-2.0.42-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
 
@@ -61,11 +61,11 @@ Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
 
+**2.0.42** — Region stash bound to the injected tab (`stash.tabId` / `windowId` via popup `executeScript` bind). Gesture-safe Region Copy via `ClipboardItem` Promise + cached crop; Download crops from cache. wiki + LISTING scripting/textOverlay notes; dead overlay hide/show/capture-failed paths and leftover `i18n/en.json` removed.
+
 **2.0.41** — Settings Reset persists all defaults (format/quality/mode/auto-capture/page bar/locale) without a separate Save. Copy to clipboard prefers PNG (Download keeps selected format). Region clears `unissRegionTabId` with the stash; nested overflow scrollers are locked while selecting. Release CI dual-packs chrome + firefox zips. i18n locales filled from English for missing keys.
 
 **2.0.40** — Settings Clear temporary captures removes orphan Region stash and Edit handoff images from extension storage without resetting settings or deleting Downloads.
-
-**2.0.39** — Region locks page scroll while the selector is open (Escape cancels; wheel/touch locked; unexpected scroll clears the stash). Editor handoff (`unissEditImage`) enforces a 30-minute TTL, clears storage after load, and surfaces QuotaExceeded. Dead Region Save-full path removed (Copy/Download/Edit only). GitHub Release dual-packs chrome + firefox zips. Settings Reset restores quality 92 and English locale.
 
 
 ## Category
@@ -76,7 +76,7 @@ Productivity (Chrome / Edge). Firefox: Photos, Music & Media or Tabs (pick the c
 
 **activeTab** — Used only after you open the toolbar popup (or auto-capture on popup open). Grants temporary access to the active tab so UniSS can call `tabs.captureVisibleTab` and, for full page, inject the scroll/stitch helpers. No lasting host access; no `<all_urls>`.
 
-**scripting** — Full-page capture injects serializable helper functions with `scripting.executeScript({ func, args })` to hide fixed/sticky UI, scroll in viewport steps, and restore the page in `finally`. Visible capture does not need injection. No remote URLs, no `code:` strings, no `eval`.
+**scripting** — Full-page capture injects serializable helper functions with `scripting.executeScript({ func, args })` to hide fixed/sticky UI, scroll in viewport steps, and restore the page in `finally`. Region capture injects `scripting.executeScript({ files: ["region-overlay.js"] })` plus a follow-up `{ func, args }` bind for tab/window ids. Visible capture does not need injection. No remote URLs, no `code:` strings, no `eval`.
 
 **storage** — `storage.local` holds settings (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`) and the editor handoff (`unissEditImage`, `unissEditTs`). Region capture briefly keeps `unissRegionStash` in `storage.local` until export, cancel, unload, or ~5 minute TTL. Captures are data URLs on the device. Nothing is synced or uploaded.
 
@@ -102,7 +102,7 @@ How to test:
 1. Load the zip (or unpacked folder) on an `https://` page.
 2. Open the popup → Visible → confirm a screenshot downloads or opens in the editor.
 3. Full page on a long document; confirm the page is restored after capture (fixed headers return).
-4. Editor: draw a rectangle, add text via the prompt, undo, download.
+4. Editor: draw a rectangle, add text via `#textOverlay` (in-canvas overlay), undo, download.
 5. Settings: switch format/locale; reload popup and confirm it stuck.
 6. `chrome://extensions` or `about:debugging` — capture should refuse.
 
