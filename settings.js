@@ -209,9 +209,23 @@
       fillLanguages();
       localeEl.value = DEFAULTS.locale;
     } catch (_) {}
-    saved.locale = DEFAULTS.locale;
+    const local = storageLocal();
+    if (local) {
+      try {
+        await local.set({
+          unissFormat: DEFAULTS.format,
+          unissQuality: DEFAULTS.quality,
+          unissMode: DEFAULTS.mode,
+          unissAutoCaptureOnClick: DEFAULTS.autoCapture,
+          unissPageInfoBar: DEFAULTS.pageInfoBar,
+          unissLocale: DEFAULTS.locale,
+        });
+      } catch (_) {}
+    }
     syncQualityVisibility();
+    snapshotSaved();
     syncButtons();
+    setStatus(t("saved"), "ok");
   }
 
 

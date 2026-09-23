@@ -1806,13 +1806,33 @@
     try {
       let blob;
       try {
+        // Clipboard prefers PNG; download keeps user-selected format via exportHref.
         const exported = renderExportCanvas();
-        blob = await canvasToBlob(exported.canvas, exported.mime, exported.quality);
+        blob = await canvasToBlob(exported.canvas, "image/png");
       } catch (_) {
-        blob = dataUrlToBlob(exportHref());
+        const href = exportHref();
+        const raw = dataUrlToBlob(href);
+        if ((raw.type || "").toLowerCase() === "image/png") {
+          blob = raw;
+        } else {
+          // Re-encode without fetch(data:) for Firefox compatibility.
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = () => reject(new Error("Invalid image data"));
+            img.src = href;
+          });
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth || img.width;
+          c.height = img.naturalHeight || img.height;
+          const ctx = c.getContext("2d");
+          if (!ctx) throw new Error("Canvas export failed");
+          ctx.drawImage(img, 0, 0);
+          blob = await canvasToBlob(c, "image/png");
+        }
       }
       await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type || "image/png"]: blob }),
+        new ClipboardItem({ "image/png": blob }),
       ]);
       setStatus(t("statusCopied"), "ok", { toast: true });
     } catch (err) {

@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.40`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.41`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -9,11 +9,11 @@ Read this file before changing code. Prefer surgical edits; do not rewrite whole
 Capture the visible tab or stitch a full-page screenshot, then download, copy, or annotate. Three extension pages: popup, editor, settings. Thin SW opens those pages from the region overlay (avoids page-origin `chrome-extension://` navigation). Region selection runs as an injected overlay on the page.
 
 - Visible capture: `tabs.captureVisibleTab`
-- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL), injects `region-overlay.js` into the focused page (no helper tab); overlay locks page scroll (overflow hidden + wheel/touch preventDefault; keyboard scroll cancels and clears stash); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (page is focused → clipboard works); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box).
+- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId`), injects `region-overlay.js` into the focused page (no helper tab); overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
 - Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor clears the handoff after a successful load (QuotaExceeded → user-facing errQuota)
 - Download is an `<a download>` click (no `downloads` permission)
-- Copy uses `ClipboardItem` (fails on browsers without image clipboard write)
+- Copy uses `ClipboardItem` with **image/png** (re-encode when export format is jpeg/webp; Download keeps user format). Fails on browsers without image clipboard write
 
 Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`). `chrome://`, `about:`, store pages, etc. are rejected.
 
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.40`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.41`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,7 +84,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.40`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.41`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -176,7 +176,7 @@ HTML English copy is the fallback before `init()`. Do not switch to `_locales/` 
 
 Canvas overlay on the captured bitmap. Tools: `select`, `crop`, `pen`, `line`, `highlight`, `rect`, `ellipse`, `arrow`, `text`.
 
-- Text is `ctx.fillText` after `window.prompt` — never inject HTML into the page or canvas
+- Text uses in-canvas `#textOverlay` (textarea overlay) then `ctx.fillText` — never inject HTML into the page or canvas
 - Select: move + resize handles (text: corners only, uniform scale)
 - Crop (`data-tool="crop"`, shortcut `c`): free rectangle with ~6% inset default; Shift while resizing locks aspect; Apply bakes baseImage+shapes into a new bitmap, clears `shapes[]`, does **not** rewrite `unissEditImage`; Cancel discards the rect. Single-level crop undo via Cmd/Ctrl+Z restores previous baseImage + shapes + canvas size (extends beyond `shapes.pop()`)
 - Style panels (`#shapeStyle`, `#textStyle`) show only while a matching shape is selected; `#cropActions` shows in crop mode

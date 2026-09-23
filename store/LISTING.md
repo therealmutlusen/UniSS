@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.40; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.41; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.40-chrome.zip` to CWS/Edge and `uniss-2.0.40-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.41-chrome.zip` to CWS/Edge and `uniss-2.0.41-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
 
@@ -42,7 +42,7 @@ UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon
 **Export**
 
 • Download as PNG, JPEG, or WebP (quality configurable in Settings)
-• Copy to the clipboard as an image where the browser supports image clipboard write
+• Copy to the clipboard as PNG where the browser supports image clipboard write (Download keeps PNG/JPEG/WebP choice)
 
 **Settings**
 
@@ -61,11 +61,11 @@ Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
 
+**2.0.41** — Settings Reset persists all defaults (format/quality/mode/auto-capture/page bar/locale) without a separate Save. Copy to clipboard prefers PNG (Download keeps selected format). Region clears `unissRegionTabId` with the stash; nested overflow scrollers are locked while selecting. Release CI dual-packs chrome + firefox zips. i18n locales filled from English for missing keys.
+
 **2.0.40** — Settings Clear temporary captures removes orphan Region stash and Edit handoff images from extension storage without resetting settings or deleting Downloads.
 
-**2.0.39** — Region locks page scroll while the selector is open (scroll/keyboard cancel clears the stash). Editor handoff (`unissEditImage`) enforces a 30-minute TTL, clears storage after load, and surfaces QuotaExceeded. Dead Region Save-full path removed (Copy/Download/Edit only). GitHub Release dual-packs chrome + firefox zips. Settings Reset restores quality 92 and English locale.
-
-**2.0.38** — Editor “Copied to clipboard” toast uses a solid high-contrast pill so it stays readable over light page content. Page title and URL bar defaults to on for new installs, and Region Copy/Download/Edit now bake the same top bar into the image when the setting is enabled (Visible/Full already did).
+**2.0.39** — Region locks page scroll while the selector is open (Escape cancels; wheel/touch locked; unexpected scroll clears the stash). Editor handoff (`unissEditImage`) enforces a 30-minute TTL, clears storage after load, and surfaces QuotaExceeded. Dead Region Save-full path removed (Copy/Download/Edit only). GitHub Release dual-packs chrome + firefox zips. Settings Reset restores quality 92 and English locale.
 
 
 ## Category

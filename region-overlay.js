@@ -91,7 +91,7 @@
         Date.now() - stash.ts > STASH_MAX_AGE_MS
       ) {
         try {
-          await local.remove("unissRegionStash");
+          await local.remove(["unissRegionStash", "unissRegionTabId"]);
         } catch (_) {}
         return null;
       }
@@ -105,10 +105,10 @@
     const local = storageLocal();
     if (!local) return;
     try {
-      await local.remove("unissRegionStash");
+      await local.remove(["unissRegionStash", "unissRegionTabId"]);
     } catch (_) {
       try {
-        await local.set({ unissRegionStash: null });
+        await local.set({ unissRegionStash: null, unissRegionTabId: null });
       } catch (__) {}
     }
   }
@@ -312,14 +312,41 @@
     return new Blob([bytes], { type: mime });
   }
 
+  async function dataUrlToPngBlob(dataUrl) {
+    const blob = dataUrlToBlob(dataUrl);
+    if ((blob.type || "").toLowerCase() === "image/png") return blob;
+    const img = await loadImage(dataUrl);
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth || img.width;
+    c.height = img.naturalHeight || img.height;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("Invalid image data");
+    ctx.drawImage(img, 0, 0);
+    if (typeof c.toBlob === "function") {
+      const png = await new Promise((resolve, reject) => {
+        try {
+          c.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
+            "image/png"
+          );
+        } catch (err) {
+          reject(err);
+        }
+      });
+      if (png) return png;
+    }
+    return dataUrlToBlob(c.toDataURL("image/png"));
+  }
+
   async function copyDataUrl(dataUrl) {
     if (!navigator.clipboard || !window.ClipboardItem) {
       throw new Error(t("errClipboard"));
     }
     try {
-      const blob = dataUrlToBlob(dataUrl);
+      // Clipboard prefers PNG; download keeps user-selected format.
+      const blob = await dataUrlToPngBlob(dataUrl);
       await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type || "image/png"]: blob }),
+        new ClipboardItem({ "image/png": blob }),
       ]);
     } catch (err) {
       const msg = err && err.message ? String(err.message) : String(err || "");
@@ -1134,11 +1161,61 @@
   }
 
   // Keep viewport fixed while the stash is valid (scroll would desync crop).
+  // Also lock nested overflow scrollers (window scroll alone is not enough).
+  const NESTED_SCROLL_CAP = 40;
+  const NESTED_SCAN_CAP = 2500;
+
+  function collectNestedScrollables(cap) {
+    const found = [];
+    const root = document.documentElement;
+    const body = document.body;
+    if (!body) return found;
+    let nodes;
+    try {
+      nodes = body.getElementsByTagName("*");
+    } catch (_) {
+      return found;
+    }
+    const n = Math.min(nodes.length, NESTED_SCAN_CAP);
+    for (let i = 0; i < n && found.length < cap; i++) {
+      const el = nodes[i];
+      if (!el || el === root || el === body) continue;
+      if (el.id === ROOT_ID || (el.closest && el.closest("#" + ROOT_ID))) continue;
+      try {
+        const style = window.getComputedStyle(el);
+        const ox = style.overflowX || "";
+        const oy = style.overflowY || "";
+        const o = style.overflow || "";
+        const canY =
+          /(auto|scroll|overlay)/.test(oy) || /(auto|scroll|overlay)/.test(o);
+        const canX =
+          /(auto|scroll|overlay)/.test(ox) || /(auto|scroll|overlay)/.test(o);
+        if (!canX && !canY) continue;
+        if (
+          el.scrollHeight <= el.clientHeight + 1 &&
+          el.scrollWidth <= el.clientWidth + 1
+        ) {
+          continue;
+        }
+        found.push({
+          el,
+          overflow: el.style.overflow || "",
+          overflowX: el.style.overflowX || "",
+          overflowY: el.style.overflowY || "",
+          scrollTop: el.scrollTop,
+          scrollLeft: el.scrollLeft,
+        });
+      } catch (_) {}
+    }
+    return found;
+  }
+
   const scrollLock = {
     htmlOverflow: "",
     bodyOverflow: "",
     scrollX: window.scrollX || 0,
     scrollY: window.scrollY || 0,
+    nested: [],
     active: true,
     cancelling: false,
   };
@@ -1147,6 +1224,13 @@
     scrollLock.bodyOverflow = document.body ? document.body.style.overflow || "" : "";
     document.documentElement.style.overflow = "hidden";
     if (document.body) document.body.style.overflow = "hidden";
+    scrollLock.nested = collectNestedScrollables(NESTED_SCROLL_CAP);
+    for (let i = 0; i < scrollLock.nested.length; i++) {
+      const item = scrollLock.nested[i];
+      try {
+        item.el.style.overflow = "hidden";
+      } catch (_) {}
+    }
   } catch (_) {}
 
   function restoreScrollLock() {
@@ -1156,6 +1240,17 @@
       document.documentElement.style.overflow = scrollLock.htmlOverflow;
       if (document.body) document.body.style.overflow = scrollLock.bodyOverflow;
     } catch (_) {}
+    const nested = scrollLock.nested || [];
+    for (let i = 0; i < nested.length; i++) {
+      const item = nested[i];
+      try {
+        item.el.style.overflow = item.overflow;
+        item.el.style.overflowX = item.overflowX;
+        item.el.style.overflowY = item.overflowY;
+        item.el.scrollTop = item.scrollTop;
+        item.el.scrollLeft = item.scrollLeft;
+      } catch (_) {}
+    }
   }
 
   function onWheelLock(e) {
@@ -1167,11 +1262,30 @@
   const wheelOpts = { capture: true, passive: false };
   const touchOpts = { capture: true, passive: false };
 
-  function onScrollGuard() {
+  function onScrollGuard(e) {
     if (!scrollLock.active || scrollLock.cancelling || capturing) return;
     const x = window.scrollX || 0;
     const y = window.scrollY || 0;
-    if (x === scrollLock.scrollX && y === scrollLock.scrollY) return;
+    let moved = x !== scrollLock.scrollX || y !== scrollLock.scrollY;
+    if (!moved && scrollLock.nested && scrollLock.nested.length) {
+      for (let i = 0; i < scrollLock.nested.length; i++) {
+        const item = scrollLock.nested[i];
+        try {
+          if (
+            item.el.scrollTop !== item.scrollTop ||
+            item.el.scrollLeft !== item.scrollLeft
+          ) {
+            moved = true;
+            try {
+              item.el.scrollTop = item.scrollTop;
+              item.el.scrollLeft = item.scrollLeft;
+            } catch (_) {}
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+    if (!moved) return;
     scrollLock.cancelling = true;
     try {
       window.scrollTo(scrollLock.scrollX, scrollLock.scrollY);

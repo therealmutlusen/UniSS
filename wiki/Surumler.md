@@ -21,13 +21,20 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.41
+
+- Settings Reset tüm varsayılanları `storage.local`’a yazar (ayrı Save gerekmez).
+- Copy panoya PNG tercih eder; Download kullanıcı formatını korur.
+- Region stash temizlenince `unissRegionTabId` de silinir; iç içe overflow kaydırıcılar kilitlenir.
+- Release CI chrome + firefox çift paket. i18n eksik anahtarlar en’den dolduruldu.
+
 ## 2.0.40
 
 - Settings → Gizlilik: geçici yakalamaları temizle (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`); ayarlar ve İndirilenler dokunulmaz.
 
 ## 2.0.39
 
-- Region: sayfa kaydırma kilidi (overflow + wheel/touch); klavye kaydırması stash’i iptal eder.
+- Region: sayfa kaydırma kilidi (overflow + wheel/touch); Escape iptal; beklenmeyen kaydırma stash’i temizler.
 - Edit handoff: 30 dk TTL, yükleme sonrası `unissEditImage` temizliği, QuotaExceeded mesajı; `editor.html?wait=1`.
 - Region Save-full ölü yolu kaldırıldı (yalnızca Copy / Download / Edit).
 - Release CI çift paket (chrome + firefox). Settings Reset kalite 92 + dil en.

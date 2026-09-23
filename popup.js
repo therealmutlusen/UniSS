@@ -677,6 +677,13 @@
       func: () => !!document.getElementById("uniss-region-root"),
     });
     if (!probe || !probe[0] || !probe[0].result) {
+      try {
+        if (local) await local.remove(["unissRegionTabId"]);
+      } catch (_) {}
+      try {
+        const stashStoreFail = stashStorage();
+        if (stashStoreFail) await stashStoreFail.remove(["unissRegionStash"]);
+      } catch (_) {}
       throw new Error(t("errInject"));
     }
     try {
@@ -768,6 +775,32 @@
     return new Blob([bytes], { type: mime });
   }
 
+  async function dataUrlToPngBlob(dataUrl) {
+    const blob = dataUrlToBlob(dataUrl);
+    if ((blob.type || "").toLowerCase() === "image/png") return blob;
+    const img = await loadImage(dataUrl);
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth || img.width;
+    c.height = img.naturalHeight || img.height;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("Invalid image data");
+    ctx.drawImage(img, 0, 0);
+    if (typeof c.toBlob === "function") {
+      const png = await new Promise((resolve, reject) => {
+        try {
+          c.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
+            "image/png"
+          );
+        } catch (err) {
+          reject(err);
+        }
+      });
+      if (png) return png;
+    }
+    return dataUrlToBlob(c.toDataURL("image/png"));
+  }
+
   function download() {
     if (!lastDataUrl) return;
     const a = document.createElement("a");
@@ -786,14 +819,15 @@
       return;
     }
     try {
-      const blob = dataUrlToBlob(lastDataUrl);
+      // Clipboard prefers PNG; download/export keep the user-selected format.
+      const blob = await dataUrlToPngBlob(lastDataUrl);
       await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type || "image/png"]: blob }),
+        new ClipboardItem({ "image/png": blob }),
       ]);
       setStatus(t("statusCopied"), "ok");
     } catch (err) {
       const message = err && err.message ? String(err.message) : String(err || "");
-      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image/i.test(message)
+      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image|Canvas export/i.test(message)
         ? t("errClipboardDenied")
         : message;
       setStatus(userMessage || t("errClipboardDenied"), "err");
