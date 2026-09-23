@@ -21,6 +21,10 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.40
+
+- Settings → Gizlilik: geçici yakalamaları temizle (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`); ayarlar ve İndirilenler dokunulmaz.
+
 ## 2.0.39
 
 - Region: sayfa kaydırma kilidi (overflow + wheel/touch); klavye kaydırması stash’i iptal eder.

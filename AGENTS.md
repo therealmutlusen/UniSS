@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.39`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.40`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -25,7 +25,7 @@ background.js          service worker: uniss-open → tabs.create (allowlisted p
 popup.html|js|css      toolbar popup (360px)
 region-overlay.js      injected region/element selector + export (files: executeScript)
 editor.html|js|css     annotation canvas in a new tab
-settings.html|js|css   format / quality / mode / locale
+settings.html|js|css   format / quality / mode / locale / Privacy clear temp captures
 i18n.js                UniSSI18n on window
 i18n/languages.json    locale picker list (71 codes)
 i18n/messages/*.json   catalogs; en.json is the source of truth
@@ -46,7 +46,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.39`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.40`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -84,7 +84,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.39`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.40`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -156,6 +156,8 @@ Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_
 | `unissRegionStash` | capture-at-start PNG dataUrl + viewport `{w,h,dpr}` + tabId/windowId/ts; `storage.local` only; ~5 min TTL; removed after export/cancel/unload |
 
 Prefix new keys with `uniss`. Large data URLs live only in local storage; never send captures off-device.
+
+Settings → Privacy can clear the four temp keys without touching settings or Downloads.
 
 ## i18n
 

@@ -15,6 +15,13 @@
   const saveBtn = document.getElementById("save");
   const resetBtn = document.getElementById("reset");
   const closeBtn = document.getElementById("close");
+  const clearTempCapturesBtn = document.getElementById("clearTempCaptures");
+  const TEMP_CAPTURE_KEYS = [
+    "unissEditImage",
+    "unissEditTs",
+    "unissRegionStash",
+    "unissRegionTabId",
+  ];
 
   const DEFAULTS = {
     format: "png",
@@ -207,6 +214,28 @@
     syncButtons();
   }
 
+
+  async function clearTempCaptures() {
+    const local = storageLocal();
+    if (!local) {
+      setStatus(t("clearTempCapturesEmpty"), "ok");
+      return;
+    }
+    try {
+      const data = await local.get(TEMP_CAPTURE_KEYS);
+      const present = TEMP_CAPTURE_KEYS.filter((k) => data[k] !== undefined);
+      if (!present.length) {
+        setStatus(t("clearTempCapturesEmpty"), "ok");
+        return;
+      }
+      await local.remove(present);
+      setStatus(t("clearedTempCaptures"), "ok");
+    } catch (e) {
+      const msg = String(e && e.message ? e.message : e || "Storage error");
+      setStatus(msg.length > 120 ? msg.slice(0, 117) + "…" : msg, "err");
+    }
+  }
+
   function onFormChange() {
     syncQualityVisibility();
     syncButtons();
@@ -227,6 +256,7 @@
   saveBtn.addEventListener("click", () => save());
   if (resetBtn) resetBtn.addEventListener("click", () => applyDefaults());
   closeBtn.addEventListener("click", () => window.close());
+  if (clearTempCapturesBtn) clearTempCapturesBtn.addEventListener("click", () => clearTempCaptures());
 
   window.UniSSI18n.init()
     .then(() => load())

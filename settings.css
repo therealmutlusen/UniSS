@@ -165,6 +165,19 @@ body {
   min-height: 0;
 }
 
+.row.row-stack {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+
+.row.row-stack > .btn {
+  justify-self: start;
+  width: auto;
+  max-width: 100%;
+  border-color: var(--border);
+}
+
 .about-meta {
   font-size: 13.5px;
   font-weight: 550;
