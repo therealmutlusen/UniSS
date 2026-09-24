@@ -13,7 +13,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi. Yeni sekm
 
 - **Default mode:** Visible area, Region veya Full page (popup’taki varsayılan)
 - **Capture immediately when the extension is clicked:** açıkken simgeye basınca hemen yakalar
-- **Show page title and URL on the screenshot:** açıkken yakalamanın üstüne tam genişlikte siyah şerit ekler; solda sekme başlığı ve URL
+- **Show page title and URL on the screenshot:** açıkken yakalamanın üstüne tam genişlikte siyah şerit ekler; solda sekme başlığı ve URL (`unissPageInfoBar`, ayar; Clear silmez)
 
 ## Language
 
@@ -27,4 +27,4 @@ Ayarların altında sürüm, MIT lisansı, gizlilik politikası ve destek e-post
 
 ## Privacy
 
-**Clear temporary captures** — Region stash (`unissRegionStash`, `unissRegionTabId`) ve Edit handoff (`unissEditImage`, `unissEditTs`) anahtarlarını siler. Ayarlar ve İndirilenler dokunulmaz.
+**Clear temporary captures** — Region stash (`unissRegionStash`, `unissRegionTabId`) ve Edit handoff (`unissEditImage`, `unissEditTs`) anahtarlarını siler. Ayarlar (`unissPageInfoBar` dahil) ve İndirilenler dokunulmaz.

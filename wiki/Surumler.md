@@ -21,6 +21,12 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.43
+
+- Popup/editor Copy: Region ile aynı jest-güvenli `ClipboardItem` Promise (encode `write` öncesi await edilmez).
+- `canCapture`: bilinen mağaza host’ları reddedilir; dokümanlar kodla hizalandı.
+- `unissPageInfoBar` depolandı/dokümante; 71 dil dürüstlüğü (en fallback); Edge Add-ons ifadesi (paket hedefi, canlı değil); popup önizleme `alt` i18n.
+
 ## 2.0.42
 
 - Region stash: overlay yalnızca `stash.tabId` / `windowId` bağlanan sekme ile eşleşirse kabul eder (popup `executeScript` bind).

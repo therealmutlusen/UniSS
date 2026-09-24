@@ -21,6 +21,7 @@
   "language": "Language",
   "languageHelp": "UI language for UniSS. Default is English.",
   "popupHint": "Capture, edit, download.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Capture mode",
   "statusPreparing": "Preparing…",
   "statusCapturing": "Capturing…",

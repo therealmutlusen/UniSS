@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.42`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.43`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -15,7 +15,7 @@ Capture the visible tab or stitch a full-page screenshot, then download, copy, o
 - Download is an `<a download>` click (no `downloads` permission)
 - Copy uses `ClipboardItem` with **image/png** (re-encode when export format is jpeg/webp; Download keeps user format). Fails on browsers without image clipboard write
 
-Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`). `chrome://`, `about:`, store pages, etc. are rejected.
+Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`). `chrome://`, `about:`, and known store hosts (`chrome.google.com` webstore paths, `chromewebstore.google.com`, `addons.mozilla.org`, `microsoftedge.microsoft.com`, `addons.opera.com`) are rejected.
 
 ## Layout
 
@@ -45,7 +45,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.42`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.43`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -59,7 +59,7 @@ Limits:
 
 - Firefox `about:debugging` load is temporary and gone when Firefox quits. Production Firefox is a signed AMO listing
 - Clipboard image copy needs `ClipboardItem`; treat copy as optional. Download does not
-- Capture is limited to `http://` and `https://` tabs (`canCapture` in `popup.js`)
+- Capture is limited to `http://`/`https://` tabs; store hosts and `chrome://`/`about:` rejected (`canCapture` in `popup.js`)
 
 User-facing matrix and install copy live in `README.md` and `wiki/`. Update both when support or behavior changes.
 
@@ -83,7 +83,7 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.42`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.43`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
@@ -93,7 +93,7 @@ Firefox 115+:
 
 ## Store packaging
 
-First-wave stores: Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO (listed). CWS and Edge use the chrome zip; AMO uses the firefox zip. Opera Add-ons later. Do not submit to Safari.
+First-wave packages: Chrome Web Store, Microsoft Edge Add-ons (planned upload target; not listed/submitted yet), Firefox AMO (listed). CWS and Edge use the chrome zip; AMO uses the firefox zip. Opera Add-ons later. Do not submit to Safari.
 
 - `./pack.sh` or `./pack.sh chrome` writes `uniss-<version>-chrome.zip` and the legacy alias `uniss-<version>.zip`; `./pack.sh firefox` writes `uniss-<version>-firefox.zip`. Each has `manifest.json` at the zip root. Use the explicit `-chrome` / `-firefox` names for store uploads; the alias exists for the unchanged release workflow.
 - Excluded from both zips: `AGENTS.md`, `pack.sh`, `scripts/`, every `*.sh`, `store/`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
@@ -149,6 +149,7 @@ Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_
 | `unissQuality` | number, JPEG/WebP quality (settings default 92) |
 | `unissAutoCaptureOnClick` | boolean; popup auto-runs capture on open |
 | `unissLocale` | language code; missing → `en` |
+| `unissPageInfoBar` | boolean settings; page title/URL bar on screenshot (default on; Clear does not remove) |
 | `unissEditImage` | data URL for the editor; removed after successful editor load or when TTL expires |
 | `unissEditTs` | timestamp when editor image was stored (~30 min TTL) |
 | `unissRegionTabId` | tab id for in-progress region capture |

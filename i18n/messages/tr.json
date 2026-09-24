@@ -21,6 +21,7 @@
   "language": "Dil",
   "languageHelp": "UniSS arayüz dili. Varsayılan İngilizce.",
   "popupHint": "Yakala, düzenle, indir.",
+  "previewAlt": "Ekran görüntüsü önizlemesi",
   "captureModeLegend": "Yakalama modu",
   "statusPreparing": "Hazırlanıyor…",
   "statusCapturing": "Yakalanıyor…",

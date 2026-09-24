@@ -1,6 +1,6 @@
 # UniSS
 
-UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.42. Arayüz varsayılanı İngilizce; 71 dil.
+UniSS, tarayıcıdaki açık sekmeyi yakalayıp cihazınızda indirmenizi, panoya kopyalamanızı veya işaretlemenizi sağlayan bir Manifest V3 eklentisidir. Sürüm 2.0.43. Arayüz varsayılanı İngilizce; 71 dil (bazı yerellerde eksik dizeler İngilizceye düşer).
 
 Hesap yok, sunucu yok. Ekran görüntüleri tarayıcının yerel deposunda kalır.
 
@@ -23,7 +23,7 @@ Gizlilik politikası: [therealmutlusen.github.io/UniSS/store/privacy.html](https
 - **Kaydet:** PNG, JPEG veya WebP indir; destekleyen tarayıcıda panoya kopyala
 - **Ayarlar:** format, kalite, varsayılan mod, tıklayınca otomatik yakala, sayfa başlığı/URL şeridi, arayüz dili; Privacy → Clear temporary captures
 
-Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır. `chrome://`, `about:`, mağaza sayfaları ve benzeri iç sayfalar yakalanmaz.
+Yakalama yalnızca `http://` ve `https://` sekmelerinde çalışır. `chrome://`, `about:` ve bilinen mağaza host’ları (Chrome Web Store, AMO, Edge Add-ons, Opera) yakalanmaz.
 
 ## Nasıl kullanılır
 
@@ -71,7 +71,7 @@ Popup sağ üstündeki dişli veya düzenleyicideki ayarlar düğmesi.
 
 **Firefox (115+, masaüstü):** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/uniss/)
 
-Edge Add-ons henüz yok. Edge’de Chrome Web Store veya aşağıdaki paketlenmemiş yükleme.
+Edge Add-ons ilk dalga paket hedefidir (chrome zip) ancak henüz listelenmedi / gönderilmedi. Edge’de şimdilik Chrome Web Store veya aşağıdaki paketlenmemiş yükleme.
 
 Geliştirici / kaynak klasör: build yok. Zip indirdiyseniz açın; yüklenecek klasör `manifest.json` içeren kök olmalı.
 

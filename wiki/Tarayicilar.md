@@ -1,6 +1,6 @@
 # Tarayıcılar
 
-Sürüm 2.0.42, Manifest V3. Chromium için `-chrome`, Firefox AMO için `-firefox` paketi.
+Sürüm 2.0.43, Manifest V3. Chromium için `-chrome`, Firefox AMO için `-firefox` paketi.
 
 | Tarayıcı | Destek | Not |
 | --- | --- | --- |

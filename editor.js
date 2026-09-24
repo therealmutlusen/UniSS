@@ -1804,17 +1804,18 @@
       return;
     }
     try {
-      let blob;
-      try {
-        // Clipboard prefers PNG; download keeps user-selected format via exportHref.
-        const exported = renderExportCanvas();
-        blob = await canvasToBlob(exported.canvas, "image/png");
-      } catch (_) {
-        const href = exportHref();
-        const raw = dataUrlToBlob(href);
-        if ((raw.type || "").toLowerCase() === "image/png") {
-          blob = raw;
-        } else {
+      // Clipboard prefers PNG; download keeps user-selected format via exportHref.
+      // ClipboardItem Promise API keeps user activation (no await before write).
+      const pngBlobPromise = (async () => {
+        try {
+          const exported = renderExportCanvas();
+          return await canvasToBlob(exported.canvas, "image/png");
+        } catch (_) {
+          const href = exportHref();
+          const raw = dataUrlToBlob(href);
+          if ((raw.type || "").toLowerCase() === "image/png") {
+            return raw;
+          }
           // Re-encode without fetch(data:) for Firefox compatibility.
           const img = new Image();
           await new Promise((resolve, reject) => {
@@ -1828,11 +1829,11 @@
           const ctx = c.getContext("2d");
           if (!ctx) throw new Error("Canvas export failed");
           ctx.drawImage(img, 0, 0);
-          blob = await canvasToBlob(c, "image/png");
+          return await canvasToBlob(c, "image/png");
         }
-      }
+      })();
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
+        new ClipboardItem({ "image/png": pngBlobPromise }),
       ]);
       setStatus(t("statusCopied"), "ok", { toast: true });
     } catch (err) {

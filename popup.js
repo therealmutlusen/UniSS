@@ -152,8 +152,22 @@
 
   function canCapture(tab) {
     if (!tab || !tab.url) return false;
-    const u = tab.url;
-    return u.startsWith("http://") || u.startsWith("https://");
+    let url;
+    try {
+      url = new URL(tab.url);
+    } catch (_) {
+      return false;
+    }
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    const host = String(url.hostname || "").toLowerCase();
+    if (host === "chromewebstore.google.com") return false;
+    if (host === "chrome.google.com" && String(url.pathname || "").toLowerCase().includes("/webstore")) {
+      return false;
+    }
+    if (host === "addons.mozilla.org") return false;
+    if (host === "microsoftedge.microsoft.com") return false;
+    if (host === "addons.opera.com") return false;
+    return true;
   }
 
   async function runInTab(tabId, func, args = []) {
@@ -757,7 +771,15 @@
       preview.removeAttribute("src");
       previewBox.hidden = true;
       setReadyButtons(false);
-      setStatus(err && err.message ? err.message : String(err), "err");
+      let message = err && err.message ? String(err.message) : String(err || "");
+      if (
+        /cannot be captured|cannot be scripted|restricted|extensions gallery|Cannot access contents|cannot access a chrome|Extension gallery/i.test(
+          message
+        )
+      ) {
+        message = t("errCannotCapture");
+      }
+      setStatus(message || t("errCannotCapture"), "err");
     } finally {
       capturing = false;
       captureBtn.disabled = false;
@@ -829,9 +851,10 @@
     }
     try {
       // Clipboard prefers PNG; download/export keep the user-selected format.
-      const blob = await dataUrlToPngBlob(lastDataUrl);
+      // ClipboardItem Promise API keeps user activation (no await before write).
+      const pngBlobPromise = (async () => dataUrlToPngBlob(lastDataUrl))();
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
+        new ClipboardItem({ "image/png": pngBlobPromise }),
       ]);
       setStatus(t("statusCopied"), "ok");
     } catch (err) {

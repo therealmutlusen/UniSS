@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.42; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy for Edge Add-ons. Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.43; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy when submitting Edge Add-ons (not listed yet). Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,9 +8,9 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.42-chrome.zip` to CWS/Edge and `uniss-2.0.42-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.43-chrome.zip` to CWS/Edge and `uniss-2.0.43-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
-First-wave stores: Chrome Web Store and Edge Add-ons use the chrome package; Firefox AMO (listed) uses the firefox package. Opera Add-ons later. Safari is not a target.
+First-wave packages include Chrome Web Store and Microsoft Edge Add-ons (chrome zip) plus Firefox AMO (firefox zip). Edge Add-ons is a planned upload target but is not listed/submitted yet. Opera Add-ons later. Safari is not a target.
 
 ## Single purpose
 
@@ -18,7 +18,7 @@ Capture a web page (visible area, region, or full page), then download, copy, or
 
 ## Short description (≤132 characters)
 
-UniSS: capture, annotate, download. 71 UI languages (default English).
+UniSS: capture, annotate, download. 71 UI languages (default English; some strings still fall back to English).
 
 (This matches `manifest.json` `description`.)
 
@@ -31,7 +31,7 @@ UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon
 • Visible area — the portion of the active tab currently on screen
 • Region — select an element or free rectangle on the page (hover snap; crop of the visible viewport; Copy / Download / Edit only — no Save-full)
 • Full page — scrolls the tab, temporarily hides fixed chrome, and stitches slices into one image
-• Scope — HTTP and HTTPS pages only; browser and store pages (for example chrome:// or about:) cannot be captured
+• Scope — HTTP and HTTPS pages only; browser pages (chrome://, about:) and known store hosts (Chrome Web Store, AMO, Edge Add-ons, Opera) cannot be captured
 
 **Annotate**
 
@@ -48,7 +48,7 @@ UniSS is a local screenshot tool for Chromium and Firefox. Open the toolbar icon
 
 • Default capture mode, image format, quality, page title/URL bar, and interface language
 • Privacy: clear temporary Region/Edit storage without resetting settings
-• 71 UI languages; English is the default
+• 71 UI languages; English is the default (many locales still use English fallback for some strings / partial translation)
 
 **Privacy and permissions**
 
@@ -61,11 +61,11 @@ Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
 
+**2.0.43** — Popup/editor Copy uses gesture-safe `ClipboardItem` Promise (match Region; no await before `clipboard.write`). `canCapture` rejects known store hosts. Documented `unissPageInfoBar`; 71-language honesty (en fallback); Edge Add-ons wording (package target, not live yet); popup preview `alt` i18n.
+
 **2.0.42** — Region stash bound to the injected tab (`stash.tabId` / `windowId` via popup `executeScript` bind). Gesture-safe Region Copy via `ClipboardItem` Promise + cached crop; Download crops from cache. wiki + LISTING scripting/textOverlay notes; dead overlay hide/show/capture-failed paths and leftover `i18n/en.json` removed.
 
 **2.0.41** — Settings Reset persists all defaults (format/quality/mode/auto-capture/page bar/locale) without a separate Save. Copy to clipboard prefers PNG (Download keeps selected format). Region clears `unissRegionTabId` with the stash; nested overflow scrollers are locked while selecting. Release CI dual-packs chrome + firefox zips. i18n locales filled from English for missing keys.
-
-**2.0.40** — Settings Clear temporary captures removes orphan Region stash and Edit handoff images from extension storage without resetting settings or deleting Downloads.
 
 
 ## Category
@@ -78,7 +78,7 @@ Productivity (Chrome / Edge). Firefox: Photos, Music & Media or Tabs (pick the c
 
 **scripting** — Full-page capture injects serializable helper functions with `scripting.executeScript({ func, args })` to hide fixed/sticky UI, scroll in viewport steps, and restore the page in `finally`. Region capture injects `scripting.executeScript({ files: ["region-overlay.js"] })` plus a follow-up `{ func, args }` bind for tab/window ids. Visible capture does not need injection. No remote URLs, no `code:` strings, no `eval`.
 
-**storage** — `storage.local` holds settings (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`) and the editor handoff (`unissEditImage`, `unissEditTs`). Region capture briefly keeps `unissRegionStash` in `storage.local` until export, cancel, unload, or ~5 minute TTL. Captures are data URLs on the device. Nothing is synced or uploaded.
+**storage** — `storage.local` holds settings (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`, `unissPageInfoBar`) and the editor handoff (`unissEditImage`, `unissEditTs`). Region capture briefly keeps `unissRegionStash` in `storage.local` until export, cancel, unload, or ~5 minute TTL. Privacy Clear removes only the four temporary Region/Edit keys (not settings). Captures are data URLs on the device. Nothing is synced or uploaded.
 
 Not requested: `downloads`, `tabs` (beyond activeTab), `host_permissions`, `<all_urls>`, clipboard permissions (copy uses `ClipboardItem` in the extension page).
 
