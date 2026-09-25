@@ -19,6 +19,7 @@
   "language": "Bahasa",
   "languageHelp": "Bahasa UI UniSS. Default bahasa Inggris.",
   "popupHint": "Tangkap, edit, unduh.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Mode tangkap",
   "statusPreparing": "Menyiapkan…",
   "statusCapturing": "Menangkap…",

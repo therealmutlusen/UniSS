@@ -19,6 +19,7 @@
   "language": "Γλώσσα",
   "languageHelp": "Γλώσσα διεπαφής UniSS. Προεπιλογή τα αγγλικά.",
   "popupHint": "Λήψη, επεξεργασία, λήψη αρχείου.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Λειτουργία λήψης",
   "statusPreparing": "Προετοιμασία…",
   "statusCapturing": "Λήψη…",

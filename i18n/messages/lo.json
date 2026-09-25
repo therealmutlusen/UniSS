@@ -19,6 +19,7 @@
   "language": "ພາສາ",
   "languageHelp": "ພາສາ UI ຂອງ UniSS. ຄ່າເລີ່ມຕົ້ນແມ່ນອັງກິດ.",
   "popupHint": "ຖ່າຍ, ແກ້ໄຂ, ດາວໂຫລດ.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "ໂໝດຖ່າຍ",
   "statusPreparing": "ກຳລັງກຽມ…",
   "statusCapturing": "ກຳລັງຖ່າຍ…",

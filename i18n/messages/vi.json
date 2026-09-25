@@ -19,6 +19,7 @@
   "language": "Ngôn ngữ",
   "languageHelp": "Ngôn ngữ giao diện UniSS. Mặc định là tiếng Anh.",
   "popupHint": "Chụp, chỉnh sửa, tải xuống.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Chế độ chụp",
   "statusPreparing": "Đang chuẩn bị…",
   "statusCapturing": "Đang chụp…",

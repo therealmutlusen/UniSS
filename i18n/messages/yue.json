@@ -19,6 +19,7 @@
   "language": "語言",
   "languageHelp": "UniSS 介面語言。預設係英文。",
   "popupHint": "截圖、編輯、下載。",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "截圖模式",
   "statusPreparing": "準備緊…",
   "statusCapturing": "截緊圖…",

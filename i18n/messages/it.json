@@ -19,6 +19,7 @@
   "language": "Lingua",
   "languageHelp": "Lingua dell’interfaccia UniSS. Predefinita: inglese.",
   "popupHint": "Acquisisci, modifica, scarica.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Modalità di acquisizione",
   "statusPreparing": "Preparazione…",
   "statusCapturing": "Acquisizione…",

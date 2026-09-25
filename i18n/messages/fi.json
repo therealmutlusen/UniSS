@@ -19,6 +19,7 @@
   "language": "Kieli",
   "languageHelp": "UniSS-käyttöliittymän kieli. Oletus on englanti.",
   "popupHint": "Kaappaa, muokkaa, lataa.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Kaappaustila",
   "statusPreparing": "Valmistellaan…",
   "statusCapturing": "Kaapataan…",

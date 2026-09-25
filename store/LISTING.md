@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.43; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy when submitting Edge Add-ons (not listed yet). Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.44; live CWS 2.0.16 / AMO 2.0.17). Reuse this copy when submitting Edge Add-ons (not listed yet). Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.43-chrome.zip` to CWS/Edge and `uniss-2.0.43-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.44-chrome.zip` to CWS/Edge and `uniss-2.0.44-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave packages include Chrome Web Store and Microsoft Edge Add-ons (chrome zip) plus Firefox AMO (firefox zip). Edge Add-ons is a planned upload target but is not listed/submitted yet. Opera Add-ons later. Safari is not a target.
 
@@ -61,11 +61,11 @@ Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
 
+**2.0.44** — Fill `previewAlt` (“Screenshot preview”) into all 71 locales from English (tr kept). Remove unused Region `copyDataUrl` / `dataUrlToPngBlob` (gesture-safe Copy unchanged).
+
 **2.0.43** — Popup/editor Copy uses gesture-safe `ClipboardItem` Promise (match Region; no await before `clipboard.write`). `canCapture` rejects known store hosts. Documented `unissPageInfoBar`; 71-language honesty (en fallback); Edge Add-ons wording (package target, not live yet); popup preview `alt` i18n.
 
 **2.0.42** — Region stash bound to the injected tab (`stash.tabId` / `windowId` via popup `executeScript` bind). Gesture-safe Region Copy via `ClipboardItem` Promise + cached crop; Download crops from cache. wiki + LISTING scripting/textOverlay notes; dead overlay hide/show/capture-failed paths and leftover `i18n/en.json` removed.
-
-**2.0.41** — Settings Reset persists all defaults (format/quality/mode/auto-capture/page bar/locale) without a separate Save. Copy to clipboard prefers PNG (Download keeps selected format). Region clears `unissRegionTabId` with the stash; nested overflow scrollers are locked while selecting. Release CI dual-packs chrome + firefox zips. i18n locales filled from English for missing keys.
 
 
 ## Category

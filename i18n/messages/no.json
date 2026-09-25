@@ -19,6 +19,7 @@
   "language": "Språk",
   "languageHelp": "UI-språk for UniSS. Standard er engelsk.",
   "popupHint": "Ta opp, rediger, last ned.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Opptaksmodus",
   "statusPreparing": "Forbereder…",
   "statusCapturing": "Tar opp…",

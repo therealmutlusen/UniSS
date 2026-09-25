@@ -19,6 +19,7 @@
   "language": "اللغة",
   "languageHelp": "لغة واجهة UniSS. الافتراضي الإنجليزية.",
   "popupHint": "التقاط، تحرير، تنزيل.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "وضع التقاط",
   "statusPreparing": "جارٍ التحضير…",
   "statusCapturing": "جارٍ التقاط…",

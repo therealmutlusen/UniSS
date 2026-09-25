@@ -19,6 +19,7 @@
   "language": "Idioma",
   "languageHelp": "Idioma de la interfaz de UniSS. El predeterminado es inglés.",
   "popupHint": "Capturar, editar, descargar.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Modo de captura",
   "statusPreparing": "Preparando…",
   "statusCapturing": "Capturando…",

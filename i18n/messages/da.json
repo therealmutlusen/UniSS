@@ -19,6 +19,7 @@
   "language": "Sprog",
   "languageHelp": "UI-sprog for UniSS. Standard er engelsk.",
   "popupHint": "Optag, rediger, download.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Optagetilstand",
   "statusPreparing": "Forbereder…",
   "statusCapturing": "Optager…",

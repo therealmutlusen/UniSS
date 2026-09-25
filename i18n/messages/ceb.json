@@ -19,6 +19,7 @@
   "language": "Pinulongan",
   "languageHelp": "Pinulongan sa UI sa UniSS. Default ang English.",
   "popupHint": "Kuha, i-edit, i-download.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Mode sa kuha",
   "statusPreparing": "Nag-andam…",
   "statusCapturing": "Nagkuha…",

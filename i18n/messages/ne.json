@@ -19,6 +19,7 @@
   "language": "भाषा",
   "languageHelp": "UniSS UI भाषा। पूर्वनिर्धारित अंग्रेजी।",
   "popupHint": "क्याप्चर, सम्पादन, डाउनलोड।",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "क्याप्चर मोड",
   "statusPreparing": "तयार हुँदै…",
   "statusCapturing": "क्याप्चर हुँदै…",

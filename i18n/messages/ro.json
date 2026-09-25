@@ -19,6 +19,7 @@
   "language": "Limbă",
   "languageHelp": "Limba interfeței UniSS. Implicit engleză.",
   "popupHint": "Captură, editare, descărcare.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Mod de captură",
   "statusPreparing": "Pregătire…",
   "statusCapturing": "Capturare…",

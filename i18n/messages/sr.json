@@ -19,6 +19,7 @@
   "language": "Језик",
   "languageHelp": "Језик интерфејса UniSS. Подразумевано је енглески.",
   "popupHint": "Сними, уреди, преузми.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Режим снимања",
   "statusPreparing": "Припрема…",
   "statusCapturing": "Снимање…",

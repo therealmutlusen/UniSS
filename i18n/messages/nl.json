@@ -19,6 +19,7 @@
   "language": "Taal",
   "languageHelp": "UI-taal voor UniSS. Standaard is Engels.",
   "popupHint": "Opnemen, bewerken, downloaden.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Opnamemodus",
   "statusPreparing": "Voorbereiden…",
   "statusCapturing": "Opnemen…",

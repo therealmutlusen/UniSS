@@ -19,6 +19,7 @@
   "language": "Språk",
   "languageHelp": "UI-språk för UniSS. Standard är engelska.",
   "popupHint": "Fånga, redigera, ladda ner.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Fångstläge",
   "statusPreparing": "Förbereder…",
   "statusCapturing": "Fångar…",

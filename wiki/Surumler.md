@@ -21,6 +21,11 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.44
+
+- `previewAlt` tüm 71 locale’e en kopyası ile dolduruldu (tr zaten çevirili).
+- Region overlay’deki kullanılmayan `copyDataUrl` / `dataUrlToPngBlob` kaldırıldı (canlı yol `requestCopyGestureSafe`).
+
 ## 2.0.43
 
 - Popup/editor Copy: Region ile aynı jest-güvenli `ClipboardItem` Promise (encode `write` öncesi await edilmez).

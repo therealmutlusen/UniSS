@@ -19,6 +19,7 @@
   "language": "言語",
   "languageHelp": "UniSS の UI 言語。デフォルトは英語です。",
   "popupHint": "キャプチャ、編集、ダウンロード。",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "キャプチャモード",
   "statusPreparing": "準備中…",
   "statusCapturing": "キャプチャ中…",

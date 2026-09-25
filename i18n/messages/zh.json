@@ -19,6 +19,7 @@
   "language": "语言",
   "languageHelp": "UniSS 界面语言。默认为英语。",
   "popupHint": "截图、编辑、下载。",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "截图模式",
   "statusPreparing": "准备中…",
   "statusCapturing": "正在截图…",

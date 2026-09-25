@@ -19,6 +19,7 @@
   "language": "Език",
   "languageHelp": "Език на интерфейса на UniSS. По подразбиране английски.",
   "popupHint": "Заснеми, редактирай, изтегли.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Режим на заснемане",
   "statusPreparing": "Подготовка…",
   "statusCapturing": "Заснемане…",

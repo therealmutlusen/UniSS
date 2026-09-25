@@ -19,6 +19,7 @@
   "language": "Nyelv",
   "languageHelp": "A UniSS felület nyelve. Alapértelmezés: angol.",
   "popupHint": "Rögzítés, szerkesztés, letöltés.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Rögzítési mód",
   "statusPreparing": "Előkészítés…",
   "statusCapturing": "Rögzítés…",

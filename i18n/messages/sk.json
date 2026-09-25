@@ -19,6 +19,7 @@
   "language": "Jazyk",
   "languageHelp": "Jazyk rozhrania UniSS. Predvolená je angličtina.",
   "popupHint": "Zachytiť, upraviť, stiahnuť.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Režim snímky",
   "statusPreparing": "Príprava…",
   "statusCapturing": "Zachytávanie…",

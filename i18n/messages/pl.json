@@ -19,6 +19,7 @@
   "language": "Język",
   "languageHelp": "Język interfejsu UniSS. Domyślnie angielski.",
   "popupHint": "Przechwyć, edytuj, pobierz.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Tryb przechwytywania",
   "statusPreparing": "Przygotowywanie…",
   "statusCapturing": "Przechwytywanie…",

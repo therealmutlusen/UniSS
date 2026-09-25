@@ -19,6 +19,7 @@
   "language": "Язык",
   "languageHelp": "Язык интерфейса UniSS. По умолчанию английский.",
   "popupHint": "Снять, править, скачать.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Режим снимка",
   "statusPreparing": "Подготовка…",
   "statusCapturing": "Съёмка…",

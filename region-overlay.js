@@ -378,51 +378,6 @@
     return new Blob([bytes], { type: mime });
   }
 
-  async function dataUrlToPngBlob(dataUrl) {
-    const blob = dataUrlToBlob(dataUrl);
-    if ((blob.type || "").toLowerCase() === "image/png") return blob;
-    const img = await loadImage(dataUrl);
-    const c = document.createElement("canvas");
-    c.width = img.naturalWidth || img.width;
-    c.height = img.naturalHeight || img.height;
-    const ctx = c.getContext("2d");
-    if (!ctx) throw new Error("Invalid image data");
-    ctx.drawImage(img, 0, 0);
-    if (typeof c.toBlob === "function") {
-      const png = await new Promise((resolve, reject) => {
-        try {
-          c.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
-            "image/png"
-          );
-        } catch (err) {
-          reject(err);
-        }
-      });
-      if (png) return png;
-    }
-    return dataUrlToBlob(c.toDataURL("image/png"));
-  }
-
-  async function copyDataUrl(dataUrl) {
-    if (!navigator.clipboard || !window.ClipboardItem) {
-      throw new Error(t("errClipboard"));
-    }
-    try {
-      // Clipboard prefers PNG; download keeps user-selected format.
-      const blob = await dataUrlToPngBlob(dataUrl);
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-    } catch (err) {
-      const msg = err && err.message ? String(err.message) : String(err || "");
-      if (/^Invalid image data$/.test(msg)) {
-        throw new Error(t("errClipboardDenied"));
-      }
-      throw new Error(t("errClipboardDenied"));
-    }
-  }
-
   /** Ask the thin service worker to open an allowlisted extension page (no page-origin navigation). */
   async function openExtensionPageViaSw(pathWithQuery) {
     if (!api || !api.runtime || typeof api.runtime.sendMessage !== "function") {

@@ -19,6 +19,7 @@
   "language": "שפה",
   "languageHelp": "שפת הממשק של UniSS. ברירת המחדל אנגלית.",
   "popupHint": "צלם, ערוך, הורד.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "מצב צילום",
   "statusPreparing": "מכין…",
   "statusCapturing": "מצלם…",

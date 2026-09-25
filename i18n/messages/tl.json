@@ -19,6 +19,7 @@
   "language": "Wika",
   "languageHelp": "Wika ng UI ng UniSS. Default ay English.",
   "popupHint": "Kunan, i-edit, i-download.",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "Mode ng kunan",
   "statusPreparing": "Naghahanda…",
   "statusCapturing": "Kumukuha…",

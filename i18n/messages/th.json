@@ -19,6 +19,7 @@
   "language": "ภาษา",
   "languageHelp": "ภาษา UI ของ UniSS ค่าเริ่มต้นคืออังกฤษ",
   "popupHint": "จับภาพ แก้ไข ดาวน์โหลด",
+  "previewAlt": "Screenshot preview",
   "captureModeLegend": "โหมดจับภาพ",
   "statusPreparing": "กำลังเตรียม…",
   "statusCapturing": "กำลังจับภาพ…",
