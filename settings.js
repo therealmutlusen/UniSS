@@ -15,19 +15,29 @@
   const saveBtn = document.getElementById("save");
   const resetBtn = document.getElementById("reset");
   const closeBtn = document.getElementById("close");
+  const clearTempCapturesBtn = document.getElementById("clearTempCaptures");
+  const TEMP_CAPTURE_KEYS = [
+    "unissEditImage",
+    "unissEditTs",
+    "unissRegionStash",
+    "unissRegionTabId",
+  ];
 
   const DEFAULTS = {
     format: "png",
+    quality: 92,
     mode: "visible",
     autoCapture: false,
-    pageInfoBar: false,
+    pageInfoBar: true,
+    locale: "en",
   };
   let saved = {
     format: DEFAULTS.format,
-    quality: 92,
+    quality: DEFAULTS.quality,
     mode: DEFAULTS.mode,
     autoCapture: DEFAULTS.autoCapture,
     pageInfoBar: DEFAULTS.pageInfoBar,
+    locale: DEFAULTS.locale,
   };
 
   function t(key, vars) {
@@ -69,10 +79,12 @@
       mode: modeEl.value,
       autoCapture: !!autoCaptureEl.checked,
       pageInfoBar: !!pageInfoBarEl.checked,
+      locale: localeEl.value || DEFAULTS.locale,
     };
   }
 
   function isDirty() {
+    // Locale auto-persists on change (see localeEl listener); Save tracks the rest.
     const c = currentCapture();
     return (
       c.format !== saved.format ||
@@ -87,9 +99,11 @@
     const c = currentCapture();
     return (
       c.format === DEFAULTS.format &&
+      c.quality === DEFAULTS.quality &&
       c.mode === DEFAULTS.mode &&
       c.autoCapture === DEFAULTS.autoCapture &&
-      c.pageInfoBar === DEFAULTS.pageInfoBar
+      c.pageInfoBar === DEFAULTS.pageInfoBar &&
+      c.locale === DEFAULTS.locale
     );
   }
 
@@ -150,9 +164,9 @@
     qualityEl.value = String(
       typeof data.unissQuality === "number" ? data.unissQuality : 92
     );
-    modeEl.value = data.unissMode === "full" ? "full" : "visible";
+    modeEl.value = data.unissMode === "full" || data.unissMode === "region" ? data.unissMode : "visible";
     autoCaptureEl.checked = data.unissAutoCaptureOnClick === true;
-    pageInfoBarEl.checked = data.unissPageInfoBar === true;
+    pageInfoBarEl.checked = data.unissPageInfoBar !== false;
     fillLanguages();
     if (data.unissLocale) localeEl.value = data.unissLocale;
     fillAboutVersion();
@@ -182,13 +196,58 @@
     setStatus(t("saved"), "ok");
   }
 
-  function applyDefaults() {
+  async function applyDefaults() {
     formatEl.value = DEFAULTS.format;
+    qualityEl.value = String(DEFAULTS.quality);
     modeEl.value = DEFAULTS.mode;
     autoCaptureEl.checked = DEFAULTS.autoCapture;
     pageInfoBarEl.checked = DEFAULTS.pageInfoBar;
+    // Locale auto-persists; reset also writes en immediately.
+    localeEl.value = DEFAULTS.locale;
+    try {
+      await window.UniSSI18n.setLocale(DEFAULTS.locale);
+      fillLanguages();
+      localeEl.value = DEFAULTS.locale;
+    } catch (_) {}
+    const local = storageLocal();
+    if (local) {
+      try {
+        await local.set({
+          unissFormat: DEFAULTS.format,
+          unissQuality: DEFAULTS.quality,
+          unissMode: DEFAULTS.mode,
+          unissAutoCaptureOnClick: DEFAULTS.autoCapture,
+          unissPageInfoBar: DEFAULTS.pageInfoBar,
+          unissLocale: DEFAULTS.locale,
+        });
+      } catch (_) {}
+    }
     syncQualityVisibility();
+    snapshotSaved();
     syncButtons();
+    setStatus(t("saved"), "ok");
+  }
+
+
+  async function clearTempCaptures() {
+    const local = storageLocal();
+    if (!local) {
+      setStatus(t("clearTempCapturesEmpty"), "ok");
+      return;
+    }
+    try {
+      const data = await local.get(TEMP_CAPTURE_KEYS);
+      const present = TEMP_CAPTURE_KEYS.filter((k) => data[k] !== undefined);
+      if (!present.length) {
+        setStatus(t("clearTempCapturesEmpty"), "ok");
+        return;
+      }
+      await local.remove(present);
+      setStatus(t("clearedTempCaptures"), "ok");
+    } catch (e) {
+      const msg = String(e && e.message ? e.message : e || "Storage error");
+      setStatus(msg.length > 120 ? msg.slice(0, 117) + "…" : msg, "err");
+    }
   }
 
   function onFormChange() {
@@ -205,10 +264,13 @@
     await window.UniSSI18n.setLocale(localeEl.value);
     fillLanguages();
     localeEl.value = window.UniSSI18n.getLocale();
+    saved.locale = localeEl.value;
+    syncButtons();
   });
   saveBtn.addEventListener("click", () => save());
   if (resetBtn) resetBtn.addEventListener("click", () => applyDefaults());
   closeBtn.addEventListener("click", () => window.close());
+  if (clearTempCapturesBtn) clearTempCapturesBtn.addEventListener("click", () => clearTempCaptures());
 
   window.UniSSI18n.init()
     .then(() => load())

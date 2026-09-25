@@ -3,6 +3,11 @@
   function storageLocal() {
     return api && api.storage && api.storage.local;
   }
+  // The injected Region content script cannot read Chrome storage.session (trusted contexts only),
+  // so keep the short-lived stash in storage.local.
+  function stashStorage() {
+    return storageLocal();
+  }
   const t = (key, vars) => (window.UniSSI18n ? window.UniSSI18n.t(key, vars) : key);
 
   const MAX_FULL_HEIGHT_CSS = 16000;
@@ -22,7 +27,31 @@
   let exportFormat = "png";
   let exportQuality = 92;
   let autoCaptureOnClick = false;
-  let pageInfoBar = false;
+  let pageInfoBar = true;
+
+  /** Retry when Chrome tab strip is briefly busy (drag / “Tabs cannot be edited”). */
+  async function withTabStripRetry(fn, { retries = 8, delayMs = 60 } = {}) {
+    let lastErr;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastErr = err;
+        const msg = err && err.message ? String(err.message) : String(err || "");
+        if (!/cannot be edited|dragging a tab/i.test(msg)) throw err;
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
+  }
+
+  async function activateTab(tabId, opts) {
+    return withTabStripRetry(() => api.tabs.update(tabId, { active: true }), opts);
+  }
+
+  async function createTab(createProps, opts) {
+    return withTabStripRetry(() => api.tabs.create(createProps), opts);
+  }
 
   function setStatus(text, kind) {
     if (!statusEl) return;
@@ -68,11 +97,6 @@
   }
 
   function updateHints() {
-    const q =
-      exportFormat === "png"
-        ? "kayıpsız"
-        : `kalite ${exportQuality}`;
-    const qLabel = exportFormat === "png" ? t("qualityLossless") : t("qualityValue", { n: exportQuality });
     // format hint text removed — info icon + tooltip provides the details
     downloadBtn.textContent = t("downloadFmt", { fmt: extFor(exportFormat).toUpperCase() });
   }
@@ -97,7 +121,7 @@
       "unissAutoCaptureOnClick",
       "unissPageInfoBar",
     ]);
-    if (data.unissMode === "full" || data.unissMode === "visible") {
+    if (data.unissMode === "full" || data.unissMode === "visible" || data.unissMode === "region") {
       const radio = document.querySelector(
         `input[name="mode"][value="${data.unissMode}"]`
       );
@@ -110,7 +134,7 @@
       exportQuality = data.unissQuality;
     }
     autoCaptureOnClick = data.unissAutoCaptureOnClick === true;
-    pageInfoBar = data.unissPageInfoBar === true;
+    pageInfoBar = data.unissPageInfoBar !== false;
     updateHints();
   }
 
@@ -128,8 +152,22 @@
 
   function canCapture(tab) {
     if (!tab || !tab.url) return false;
-    const u = tab.url;
-    return u.startsWith("http://") || u.startsWith("https://");
+    let url;
+    try {
+      url = new URL(tab.url);
+    } catch (_) {
+      return false;
+    }
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    const host = String(url.hostname || "").toLowerCase();
+    if (host === "chromewebstore.google.com") return false;
+    if (host === "chrome.google.com" && String(url.pathname || "").toLowerCase().includes("/webstore")) {
+      return false;
+    }
+    if (host === "addons.mozilla.org") return false;
+    if (host === "microsoftedge.microsoft.com") return false;
+    if (host === "addons.opera.com") return false;
+    return true;
   }
 
   async function runInTab(tabId, func, args = []) {
@@ -581,6 +619,112 @@
     setReadyButtons(true);
   }
 
+  function regionOverlayStrings() {
+    return {
+      regionInstruct: t("regionInstruct"),
+      regionCancel: t("regionCancel"),
+      regionCopy: t("regionCopy"),
+      regionDownload: t("regionDownload"),
+      regionEdit: t("regionEdit"),
+      regionCapturing: t("regionCapturing"),
+      regionSize: t("regionSize"),
+      regionCopied: t("regionCopied"),
+      regionDownloaded: t("regionDownloaded"),
+      regionScrollCancelled: t("regionScrollCancelled"),
+      errClipboard: t("errClipboard"),
+      errClipboardDenied: t("errClipboardDenied"),
+      errRegionCrop: t("errRegionCrop"),
+      errRegionStashMissing: t("errRegionStashMissing"),
+      errImageLoad: t("errImageLoad"),
+      errMetrics: t("errMetrics"),
+      errQuota: t("errQuota"),
+      regionExportFailed: t("regionExportFailed"),
+    };
+  }
+
+  async function startRegionCapture(tab) {
+    const local = storageLocal();
+    // Keep activeTab hot: focus page, stash a viewport capture + metrics, then inject.
+    try {
+      await activateTab(tab.id);
+    } catch (_) {}
+    const dataUrl = await captureVisible(tab.windowId, "png", 100);
+    const vpResults = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => ({
+        w: window.innerWidth,
+        h: window.innerHeight,
+        dpr: window.devicePixelRatio || 1,
+      }),
+    });
+    const viewport =
+      vpResults && vpResults[0] && vpResults[0].result
+        ? vpResults[0].result
+        : { w: 1, h: 1, dpr: 1 };
+    if (local) {
+      await local.set({
+        unissRegionTabId: tab.id,
+        unissMode: "region",
+      });
+    }
+    const stashStore = stashStorage();
+    if (stashStore) {
+      await stashStore.set({
+        unissRegionStash: {
+          tabId: tab.id,
+          windowId: tab.windowId,
+          dataUrl,
+          viewport,
+          title: tab.title || "",
+          url: tab.url || "",
+          ts: Date.now(),
+        },
+      });
+    }
+    // Inject during the action click so activeTab covers the page tab.
+    await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["region-overlay.js"],
+    });
+    // Bind tab/window ids into the page so overlay rejects foreign stash (CWE-668).
+    await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (tabId, windowId) => {
+        window.__unissRegionBoundTabId = tabId;
+        window.__unissRegionBoundWindowId = windowId;
+      },
+      args: [tab.id, tab.windowId],
+    });
+    const probe = await api.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => !!document.getElementById("uniss-region-root"),
+    });
+    if (!probe || !probe[0] || !probe[0].result) {
+      try {
+        if (local) await local.remove(["unissRegionTabId"]);
+      } catch (_) {}
+      try {
+        const stashStoreFail = stashStorage();
+        if (stashStoreFail) await stashStoreFail.remove(["unissRegionStash"]);
+      } catch (_) {}
+      throw new Error(t("errInject"));
+    }
+    try {
+      await api.tabs.sendMessage(tab.id, {
+        type: "uniss-region",
+        action: "strings",
+        strings: regionOverlayStrings(),
+      });
+    } catch (_) {}
+    // Overlay owns export; keep the page focused. Helper tab region.html intentionally removed (2.0.26+).
+    try {
+      await activateTab(tab.id);
+    } catch (_) {}
+    try {
+      window.close();
+    } catch (_) {}
+  }
+
   async function capture() {
     if (capturing) return;
     capturing = true;
@@ -596,6 +740,11 @@
         throw new Error(t("errCannotCapture"));
       }
       const mode = selectedMode();
+      if (mode === "region") {
+        setStatus(t("regionStarting"));
+        await startRegionCapture(tab);
+        return;
+      }
       if (mode === "full") {
         const result = await captureFullPage(tab);
         const withInfo = await applyPageInfoBar(result.dataUrl, tab);
@@ -622,11 +771,65 @@
       preview.removeAttribute("src");
       previewBox.hidden = true;
       setReadyButtons(false);
-      setStatus(err && err.message ? err.message : String(err), "err");
+      let message = err && err.message ? String(err.message) : String(err || "");
+      if (
+        /cannot be captured|cannot be scripted|restricted|extensions gallery|Cannot access contents|cannot access a chrome|Extension gallery/i.test(
+          message
+        )
+      ) {
+        message = t("errCannotCapture");
+      }
+      setStatus(message || t("errCannotCapture"), "err");
     } finally {
       capturing = false;
       captureBtn.disabled = false;
     }
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const parts = String(dataUrl || "").split(",");
+    if (parts.length !== 2 || !/^data:/i.test(parts[0])) {
+      throw new Error("Invalid image data");
+    }
+    const match = parts[0].match(/^data:([^;,]+)/i);
+    const mime = match ? match[1].toLowerCase() : "application/octet-stream";
+    let binary;
+    try {
+      binary = atob(parts[1]);
+    } catch (_) {
+      throw new Error("Invalid image data");
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
+  async function dataUrlToPngBlob(dataUrl) {
+    const blob = dataUrlToBlob(dataUrl);
+    if ((blob.type || "").toLowerCase() === "image/png") return blob;
+    const img = await loadImage(dataUrl);
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth || img.width;
+    c.height = img.naturalHeight || img.height;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("Invalid image data");
+    ctx.drawImage(img, 0, 0);
+    if (typeof c.toBlob === "function") {
+      const png = await new Promise((resolve, reject) => {
+        try {
+          c.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
+            "image/png"
+          );
+        } catch (err) {
+          reject(err);
+        }
+      });
+      if (png) return png;
+    }
+    return dataUrlToBlob(c.toDataURL("image/png"));
   }
 
   function download() {
@@ -642,18 +845,24 @@
 
   async function copy() {
     if (!lastDataUrl) return;
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      setStatus(t("errClipboard"), "err");
+      return;
+    }
     try {
-      const res = await fetch(lastDataUrl);
-      const blob = await res.blob();
-      if (!navigator.clipboard || !window.ClipboardItem) {
-        throw new Error(t("errClipboard"));
-      }
+      // Clipboard prefers PNG; download/export keep the user-selected format.
+      // ClipboardItem Promise API keeps user activation (no await before write).
+      const pngBlobPromise = (async () => dataUrlToPngBlob(lastDataUrl))();
       await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type || "image/png"]: blob }),
+        new ClipboardItem({ "image/png": pngBlobPromise }),
       ]);
       setStatus(t("statusCopied"), "ok");
     } catch (err) {
-      setStatus(err && err.message ? err.message : String(err), "err");
+      const message = err && err.message ? String(err.message) : String(err || "");
+      const userMessage = /NetworkError|fetch|NotAllowedError|not focused|Permission|clipboard|Invalid image|Canvas export/i.test(message)
+        ? t("errClipboardDenied")
+        : message;
+      setStatus(userMessage || t("errClipboardDenied"), "err");
     }
   }
 
@@ -661,18 +870,29 @@
     if (!lastDataUrl) return;
     const local = storageLocal();
     if (!local) return;
-    await local.set({
-      unissEditImage: lastDataUrl,
-      unissEditTs: Date.now(),
-      unissFormat: exportFormat,
-      unissQuality: exportQuality,
-    });
-    await api.tabs.create({ url: api.runtime.getURL("editor.html") });
+    try {
+      await local.set({
+        unissEditImage: lastDataUrl,
+        unissEditTs: Date.now(),
+        unissFormat: exportFormat,
+        unissQuality: exportQuality,
+      });
+    } catch (err) {
+      const name = err && err.name ? String(err.name) : "";
+      const msg = err && err.message ? String(err.message) : String(err || "");
+      if (name === "QuotaExceededError" || /quota/i.test(msg)) {
+        setStatus(t("errQuota"), "err");
+        return;
+      }
+      setStatus(msg || t("errQuota"), "err");
+      return;
+    }
+    await createTab({ url: api.runtime.getURL("editor.html?wait=1"), active: true });
     setStatus(t("statusEditorOpened"), "ok");
   }
 
   async function openSettings() {
-    await api.tabs.create({ url: api.runtime.getURL("settings.html") });
+    await createTab({ url: api.runtime.getURL("settings.html"), active: true });
   }
 
   document.querySelectorAll('input[name="mode"]').forEach((el) => {
@@ -686,7 +906,7 @@
 
   window.UniSSI18n.init()
     .then(() => loadSettings())
-    .then(() => {
+    .then(async () => {
       syncCaptureButtonLabel();
       window.UniSSI18n.applyDom(document);
       updateHints();

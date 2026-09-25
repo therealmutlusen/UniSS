@@ -54,6 +54,7 @@
             <select id="mode" class="control">
               <option value="visible" data-i18n="modeVisible">Visible area</option>
               <option value="full" data-i18n="modeFull">Full page</option>
+              <option value="region" data-i18n="modeRegion">Region</option>
             </select>
           </div>
           <label class="row toggle-row" for="autoCapture">
@@ -92,6 +93,19 @@
         </div>
       </section>
 
+
+      <section class="group">
+        <h2 class="group-title" data-i18n="sectionPrivacy">Privacy</h2>
+        <div class="card">
+          <div class="row row-stack">
+            <div class="row-copy">
+              <p class="help" data-i18n="clearTempCapturesHelp">Removes Region stash and Edit handoff images left in extension storage. Your settings and downloaded files stay.</p>
+            </div>
+            <button type="button" id="clearTempCaptures" class="btn btn-ghost" data-i18n="clearTempCaptures">Clear temporary captures</button>
+          </div>
+        </div>
+      </section>
+
       <section class="group">
         <h2 class="group-title" data-i18n="sectionAbout">About</h2>
         <div class="card">
@@ -100,7 +114,7 @@
           </div>
           <div class="row">
             <span class="row-label" data-i18n="aboutVersion">Version</span>
-            <span id="aboutVersion" class="about-meta">2.0.20</span>
+            <span id="aboutVersion" class="about-meta">2.0.44</span>
           </div>
           <div class="row">
             <span class="row-label" data-i18n="aboutSupport">Support</span>

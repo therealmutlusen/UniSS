@@ -22,4 +22,4 @@ Cihaz dışına gitmez. [[Gizlilik]].
 Hedef değil.
 
 **Mağazadan nasıl kurulur?**  
-Chrome: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn). Firefox: [AMO](https://addons.mozilla.org/firefox/addon/uniss/). Edge Add-ons henüz yok. [[Kurulum]], [[Magaza]].
+Chrome: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn). Firefox: [AMO](https://addons.mozilla.org/firefox/addon/uniss/). Edge Add-ons ilk dalga paket hedefi; henüz listelenmedi. [[Kurulum]], [[Magaza]].

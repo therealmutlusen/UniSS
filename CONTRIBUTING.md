@@ -36,10 +36,11 @@ Do not add Safari-only APIs.
 ## Store zip
 
 ```sh
-./pack.sh
+./pack.sh chrome
+./pack.sh firefox
 ```
 
-That writes `uniss-<version>.zip` with `manifest.json` at the zip root. Do not commit `uniss-*.zip`. To publish a GitHub Release, bump `manifest.json` `version`, commit, and push a matching tag (`v2.0.12`). The Release workflow attaches the zip and generates notes. Listing copy is `store/LISTING.md`. Privacy policy is `store/privacy.html` (GitHub Pages: https://therealmutlusen.github.io/UniSS/store/privacy.html).
+These write `uniss-<version>-chrome.zip` and `uniss-<version>-firefox.zip` with `manifest.json` at each zip root. The Chrome target also writes the legacy `uniss-<version>.zip` alias. Both packages exclude `scripts/` and `*.sh`. Do not commit `uniss-*.zip`. To publish a GitHub Release, bump `manifest.json` `version`, commit, and push a matching tag (`v2.0.12`). The Release workflow attaches the zip and generates notes. Listing copy is `store/LISTING.md`. Privacy policy is `store/privacy.html` (GitHub Pages: https://therealmutlusen.github.io/UniSS/store/privacy.html).
 
 ## Pull requests
 

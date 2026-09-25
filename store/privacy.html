@@ -18,14 +18,14 @@
 </head>
 <body>
   <h1>UniSS privacy policy</h1>
-  <p>Last updated: 12 September 2026. Applies to the UniSS browser extension (Manifest V3) on Chromium browsers and Firefox.</p>
+  <p>Last updated: 17 September 2026. Applies to the UniSS browser extension (Manifest V3) on Chromium browsers and Firefox.</p>
 
   <h2>What UniSS does</h2>
   <p>UniSS captures the visible area or a full web page, then lets you download, copy, or annotate the image. It runs entirely in the browser. There is no UniSS account and no UniSS server.</p>
 
   <h2>Data UniSS handles</h2>
   <p>When you capture a page, UniSS reads the pixels of the active tab (HTTP or HTTPS only) and stores the resulting image locally so you can edit, copy, or download it. Settings such as capture mode, image format, quality, and interface language are also stored locally.</p>
-  <p>Storage keys live in the browser’s extension local storage (<code>storage.local</code>), including <code>unissMode</code>, <code>unissFormat</code>, <code>unissQuality</code>, <code>unissAutoCaptureOnClick</code>, <code>unissLocale</code>, and temporary editor fields <code>unissEditImage</code> and <code>unissEditTs</code>.</p>
+  <p>Storage keys live in the browser’s extension storage. Settings and editor handoff use <code>storage.local</code>, including <code>unissMode</code>, <code>unissFormat</code>, <code>unissQuality</code>, <code>unissAutoCaptureOnClick</code>, <code>unissLocale</code>, <code>unissPageInfoBar</code> (page title/URL bar setting), and temporary editor fields <code>unissEditImage</code> and <code>unissEditTs</code>. Settings Clear temporary captures removes only the four temporary Region/Edit keys; it does not remove settings such as <code>unissPageInfoBar</code>. Region capture also uses a short-lived <code>unissRegionStash</code> key (PNG snapshot + viewport metrics in <code>storage.local</code>) that is removed after Copy/Download/Edit, cancel, or page unload, and is refused if older than about five minutes. Related temporary Region keys such as <code>unissRegionTabId</code> may also appear during an in-progress selection.</p>
 
   <h2>What we do not collect</h2>
   <p>UniSS does not collect names, email addresses, passwords, payment details, location, browsing history, or analytics. It does not sell data, use data for advertising, or share data with third parties. Captures are not uploaded.</p>
