@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.44`). Default UI language is English. Stores: **CWS 2.0.16 live**, **2.0.17 in review**; **AMO 2.0.17 live** (approved 2026-09-16).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.45`). Default UI language is English. Stores: **Live CWS: 2.0.37**, **Live AMO: 2.0.37** (audit-verified).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -9,7 +9,7 @@ Read this file before changing code. Prefer surgical edits; do not rewrite whole
 Capture the visible tab or stitch a full-page screenshot, then download, copy, or annotate. Three extension pages: popup, editor, settings. Thin SW opens those pages from the region overlay (avoids page-origin `chrome-extension://` navigation). Region selection runs as an injected overlay on the page.
 
 - Visible capture: `tabs.captureVisibleTab`
-- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId` + stash `tabId`/`windowId`), injects `region-overlay.js` then `executeScript({ func, args })` sets `window.__unissRegionBoundTabId` / `__unissRegionBoundWindowId`; overlay rejects stash if bound ids mismatch (clears keys); eager-decodes stash Image for gesture-safe Copy (`ClipboardItem` Promise) and Download; overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG via Promise; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
+- Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId` + stash `tabId`/`windowId`), injects `region-overlay.js` then `executeScript({ func, args })` sets `window.__unissRegionBoundTabId` / `__unissRegionBoundWindowId`; overlay rejects stash if bound ids mismatch (clears keys); eager-decodes stash Image for gesture-safe Copy (`ClipboardItem` Promise) and Download; overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves or viewport/visualViewport resizes, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG via Promise; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
 - Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor clears the handoff after a successful load (QuotaExceeded → user-facing errQuota)
 - Download is an `<a download>` click (no `downloads` permission)
@@ -45,7 +45,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.44`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.45`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -83,25 +83,25 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.44`. **Live CWS: 2.0.16** (2.0.17 in review). **Live AMO: 2.0.17.** Do not cancel the queued CWS 2.0.17 review.
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.45`. **Live CWS: 2.0.37.** **Live AMO: 2.0.37.**
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
 - Do not push a commit that leaves the version unchanged.
-- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.17`). Workflow runs `./pack.sh chrome` and `./pack.sh firefox` and attaches both zips (plus the chrome alias). Tag must match the manifest or the job fails. Do not tag every commit.
+- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.45`). Workflow runs `./pack.sh chrome` and `./pack.sh firefox` and attaches both zips (plus the chrome alias). Tag must match the manifest or the job fails. Do not tag every commit.
 - Do not cancel a CWS/AMO review that is already queued unless the zip or listing icon is wrong.
 
 ## Store packaging
 
 First-wave packages: Chrome Web Store, Microsoft Edge Add-ons (planned upload target; not listed/submitted yet), Firefox AMO (listed). CWS and Edge use the chrome zip; AMO uses the firefox zip. Opera Add-ons later. Do not submit to Safari.
 
-- `./pack.sh` or `./pack.sh chrome` writes `uniss-<version>-chrome.zip` and the legacy alias `uniss-<version>.zip`; `./pack.sh firefox` writes `uniss-<version>-firefox.zip`. Each has `manifest.json` at the zip root. Use the explicit `-chrome` / `-firefox` names for store uploads; the alias exists for the unchanged release workflow.
+- `./pack.sh` or `./pack.sh chrome` writes `uniss-<version>-chrome.zip` and the legacy alias `uniss-<version>.zip`; `./pack.sh firefox` writes `uniss-<version>-firefox.zip`. Each has `manifest.json` at the zip root. Use the explicit `-chrome` / `-firefox` names for store uploads; the chrome alias `uniss-<version>.zip` is also attached on GitHub Release.
 - Excluded from both zips: `AGENTS.md`, `pack.sh`, `scripts/`, every `*.sh`, `store/`, `.git/`, `.github/`, `wiki/`, `.amo-assets/`, `.DS_Store`, leftover `uniss-*.zip` (a nested zip fails store review). `.gitignore` already ignores `uniss-*.zip`.
 - Listing copy and permission justifications: `store/LISTING.md`
 - Privacy policy: `store/privacy.html`, served at https://therealmutlusen.github.io/UniSS/store/privacy.html (GitHub Pages, `main` `/`; nothing leaves the device; contact is the store listing email)
 - Do not add a bundler, minifier, or npm for store review. Uploaded files are the source; AMO does not need a separate source zip (answer **Hayır** on the source-code question)
-- Chrome Web Store item `fdgaihefghcccapchpkfamphcgopoebn` (publisher `61b6029d-22b8-43df-ad6b-71a08952c8f0`) is **live** at **2.0.16** (published 2026-09-16). **2.0.17** is **in review** (İncelenmeyi bekliyor). A new zip cannot be submitted until that review finishes or is cancelled. Do not cancel unless the zip or listing icon is wrong. Public URL: https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn . Do not create a second item. Category: Verimlilik → **Araçlar**. Language: İngilizce. Support email `support@mutlusen.com` (publisher contact, verified).
-- Firefox AMO listed slug `uniss`, gecko id `uniss@uniss.app`, public URL https://addons.mozilla.org/firefox/addon/uniss/ . **2.0.17 live** (Onaylandı, 2026-09-16). Mozilla account `therealmutlusen+firefox@gmail.com`. Do not create a second AMO item. Desktop only; do not tick Android. Do not change the gecko id. Category: **Fotoğraf, Müzik ve Videolar**. Validator warning that `data_collection_permissions` needs Firefox 140+ vs `strict_min_version` 115 is expected — ignore; do not raise the min version.
+- Chrome Web Store item `fdgaihefghcccapchpkfamphcgopoebn` (publisher `61b6029d-22b8-43df-ad6b-71a08952c8f0`) is **live** at **2.0.37** (audit-verified). Public URL: https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn . Do not create a second item. Category: Verimlilik → **Araçlar**. Language: İngilizce. Support email `support@mutlusen.com` (publisher contact, verified). Do not cancel a queued CWS/AMO review unless the zip or listing icon is wrong.
+- Firefox AMO listed slug `uniss`, gecko id `uniss@uniss.app`, public URL https://addons.mozilla.org/firefox/addon/uniss/ . **2.0.37 live** (audit-verified). Mozilla account `therealmutlusen+firefox@gmail.com`. Do not create a second AMO item. Desktop only; do not tick Android. Do not change the gecko id. Category: **Fotoğraf, Müzik ve Videolar**. Validator warning that `data_collection_permissions` needs Firefox 140+ vs `strict_min_version` 115 is expected — ignore; do not raise the min version.
 - AMO listing copy is English but the default locale is **Türkçe** (filled from the tr DevHub UI). Do not switch default locale to en-US unless en-US fields are filled first or the listing can go empty. Extra details: tag `privacy`, homepage https://github.com/therealmutlusen/UniSS . Edit listing: https://addons.mozilla.org/tr/developers/addon/uniss/edit
 - `support@mutlusen.com` inbound is Resend receiving, not a mailbox and not a Gmail forward. Apex MX: `inbound-smtp.ap-northeast-1.amazonaws.com` (priority 10) on Hostinger DNS. Sending stays on `send` / `resend._domainkey`. CWS verify mail: Resend MCP `list-received-emails` / `get-received-email`, then open the link. Do not enable Hostinger Business Email MX on `@` — it would steal inbound from Resend.
 - CWS listing assets: **Mağaza simgesi 128×128** is required (`icons/icon-128.png`; empty icon disables **İnceleme için gönder**). At least one 1280×800 or 640×400 JPEG/24-bit PNG **without alpha**; small promo 440×280 optional. Official URL needs Search Console — leave “Yok”. Privacy: remote code **No**; check **website content**; three Limited Use boxes; no PII/history/telemetry.
@@ -138,7 +138,7 @@ Use `api` and `await`. Firefox `browser.*` is promise-based; Chromium MV3 `chrom
 
 Used APIs: `storage.local`, `tabs.query`, `tabs.captureVisibleTab`, `tabs.create`, `scripting.executeScript`, `runtime.getURL`, `runtime.onMessage` (thin SW).
 
-Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_permissions`, `<all_urls>`, `downloads`, or a background worker unless the task explicitly requires it.
+Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_permissions`, `<all_urls>`, `downloads`, `alarms`, or expand the thin SW beyond allowlisted `tabs.create` unless the task explicitly requires it.
 
 ## Storage keys (`storage.local`)
 
@@ -155,7 +155,7 @@ Keep permissions exactly: `activeTab`, `scripting`, `storage`. Do not add `host_
 | `unissRegionTabId` | tab id for in-progress region capture |
 | `unissRegionStash` | capture-at-start PNG dataUrl + viewport `{w,h,dpr}` + tabId/windowId/ts; `storage.local` only; ~5 min TTL; removed after export/cancel/unload |
 
-Prefix new keys with `uniss`. Large data URLs live only in local storage; never send captures off-device.
+Expired Region stash (~5 min) and Edit handoff (~30 min) are purged on SW `onInstalled` / `onStartup` and early in popup init (`purgeExpiredTempCaptures`); no `alarms` permission. Prefix new keys with `uniss`. Large data URLs live only in local storage; never send captures off-device.
 
 Settings → Privacy can clear the four temp keys without touching settings or Downloads.
 

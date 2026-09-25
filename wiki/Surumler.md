@@ -21,6 +21,13 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.45
+
+- Canlı mağaza dokümanları: CWS/AMO **2.0.37** (denetim doğrulamalı); eski 2.0.16/2.0.17 “canlı / incelemede” ifadeleri kaldırıldı.
+- Geçici yakalamalar: Region stash (5 dk) ve Edit handoff (30 dk) SW `onInstalled`/`onStartup` + popup init’te TTL ile temizlenir (`alarms` yok).
+- Region: görünüm/`visualViewport` yeniden boyutlanınca iptal + toast; Copy/Download/Edit `aria-label`; tutamaçlar `aria-hidden`.
+- Release CI: chrome + firefox çift paket; PR’da `check-no-region-helper` (workflow dosyaları ayrı commit).
+
 ## 2.0.44
 
 - `previewAlt` tüm 71 locale’e en kopyası ile dolduruldu (tr zaten çevirili).

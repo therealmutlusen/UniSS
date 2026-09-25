@@ -27,6 +27,7 @@
     regionCopied: "Copied to clipboard.",
     regionDownloaded: "Download started.",
     regionScrollCancelled: "Page scrolled — region capture cancelled. Start Region again.",
+    regionViewportCancelled: "Viewport resized — region capture cancelled. Start Region again.",
     errClipboard: "Copying images to the clipboard is not supported in this browser.",
     errClipboardDenied: "Could not copy to the clipboard. Try again or use Download.",
     errRegionCrop: "Could not crop the selected region.",
@@ -636,6 +637,7 @@
     const h = document.createElement("div");
     h.className = "uniss-handle";
     h.dataset.handle = pos;
+    h.setAttribute("aria-hidden", "true");
     h.style.display = "none";
     const cursors = {
       nw: "nwse-resize",
@@ -679,6 +681,7 @@
     const span = document.createElement("span");
     span.textContent = label;
     btn.appendChild(span);
+    btn.setAttribute("aria-label", label);
   }
 
   const ICON_COPY = [
@@ -821,6 +824,12 @@
     window.removeEventListener("wheel", onWheelLock, wheelOpts);
     window.removeEventListener("touchmove", onTouchLock, touchOpts);
     window.removeEventListener("scroll", onScrollGuard, true);
+    window.removeEventListener("resize", onViewportResizeGuard);
+    try {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", onViewportResizeGuard);
+      }
+    } catch (_) {}
     restoreScrollLock();
     if (window[TEARDOWN_KEY] === teardown) {
       try {
@@ -1366,6 +1375,11 @@
     bodyOverflow: "",
     scrollX: window.scrollX || 0,
     scrollY: window.scrollY || 0,
+    // Snapshot viewport when lock starts (resize would desync crop like scroll).
+    innerW: window.innerWidth,
+    innerH: window.innerHeight,
+    vvW: window.visualViewport ? window.visualViewport.width : null,
+    vvH: window.visualViewport ? window.visualViewport.height : null,
     nested: [],
     active: true,
     cancelling: false,
@@ -1451,6 +1465,33 @@
       });
   }
 
+  function onViewportResizeGuard() {
+    if (!scrollLock.active || scrollLock.cancelling || capturing) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    let changed = w !== scrollLock.innerW || h !== scrollLock.innerH;
+    if (
+      !changed &&
+      scrollLock.vvW != null &&
+      scrollLock.vvH != null &&
+      window.visualViewport
+    ) {
+      changed =
+        window.visualViewport.width !== scrollLock.vvW ||
+        window.visualViewport.height !== scrollLock.vvH;
+    }
+    if (!changed) return;
+    scrollLock.cancelling = true;
+    showToast(t("regionViewportCancelled"));
+    clearRegionStash()
+      .catch(() => {})
+      .finally(() => {
+        try {
+          teardown();
+        } catch (_) {}
+      });
+  }
+
   hit.addEventListener("mousedown", onPointerDown, true);
   window.addEventListener("mousemove", onPointerMove, true);
   window.addEventListener("mouseup", onPointerUp, true);
@@ -1458,6 +1499,12 @@
   window.addEventListener("wheel", onWheelLock, wheelOpts);
   window.addEventListener("touchmove", onTouchLock, touchOpts);
   window.addEventListener("scroll", onScrollGuard, true);
+  window.addEventListener("resize", onViewportResizeGuard);
+  try {
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", onViewportResizeGuard);
+    }
+  } catch (_) {}
 
   Object.keys(handles).forEach((k) => {
     handles[k].addEventListener("mousedown", onPointerDown, true);

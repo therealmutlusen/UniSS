@@ -12,6 +12,44 @@
     "settings.html",
   ]);
 
+  // Mirror region-overlay STASH_MAX_AGE_MS and editor EDIT_IMAGE_TTL_MS.
+  const STASH_MAX_AGE_MS = 5 * 60 * 1000;
+  const EDIT_IMAGE_TTL_MS = 30 * 60 * 1000;
+
+  /** Drop expired Region stash / Edit handoff only; never touches settings keys. */
+  async function purgeExpiredTempCaptures() {
+    const local = api && api.storage && api.storage.local;
+    if (!local) return;
+    try {
+      const data = await local.get([
+        "unissRegionStash",
+        "unissRegionTabId",
+        "unissEditImage",
+        "unissEditTs",
+      ]);
+      const now = Date.now();
+      const remove = [];
+
+      const stash = data && data.unissRegionStash;
+      const stashTs = stash && typeof stash.ts === "number" ? stash.ts : null;
+      if (!stash || stashTs === null || now - stashTs > STASH_MAX_AGE_MS) {
+        remove.push("unissRegionStash", "unissRegionTabId");
+      }
+
+      const editImage = data && data.unissEditImage;
+      const editTs =
+        data && typeof data.unissEditTs === "number" ? data.unissEditTs : null;
+      if (!editImage || editTs === null || now - editTs > EDIT_IMAGE_TTL_MS) {
+        remove.push("unissEditImage", "unissEditTs");
+      }
+
+      if (remove.length) {
+        const unique = [...new Set(remove)];
+        await local.remove(unique);
+      }
+    } catch (_) {}
+  }
+
   /** @returns {string|null} relative path with optional query/hash, or null if rejected */
   function sanitizeExtensionPath(path) {
     if (typeof path !== "string" || !path) return null;
@@ -54,7 +92,25 @@
     } catch (_) {}
   }
 
-  if (!api || !api.runtime || !api.runtime.onMessage) return;
+  if (!api || !api.runtime) return;
+
+  // Proactive TTL purge on install/update and browser startup (no alarms permission).
+  try {
+    if (api.runtime.onInstalled) {
+      api.runtime.onInstalled.addListener(() => {
+        purgeExpiredTempCaptures().catch(() => {});
+      });
+    }
+  } catch (_) {}
+  try {
+    if (api.runtime.onStartup) {
+      api.runtime.onStartup.addListener(() => {
+        purgeExpiredTempCaptures().catch(() => {});
+      });
+    }
+  } catch (_) {}
+
+  if (!api.runtime.onMessage) return;
 
   api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!msg || msg.type !== "uniss-open") return;

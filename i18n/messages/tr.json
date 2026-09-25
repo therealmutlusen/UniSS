@@ -145,5 +145,6 @@
   "errQuota": "Görüntü tarayıcı depolaması için çok büyük. Daha küçük bir yakalama deneyin veya Düzenle yerine İndir’i kullanın.",
   "regionCopied": "Panoya kopyalandı.",
   "regionDownloaded": "İndirme başladı.",
-  "regionScrollCancelled": "Sayfa kaydırıldı — bölge yakalama iptal edildi. Bölge’yi yeniden başlatın."
+  "regionScrollCancelled": "Sayfa kaydırıldı — bölge yakalama iptal edildi. Bölge’yi yeniden başlatın.",
+  "regionViewportCancelled": "Görünüm alanı yeniden boyutlandı — bölge yakalama iptal edildi. Bölge’yi yeniden başlatın."
 }

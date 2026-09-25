@@ -145,5 +145,6 @@
   "errQuota": "Image is too large for browser storage. Try a smaller capture or download instead of Edit.",
   "regionCopied": "Copied to clipboard.",
   "regionDownloaded": "Download started.",
-  "regionScrollCancelled": "Page scrolled — region capture cancelled. Start Region again."
+  "regionScrollCancelled": "Page scrolled — region capture cancelled. Start Region again.",
+  "regionViewportCancelled": "Viewport resized — region capture cancelled. Start Region again."
 }

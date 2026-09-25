@@ -111,6 +111,45 @@
     return new Promise((r) => setTimeout(r, ms));
   }
 
+
+  // Mirror region-overlay STASH_MAX_AGE_MS and editor EDIT_IMAGE_TTL_MS.
+  const STASH_MAX_AGE_MS = 5 * 60 * 1000;
+  const EDIT_IMAGE_TTL_MS = 30 * 60 * 1000;
+
+  /** Drop expired Region stash / Edit handoff only; never touches settings keys. */
+  async function purgeExpiredTempCaptures() {
+    const local = storageLocal();
+    if (!local) return;
+    try {
+      const data = await local.get([
+        "unissRegionStash",
+        "unissRegionTabId",
+        "unissEditImage",
+        "unissEditTs",
+      ]);
+      const now = Date.now();
+      const remove = [];
+
+      const stash = data && data.unissRegionStash;
+      const stashTs = stash && typeof stash.ts === "number" ? stash.ts : null;
+      if (!stash || stashTs === null || now - stashTs > STASH_MAX_AGE_MS) {
+        remove.push("unissRegionStash", "unissRegionTabId");
+      }
+
+      const editImage = data && data.unissEditImage;
+      const editTs =
+        data && typeof data.unissEditTs === "number" ? data.unissEditTs : null;
+      if (!editImage || editTs === null || now - editTs > EDIT_IMAGE_TTL_MS) {
+        remove.push("unissEditImage", "unissEditTs");
+      }
+
+      if (remove.length) {
+        const unique = [...new Set(remove)];
+        await local.remove(unique);
+      }
+    } catch (_) {}
+  }
+
   async function loadSettings() {
     const local = storageLocal();
     if (!local) return;
@@ -631,6 +670,7 @@
       regionCopied: t("regionCopied"),
       regionDownloaded: t("regionDownloaded"),
       regionScrollCancelled: t("regionScrollCancelled"),
+      regionViewportCancelled: t("regionViewportCancelled"),
       errClipboard: t("errClipboard"),
       errClipboardDenied: t("errClipboardDenied"),
       errRegionCrop: t("errRegionCrop"),
@@ -905,6 +945,7 @@
   settingsBtn.addEventListener("click", () => openSettings());
 
   window.UniSSI18n.init()
+    .then(() => purgeExpiredTempCaptures())
     .then(() => loadSettings())
     .then(async () => {
       syncCaptureButtonLabel();

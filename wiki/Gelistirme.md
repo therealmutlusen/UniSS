@@ -6,7 +6,7 @@ Ayrıntılı ajan notları repodaki `AGENTS.md` içindedir. Mağaza listing’in
 
 Vanilla MV3: bundler yok, npm yok, test yok. İnce service worker yalnızca allowlist’li extension sekmelerini açar. `manifest.json` içeren klasörü yükleyin.
 
-Popup, düzenleyici, ayarlar ayrı HTML sayfalarıdır. `background`, `content_scripts`, `host_permissions`, `options_ui` yok.
+Popup, düzenleyici, ayarlar ayrı HTML sayfalarıdır. İnce `background.js` service worker yalnızca allowlist’li extension sekmelerini açar (`chrome` `service_worker` / Firefox pack `scripts`). `content_scripts`, `host_permissions`, `options_ui` yok.
 
 ## API
 
@@ -18,7 +18,7 @@ const api = typeof browser !== "undefined" ? browser : typeof chrome !== "undefi
 
 `api` ve `await` kullanın. Callback tarzı `chrome.*` eklemeyin.
 
-İzinler: `activeTab`, `scripting`, `storage`. `host_permissions`, `<all_urls>`, `downloads`, arka plan worker eklemeyin (görev açıkça istemedikçe).
+İzinler: `activeTab`, `scripting`, `storage`. `host_permissions`, `<all_urls>`, `downloads`, `alarms` eklemeyin; ince SW’yi allowlist `tabs.create` dışına genişletmeyin (görev açıkça istemedikçe).
 
 Firefox gecko id `uniss@uniss.app` — ilk AMO imzasından sonra değişmez.
 
