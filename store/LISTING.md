@@ -1,6 +1,6 @@
 # UniSS store listing
 
-Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.45; live CWS 2.0.37 / AMO 2.0.37). Reuse this copy when submitting Edge Add-ons (not listed yet). Do not paste AGENTS.md into a listing.
+Live: [Chrome Web Store](https://chromewebstore.google.com/detail/uniss/fdgaihefghcccapchpkfamphcgopoebn) and [Firefox AMO](https://addons.mozilla.org/firefox/addon/uniss/) (tree 2.0.46; live CWS 2.0.37 / AMO 2.0.37). Reuse this copy when submitting Edge Add-ons (not listed yet). Do not paste AGENTS.md into a listing.
 
 Privacy policy URL (paste into every store form): https://therealmutlusen.github.io/UniSS/store/privacy.html
 
@@ -8,7 +8,7 @@ Support email: support@mutlusen.com
 
 Store listing images live in `/Users/mutlusen/Downloads/uniss-store-assets/` (not in git). Follow Chrome Web Store image rules: 128×128 PNG icon with 96×96 artwork and 16px transparent padding; small promo 440×280; optional marquee 1400×560; screenshots 1280×800 JPEG, square corners, no padding, no alpha.
 
-Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.45-chrome.zip` to CWS/Edge and `uniss-2.0.45-firefox.zip` to AMO; `manifest.json` is at each zip root.
+Packages: run `./pack.sh chrome` for CWS/Edge and `./pack.sh firefox` for AMO. Upload `uniss-2.0.46-chrome.zip` to CWS/Edge and `uniss-2.0.46-firefox.zip` to AMO; `manifest.json` is at each zip root.
 
 First-wave packages include Chrome Web Store and Microsoft Edge Add-ons (chrome zip) plus Firefox AMO (firefox zip). Edge Add-ons is a planned upload target but is not listed/submitted yet. Opera Add-ons later. Safari is not a target.
 
@@ -60,6 +60,8 @@ Support: support@mutlusen.com
 Privacy policy: https://therealmutlusen.github.io/UniSS/store/privacy.html
 
 **What's new**
+
+**2.0.46** — Region stash write: QuotaExceeded cleaned up without injecting overlay (`errQuota`). Edit handoff compare-and-clear so a second Edit is not wiped by an older editor. Region overlay dialog a11y (role/aria-modal/label; focus + Tab among Copy/Download/Edit). Privacy docs note proactive TTL purge on SW install/startup and popup init (no `alarms`).
 
 **2.0.45** — Docs: live CWS/AMO synced to audit-verified **2.0.37**. Proactive TTL purge for Region stash (5 min) and Edit handoff (30 min) on SW startup/install and popup init (no `alarms`). Region overlay cancels on viewport/`visualViewport` resize; Copy/Download/Edit `aria-label`; resize handles `aria-hidden`.
 

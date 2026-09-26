@@ -1,6 +1,6 @@
 # Contributing to UniSS
 
-UniSS is a vanilla Manifest V3 extension: no bundler, no npm, no tests, no service worker. Load the folder that contains `manifest.json`.
+UniSS is a vanilla Manifest V3 extension: no bundler, no npm, no tests. A thin `background.js` service worker only opens allowlisted extension tabs. Load the folder that contains `manifest.json`.
 
 Please read this file before opening a pull request. Agent-oriented internals live in `AGENTS.md`; do not paste that file into store listings.
 

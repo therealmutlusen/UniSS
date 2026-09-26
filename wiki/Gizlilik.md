@@ -4,7 +4,7 @@ Resmi metin (HTTPS, mağaza formu): [therealmutlusen.github.io/UniSS/store/priva
 
 ## Özet
 
-UniSS tamamen tarayıcıda çalışır. UniSS hesabı ve UniSS sunucusu yoktur. Ayarlar (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`, `unissPageInfoBar` vb.) ve düzenleyici görüntüsü `storage.local` içindedir; bölge seçimi için kısa ömürlü `unissRegionStash` (`storage.local`, ~5 dk TTL, export/iptal/unload sonrası silinir) kullanılır. Privacy Clear yalnızca dört geçici anahtarı siler; `unissPageInfoBar` gibi ayarlara dokunmaz. Telemetri, reklam, üçüncü taraf paylaşımı yok.
+UniSS tamamen tarayıcıda çalışır. UniSS hesabı ve UniSS sunucusu yoktur. Ayarlar (`unissMode`, `unissFormat`, `unissQuality`, `unissAutoCaptureOnClick`, `unissLocale`, `unissPageInfoBar` vb.) ve düzenleyici görüntüsü `storage.local` içindedir; bölge seçimi için kısa ömürlü `unissRegionStash` (`storage.local`, ~5 dk TTL, export/iptal/unload sonrası silinir) kullanılır. Süresi dolmuş Region (~5 dk) ve Edit (~30 dk) anahtarları SW `onInstalled`/`onStartup` ve popup init’te de temizlenir (`alarms` izni yok). Privacy Clear yalnızca dört geçici anahtarı siler; `unissPageInfoBar` gibi ayarlara dokunmaz. Telemetri, reklam, üçüncü taraf paylaşımı yok.
 
 ## İzinler
 

@@ -21,6 +21,13 @@ Yeni paket zip’leri git’e konmaz (`uniss-*.zip` ignore); yalnızca eski 2.0.
 
 Mağaza paneline hedefe uygun zip ayrıca yüklenir: CWS/Edge için `-chrome`, AMO için `-firefox`; GitHub Release mağaza incelemesinin yerine geçmez.
 
+## 2.0.46
+
+- Region stash: `QuotaExceeded` yakalanır, kısmi anahtarlar temizlenir, overlay enjekte edilmez (`errQuota`).
+- Edit handoff: compare-and-clear — yalnızca yüklenen `unissEditTs` hâlâ geçerliyse silinir (ikinci Edit yarışı).
+- Region overlay a11y: `role=dialog` / `aria-modal` / instruct `aria-label`; seçimde ilk export’a focus; Tab Copy/Download/Edit arasında döner.
+- Privacy: süresi dolmuş Region/Edit anahtarlarının SW `onInstalled`/`onStartup` + popup init’te temizlendiği (alarms yok) belirtildi.
+
 ## 2.0.45
 
 - Canlı mağaza dokümanları: CWS/AMO **2.0.37** (denetim doğrulamalı); eski 2.0.16/2.0.17 “canlı / incelemede” ifadeleri kaldırıldı.

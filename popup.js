@@ -709,17 +709,32 @@
     }
     const stashStore = stashStorage();
     if (stashStore) {
-      await stashStore.set({
-        unissRegionStash: {
-          tabId: tab.id,
-          windowId: tab.windowId,
-          dataUrl,
-          viewport,
-          title: tab.title || "",
-          url: tab.url || "",
-          ts: Date.now(),
-        },
-      });
+      try {
+        await stashStore.set({
+          unissRegionStash: {
+            tabId: tab.id,
+            windowId: tab.windowId,
+            dataUrl,
+            viewport,
+            title: tab.title || "",
+            url: tab.url || "",
+            ts: Date.now(),
+          },
+        });
+      } catch (err) {
+        const name = err && err.name ? String(err.name) : "";
+        const msg = err && err.message ? String(err.message) : String(err || "");
+        try {
+          if (local) await local.remove(["unissRegionTabId"]);
+        } catch (_) {}
+        try {
+          await stashStore.remove(["unissRegionStash"]);
+        } catch (_) {}
+        if (name === "QuotaExceededError" || /quota/i.test(msg)) {
+          throw new Error(t("errQuota"));
+        }
+        throw err instanceof Error ? err : new Error(msg || t("errQuota"));
+      }
     }
     // Inject during the action click so activeTab covers the page tab.
     await api.scripting.executeScript({

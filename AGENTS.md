@@ -1,6 +1,6 @@
 # UniSS — agent notes
 
-Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.45`). Default UI language is English. Stores: **Live CWS: 2.0.37**, **Live AMO: 2.0.37** (audit-verified).
+Vanilla Manifest V3 browser extension (no bundler, no npm, no tests). Thin service worker (`background.js`) only opens allowlisted extension tabs. Version is in `manifest.json` (`2.0.46`). Default UI language is English. Stores: **Live CWS: 2.0.37**, **Live AMO: 2.0.37** (audit-verified).
 
 Read this file before changing code. Prefer surgical edits; do not rewrite whole files.
 
@@ -11,7 +11,7 @@ Capture the visible tab or stitch a full-page screenshot, then download, copy, o
 - Visible capture: `tabs.captureVisibleTab`
 - Region / element: popup (while `activeTab` is hot) stashes `captureVisibleTab` + viewport metrics in `unissRegionStash` (`storage.local`, ~5 min TTL; also `unissRegionTabId` + stash `tabId`/`windowId`), injects `region-overlay.js` then `executeScript({ func, args })` sets `window.__unissRegionBoundTabId` / `__unissRegionBoundWindowId`; overlay rejects stash if bound ids mismatch (clears keys); eager-decodes stash Image for gesture-safe Copy (`ClipboardItem` Promise) and Download; overlay locks page and nested overflow scrollers (html/body + up to ~40 nested `overflow:auto|scroll` nodes; wheel/touch preventDefault); Escape cancels; if window/nested scroll still moves or viewport/visualViewport resizes, toast + clear stash (incl. `unissRegionTabId`); hover-snaps to DOM, click locks, drag ≥~40px free rect; Copy/Download/Edit crop/export from stash inside the overlay (Copy clipboard prefers PNG via Promise; Download keeps format); Edit asks the thin SW to `tabs.create` `editor.html?wait=1` (no page-origin navigation to `chrome-extension://`); viewport intersection only (no scroll-stitch; no Save-full from Region). Main document only (open shadow pierced; cross-origin iframe = outer box). Settings Privacy can Clear temporary captures (`unissEditImage`, `unissEditTs`, `unissRegionStash`, `unissRegionTabId`).
 - Full page: inject helpers via `scripting.executeScript({ func, args })`, hide fixed/sticky chrome, scroll in viewport steps, stitch on a canvas (max CSS height `16000`, canvas cap `16384`)
-- Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor clears the handoff after a successful load (QuotaExceeded → user-facing errQuota)
+- Edit image is handed off through `storage.local` (`unissEditImage` + `unissEditTs`, ~30 min TTL); `tabs.create` opens `editor.html?wait=1`; editor compare-and-clears the handoff after a successful load only if `unissEditTs` still matches the ts this instance loaded (avoids wiping a newer second Edit); QuotaExceeded → user-facing errQuota
 - Download is an `<a download>` click (no `downloads` permission)
 - Copy uses `ClipboardItem` with **image/png** (re-encode when export format is jpeg/webp; Download keeps user format). Fails on browsers without image clipboard write
 
@@ -45,7 +45,7 @@ Has a thin `background` service worker (tab open only). No `content_scripts`, `h
 
 ## Browser compatibility
 
-Current targets (version `2.0.45`, Manifest V3, one unpacked folder):
+Current targets (version `2.0.46`, Manifest V3, one unpacked folder):
 
 - Chrome: yes (MV3; Chrome Web Store zip or unpacked)
 - Microsoft Edge: yes (Chromium; same zip as Chrome; Edge Add-ons is a separate upload)
@@ -83,12 +83,12 @@ Firefox 115+:
 
 ## Versioning
 
-`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.45`. **Live CWS: 2.0.37.** **Live AMO: 2.0.37.**
+`manifest.json` `version` is the id for the extension, both stores, and GitHub Release. Tree is `2.0.46`. **Live CWS: 2.0.37.** **Live AMO: 2.0.37.**
 
 - Every push to the repo must increment `manifest.json` `version`. Stores reject a zip whose version is not higher than the last **published** one.
 - Bump in the same change: `README.md`, `wiki/Home.md`, `wiki/Tarayicilar.md`, `wiki/Magaza.md`, `store/LISTING.md`, settings About fallback. This file too when the live/review status changes.
 - Do not push a commit that leaves the version unchanged.
-- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.45`). Workflow runs `./pack.sh chrome` and `./pack.sh firefox` and attaches both zips (plus the chrome alias). Tag must match the manifest or the job fails. Do not tag every commit.
+- GitHub Release is **not** a store listing. After the bump is on `main`, tag `v<that version>` (example `v2.0.46`). Workflow runs `./pack.sh chrome` and `./pack.sh firefox` and attaches both zips (plus the chrome alias). Tag must match the manifest or the job fails. Do not tag every commit.
 - Do not cancel a CWS/AMO review that is already queued unless the zip or listing icon is wrong.
 
 ## Store packaging

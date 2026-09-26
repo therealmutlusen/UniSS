@@ -584,6 +584,9 @@
   const root = document.createElement("div");
   root.id = ROOT_ID;
   root.setAttribute("data-uniss", "region");
+  root.setAttribute("role", "dialog");
+  root.setAttribute("aria-modal", "true");
+  root.setAttribute("aria-label", defaults.regionInstruct);
 
   const dim = document.createElement("div");
   dim.className = "uniss-dim";
@@ -703,6 +706,7 @@
     setButtonLabel(btnDownload, ICON_DOWNLOAD, t("regionDownload"));
     setButtonLabel(btnEdit, ICON_EDIT, t("regionEdit"));
     if (instruct) instruct.textContent = t("regionInstruct");
+    root.setAttribute("aria-label", t("regionInstruct"));
   }
   applyStrings();
 
@@ -800,6 +804,13 @@
     hit.style.cursor = "default";
     setBox(rect, true);
     layoutHandlesAndActions();
+    try {
+      btnCopy.focus({ preventScroll: true });
+    } catch (_) {
+      try {
+        btnCopy.focus();
+      } catch (__) {}
+    }
   }
 
   function unlockToCrosshair() {
@@ -1290,6 +1301,29 @@
   }
 
   function onKeyDown(e) {
+    if (mode === "selected" && e.key === "Tab") {
+      const buttons = [btnCopy, btnDownload, btnEdit];
+      e.preventDefault();
+      e.stopPropagation();
+      const idx = buttons.indexOf(document.activeElement);
+      let next;
+      if (e.shiftKey) {
+        next = idx <= 0 ? buttons[buttons.length - 1] : buttons[idx - 1];
+      } else {
+        next =
+          idx < 0 || idx >= buttons.length - 1 ? buttons[0] : buttons[idx + 1];
+      }
+      try {
+        next.focus({ preventScroll: true });
+      } catch (_) {
+        try {
+          next.focus();
+        } catch (__) {}
+      }
+      return;
+    }
+    // Enter/Space on a focused export button: native trusted click fires
+    // requestCapture via existing click listeners (isTrusted preserved).
     if (e.key !== "Escape") return;
     e.preventDefault();
     e.stopPropagation();

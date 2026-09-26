@@ -1847,12 +1847,23 @@
 
   const EDIT_IMAGE_TTL_MS = 30 * 60 * 1000;
 
-  async function clearEditHandoff(local) {
+  // Compare-and-clear: only remove if unissEditTs still matches the ts this
+  // editor instance loaded, so a newer handoff from a second Edit is kept.
+  async function clearEditHandoff(local, expectedTs) {
     if (!local) return;
     try {
+      if (typeof expectedTs === "number") {
+        const cur = await local.get(["unissEditTs"]);
+        const currentTs = cur && cur.unissEditTs;
+        if (currentTs !== expectedTs) return;
+      }
       await local.remove(["unissEditImage", "unissEditTs"]);
     } catch (_) {
       try {
+        if (typeof expectedTs === "number") {
+          const cur = await local.get(["unissEditTs"]);
+          if (cur && cur.unissEditTs !== expectedTs) return;
+        }
         await local.set({ unissEditImage: null, unissEditTs: null });
       } catch (__) {}
     }
@@ -1886,7 +1897,8 @@
     }
     const ts = data && data.unissEditTs;
     if (typeof ts !== "number" || Date.now() - ts > EDIT_IMAGE_TTL_MS) {
-      await clearEditHandoff(local);
+      if (typeof ts === "number") await clearEditHandoff(local, ts);
+      else await clearEditHandoff(local);
       setStatus(t("errNoEditImage"), "err", { toast: true });
       return;
     }
@@ -1906,7 +1918,8 @@
     redraw();
     setStatus("", "ok");
     // Drop the large handoff payload once the bitmap is in memory.
-    await clearEditHandoff(local);
+    // Pass ts so a fresher handoff from another Edit is not wiped.
+    await clearEditHandoff(local, ts);
   }
 
   document.querySelectorAll(".tool").forEach((btn) => {
